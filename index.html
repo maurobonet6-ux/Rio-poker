@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RÍO — Decide en cada calle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0A0B;
+    --bg-deep: #000000;
+    --panel: #141416;
+    --panel-2: #1C1C1F;
+    --line: rgba(255,255,255,0.10);
+    --cream: #F5F2EC;
+    --cream-dim: rgba(245,242,236,0.58);
+    --ink: #0A0A0B;
+    --gold: #E8283F;
+    --gold-soft: rgba(232,40,63,0.16);
+    --crimson: #FF4757;
+    --lavender: #D8A63B;
+    --lavender-soft: rgba(216,166,59,0.16);
+    --crimson-soft: rgba(255,71,87,0.16);
+    --ok: #3DDC7A;
+    --ok-soft: rgba(61,220,122,0.14);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html, body { height: 100%; }
+  * { box-sizing: border-box; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(60% 40% at 12% 0%, rgba(232,40,63,0.14), transparent 60%),
+      radial-gradient(50% 35% at 100% 15%, rgba(255,71,87,0.09), transparent 60%),
+      var(--bg);
+    color: var(--cream);
+    font-family: 'Space Grotesk', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100%;
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+    overflow-x: hidden;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 26px 20px 70px; position: relative; }
+
+  .suitwatermark {
+    position: absolute; font-size: 13rem; opacity: 0.05; pointer-events: none;
+    font-family: 'Bricolage Grotesque', sans-serif; user-select: none; line-height: 1;
+  }
+  .suitwatermark.one { top: -30px; right: -30px; color: var(--gold); opacity: 0.08; transform: rotate(12deg); }
+  .suitwatermark.two { bottom: 120px; left: -60px; color: var(--cream); opacity: 0.04; transform: rotate(-8deg); font-size: 9rem; }
+  .suitwatermark.three { top: 340px; right: 6%; color: var(--cream); opacity: 0.035; transform: rotate(6deg); font-size: 7rem; }
+
+  header.hero { position: relative; padding-bottom: 24px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+  .brand-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand h1 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.6rem, 8vw, 4.1rem);
+    letter-spacing: -0.02em;
+    margin: 0; line-height: 0.9;
+    background: linear-gradient(100deg, var(--gold) 0%, var(--cream) 55%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .brand p { margin: 8px 0 0; color: var(--cream-dim); font-size: 1rem; }
+
+  .steps-nav { display: flex; gap: 6px; margin-top: 16px; }
+  .steps-nav .dot {
+    flex: 1; height: 6px; border-radius: 999px; background: var(--line);
+    position: relative; overflow: hidden;
+  }
+  .steps-nav .dot.done { background: var(--gold); }
+  .steps-nav .dot.active { background: var(--line); }
+  .steps-nav .dot.active::after {
+    content: ''; position: absolute; inset: 0; background: var(--gold);
+    animation: pulse-slide 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-slide { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+  .steps-labels { display: flex; justify-content: space-between; margin-top: 8px; }
+  .steps-labels span { font-size: 0.7rem; color: var(--cream-dim); font-weight: 600; }
+  .steps-labels span.active { color: var(--gold); }
+
+  section.panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px 22px;
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .panel-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .panel-num {
+    width: 30px; height: 30px; border-radius: 999px; background: var(--gold-soft); color: var(--gold);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;
+    font-family: 'Bricolage Grotesque', sans-serif; flex-shrink: 0;
+  }
+  .panel-head h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.2rem; margin: 0; }
+  .panel-hint { font-size: 0.85rem; color: var(--cream-dim); margin: -8px 0 16px 42px; }
+
+  .table-grid { display: grid; grid-template-columns: 1fr 1.7fr; gap: 22px; }
+  @media (max-width: 680px) { .table-grid { grid-template-columns: 1fr; } }
+  .zone-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cream-dim); margin-bottom: 10px; font-weight: 700; }
+  .card-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .board-groups { display: flex; gap: 18px; flex-wrap: wrap; }
+  .grp-tag { font-size: 0.64rem; color: var(--cream-dim); text-align: center; margin-top: 6px; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 600; }
+
+  .cardslot {
+    width: 62px; height: 86px; border-radius: 10px; border: none; cursor: pointer; padding: 0;
+    font-family: 'Space Grotesk', sans-serif; position: relative;
+    transition: transform .16s cubic-bezier(.34,1.56,.64,1), box-shadow .16s;
+  }
+  .cardslot:hover { transform: translateY(-3px); }
+  .cardslot:active { transform: translateY(-1px) scale(0.97); }
+  .cardslot.empty {
+    background: repeating-linear-gradient(135deg, var(--panel-2), var(--panel-2) 6px, rgba(232,40,63,0.07) 6px, rgba(232,40,63,0.07) 12px);
+    border: 1.5px dashed var(--line);
+    color: var(--cream-dim); font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
+  }
+  .cardslot.empty:hover { border-color: var(--gold); color: var(--gold); box-shadow: 0 6px 18px rgba(232,40,63,0.18); }
+  .cardslot.filled {
+    background: var(--cream); border: 1.5px solid var(--gold); color: var(--ink);
+    display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+    padding: 7px 8px; font-weight: 700; box-shadow: 0 6px 16px rgba(0,0,0,0.28);
+  }
+  .cardslot.filled.crimson { color: var(--crimson); }
+  .cardslot.filled .r { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.25rem; line-height: 1; }
+  .cardslot.filled .s { font-size: 1.3rem; align-self: flex-end; line-height: 1; }
+  .cardslot.pop { animation: cardpop .32s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes cardpop { 0% { transform: scale(0.4) rotate(-8deg); opacity: 0; } 60% { transform: scale(1.08) rotate(2deg); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+
+  .current-hand {
+    margin-top: 18px; padding: 12px 16px; border-radius: 12px; background: var(--gold-soft);
+    font-size: 0.95rem; color: var(--cream-dim); transition: background .2s;
+  }
+  .current-hand b { color: var(--gold); font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; }
+
+  .inputs-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 780px) { .inputs-row { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 460px) { .inputs-row { grid-template-columns: 1fr; } }
+  .field select {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--cream); font-size: 1rem; font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif; appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--cream-dim) 50%), linear-gradient(135deg, var(--cream-dim) 50%, transparent 50%);
+    background-position: calc(100% - 20px) center, calc(100% - 15px) center; background-size: 5px 5px; background-repeat: no-repeat;
+  }
+  .field label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--cream-dim); margin-bottom: 7px; font-weight: 700; }
+  .field-wide { grid-column: 1 / -1; }
+  .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 460px) { .toggle-group { grid-template-columns: 1fr; } }
+  .toggle-btn {
+    padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2);
+    color: var(--cream-dim); font-weight: 700; font-size: 0.88rem; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; text-align: left; transition: border-color .15s, background .15s, color .15s;
+  }
+  .toggle-btn small { display: block; font-weight: 500; font-size: 0.72rem; color: var(--cream-dim); margin-top: 2px; text-transform: none; letter-spacing: 0; }
+  .toggle-btn:hover { border-color: var(--gold); }
+  .toggle-btn.active { background: var(--gold-soft); border-color: var(--gold); color: var(--cream); }
+  .toggle-btn.active small { color: var(--gold); }
+  .stepper { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel-2); }
+  .stepper button { background: none; border: none; color: var(--gold); width: 44px; height: 46px; font-size: 1.25rem; cursor: pointer; transition: background .15s; }
+  .stepper button:hover { background: var(--gold-soft); }
+  .stepper span { flex: 1; text-align: center; font-weight: 700; font-size: 1.1rem; font-family: 'Bricolage Grotesque', sans-serif; }
+  .field input[type=number] {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--cream); font-size: 1.1rem; font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .field input:focus, .cardslot:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .field .hint { font-size: 0.76rem; color: var(--cream-dim); margin-top: 6px; }
+
+  .actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+  .btn-primary {
+    flex: 1; min-width: 220px; background: linear-gradient(100deg, var(--gold), #FF6B5B);
+    color: #fff; border: none; padding: 17px 22px; border-radius: 12px; font-weight: 700;
+    font-size: 1.05rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.01em;
+    box-shadow: 0 8px 22px rgba(232,40,63,0.30); transition: transform .13s, box-shadow .13s;
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(232,40,63,0.4); }
+  .btn-primary:active:not(:disabled) { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.6; cursor: wait; }
+  .btn-secondary {
+    background: transparent; color: var(--cream-dim); border: 1px solid var(--line);
+    padding: 17px 20px; border-radius: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+    transition: border-color .15s, color .15s;
+  }
+  .btn-secondary:hover { border-color: var(--crimson); color: var(--crimson); }
+
+  .result { display: none; }
+  .result.show { display: block; animation: fadeup .35s ease; }
+  @keyframes fadeup { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
+  .result-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .result-hand { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--gold); }
+  .decision-badge { font-weight: 800; font-size: 1rem; padding: 9px 20px; border-radius: 999px; letter-spacing: 0.03em; }
+  .decision-badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .decision-badge.warn { background: var(--lavender-soft); color: var(--lavender); }
+  .decision-badge.no { background: var(--crimson-soft); color: var(--crimson); }
+
+  .gauge { margin: 20px 0 8px; height: 16px; border-radius: 999px; background: var(--panel-2); position: relative; overflow: visible; }
+  .gauge-fill { height: 100%; border-radius: 999px; width: 0%; background: linear-gradient(90deg, var(--crimson), var(--lavender), var(--ok)); transition: width 0.8s cubic-bezier(.22,1,.36,1); }
+  .gauge-mark { position: absolute; top: -6px; width: 3px; height: 28px; background: var(--cream); border-radius: 2px; left: 0%; transition: left 0.8s cubic-bezier(.22,1,.36,1); }
+  .gauge-labels { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--cream-dim); margin-top: 6px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 20px; }
+  @media (max-width: 680px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+  .stat { background: var(--panel-2); border-radius: 12px; padding: 14px; text-align: center; cursor: help; }
+  .stat b { display: block; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.7rem; font-weight: 700; }
+  .stat span { font-size: 0.7rem; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .overlay {
+    display: none; position: fixed; inset: 0; background: rgba(10,4,10,0.78);
+    align-items: flex-end; justify-content: center; z-index: 50; backdrop-filter: blur(3px);
+  }
+  .overlay.show { display: flex; }
+  @media (min-width: 640px) { .overlay { align-items: center; } }
+  .picker {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 460px; padding: 22px; max-height: 84vh; overflow-y: auto;
+    padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    animation: slideup .22s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes slideup { from { transform: translateY(24px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
+  @media (min-width: 640px) { .picker { border-radius: 20px; } }
+  .picker-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .picker-head h3 { font-family: 'Bricolage Grotesque', sans-serif; margin: 0; font-size: 1.2rem; }
+  .picker-head button { background: none; border: none; color: var(--cream-dim); font-size: 1.5rem; cursor: pointer; }
+  .back-btn { background: none; border: none; color: var(--gold); font-weight: 600; cursor: pointer; font-family: 'Space Grotesk', sans-serif; padding: 0; margin-bottom: 4px; font-size: 0.9rem; }
+
+  .rank-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .rank-btn {
+    padding: 16px 0; border-radius: 12px; border: 1px solid var(--line); background: var(--panel-2);
+    color: var(--cream); font-weight: 700; font-size: 1.15rem; cursor: pointer; font-family: 'Bricolage Grotesque', sans-serif;
+    transition: transform .1s, border-color .15s;
+  }
+  .rank-btn:hover:not(:disabled) { border-color: var(--gold); background: var(--gold-soft); transform: translateY(-2px); }
+  .rank-btn:disabled { opacity: 0.22; cursor: not-allowed; }
+
+  .suit-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .suit-btn {
+    padding: 22px 0; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2);
+    font-size: 2.2rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    transition: transform .1s, border-color .15s;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .suit-btn small { font-size: 0.68rem; color: var(--cream-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .suit-btn.black { color: var(--cream); }
+  .suit-btn.crimson { color: var(--crimson); }
+  .suit-btn:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-2px); }
+  .suit-btn:disabled { opacity: 0.22; cursor: not-allowed; }
+
+  .clear-btn {
+    margin-top: 16px; width: 100%; padding: 13px; border-radius: 10px; border: 1px solid var(--line);
+    background: transparent; color: var(--crimson); font-weight: 600; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .advice {
+    margin-top: 18px; padding: 14px 16px; border-radius: 12px; background: var(--panel-2);
+    border-left: 3px solid var(--gold); font-size: 0.9rem; color: var(--cream-dim); line-height: 1.5;
+  }
+  .advice b { color: var(--cream); }
+
+  .usage-row { margin-top: 14px; text-align: center; font-size: 0.78rem; color: var(--cream-dim); }
+  .usage-row .pro-tag { color: var(--gold); font-weight: 700; }
+  .usage-row .low { color: var(--crimson); font-weight: 700; }
+
+  .history-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 12px 4px; border-bottom: 1px solid var(--line); font-size: 0.88rem;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item .h-hand { font-weight: 700; color: var(--cream); }
+  .history-item .h-meta { color: var(--cream-dim); font-size: 0.76rem; margin-top: 2px; }
+  .history-tag { font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 999px; flex-shrink: 0; }
+  .history-tag.ok { background: var(--ok-soft); color: var(--ok); }
+  .history-tag.warn { background: var(--lavender-soft); color: var(--lavender); }
+  .history-tag.no { background: var(--crimson-soft); color: var(--crimson); }
+  .history-locked { text-align: center; padding: 18px 10px; color: var(--cream-dim); font-size: 0.86rem; }
+  .history-locked a { color: var(--gold); font-weight: 700; cursor: pointer; }
+
+  .paywall-card { text-align: left; }
+  .paywall-copy { color: var(--cream-dim); font-size: 0.92rem; line-height: 1.5; margin: 0 0 14px; }
+  .paywall-features { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 9px; }
+  .paywall-features li { font-size: 0.88rem; color: var(--cream); background: var(--panel-2); padding: 10px 12px; border-radius: 9px; }
+  .paywall-price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 16px; }
+  .paywall-price span { font-family: 'Bricolage Grotesque', sans-serif; font-size: 2.1rem; font-weight: 800; color: var(--gold); }
+  .paywall-price small { color: var(--cream-dim); font-size: 0.85rem; }
+  .paywall-fine { font-size: 0.72rem; color: var(--cream-dim); text-align: center; margin: 12px 0 0; }
+  .restore-msg { font-size: 0.82rem; margin-top: 10px; text-align: center; min-height: 1em; }
+  .restore-msg.ok { color: var(--ok); }
+  .restore-msg.no { color: var(--crimson); }
+
+  footer { text-align: center; color: var(--cream-dim); font-size: 0.8rem; margin-top: 34px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="suitwatermark one">♠</div>
+  <div class="suitwatermark two">♥</div>
+  <div class="suitwatermark three">♣</div>
+
+  <header class="hero">
+    <div class="brand-row">
+      <div class="brand">
+        <h1>RÍO</h1>
+        <p>Decide en cada calle — equity en vivo, sin adivinar</p>
+      </div>
+    </div>
+    <div class="steps-nav">
+      <div class="dot" id="dotPreflop"></div>
+      <div class="dot" id="dotFlop"></div>
+      <div class="dot" id="dotTurn"></div>
+      <div class="dot" id="dotRiver"></div>
+    </div>
+    <div class="steps-labels">
+      <span id="lblPreflop">Preflop</span>
+      <span id="lblFlop">Flop</span>
+      <span id="lblTurn">Turn</span>
+      <span id="lblRiver">Río</span>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="panel-head"><div class="panel-num">1</div><h2>Tu mano y la mesa</h2></div>
+    <div class="panel-hint">Toca una carta para elegirla — puedes cambiarla cuando quieras</div>
+    <div class="table-grid">
+      <div>
+        <div class="zone-label">Tu mano</div>
+        <div class="card-row" id="holeRow"></div>
+      </div>
+      <div>
+        <div class="zone-label">Comunitarias</div>
+        <div class="board-groups">
+          <div><div class="card-row" id="flopRow"></div><div class="grp-tag">Flop</div></div>
+          <div><div class="card-row" id="turnRow"></div><div class="grp-tag">Turn</div></div>
+          <div><div class="card-row" id="riverRow"></div><div class="grp-tag">Río</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="current-hand" id="currentHand">Elige tus dos cartas para empezar.</div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div class="panel-num">2</div><h2>La situación</h2></div>
+    <div class="inputs-row">
+      <div class="field">
+        <label>Rivales en la mano</label>
+        <div class="stepper">
+          <button type="button" id="rivMinus">−</button>
+          <span id="rivVal">1</span>
+          <button type="button" id="rivPlus">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Bote actual</label>
+        <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
+        <div class="hint">Fichas o €, la unidad da igual</div>
+      </div>
+      <div class="field">
+        <label>Cantidad a igualar</label>
+        <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
+        <div class="hint">Lo que cuesta pagar ahora</div>
+      </div>
+      <div class="field">
+        <label>Tu stack efectivo</label>
+        <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
+        <div class="hint">Fichas que te quedan detrás</div>
+      </div>
+      <div class="field field-wide">
+        <label>¿Quién actúa primero en esta calle?</label>
+        <div class="toggle-group" id="orderToggle" role="group">
+          <button type="button" class="toggle-btn active" data-val="oop">Yo actúo primero<small>Fuera de posición</small></button>
+          <button type="button" class="toggle-btn" data-val="ip">El rival actúa primero<small>Tú tienes posición</small></button>
+        </div>
+        <div class="hint">Afecta al margen de seguridad del consejo, no al cálculo de equity</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="analyzeBtn">Analizar mano</button>
+      <button class="btn-secondary" id="resetBtn">Reiniciar</button>
+    </div>
+    <div class="usage-row" id="usageRow"></div>
+  </section>
+
+  <section class="panel result" id="resultPanel">
+    <div class="panel-head"><div class="panel-num">3</div><h2>Resultado</h2></div>
+    <div class="result-top">
+      <div class="result-hand" id="resultHandName">—</div>
+      <div class="decision-badge" id="decisionBadge">—</div>
+    </div>
+    <div class="gauge">
+      <div class="gauge-fill" id="gaugeFill"></div>
+      <div class="gauge-mark" id="gaugeMark"></div>
+    </div>
+    <div class="gauge-labels"><span>0%</span><span id="markLabel">Necesitas X%</span><span>100%</span></div>
+    <div class="stat-grid">
+      <div class="stat" title="Probabilidad de tener la mejor mano al final, según la simulación"><b id="statEquity">—</b><span>Prob. de ganar</span></div>
+      <div class="stat" title="Probabilidad de empatar el bote con un rival"><b id="statTie">—</b><span>Prob. de empate</span></div>
+      <div class="stat" title="Equity mínima que necesitas para que pagar sea rentable a largo plazo"><b id="statNeeded">—</b><span>Odds del bote</span></div>
+      <div class="stat" title="Por cada ficha que pagas, esto es lo que hay en juego"><b id="statRatio">—</b><span>Ratio del bote</span></div>
+      <div class="stat" title="Ganancia o pérdida media esperada de pagar, en fichas"><b id="statEV">—</b><span>EV de igualar</span></div>
+      <div class="stat" title="Stack efectivo dividido entre el bote — orienta cuánta presión soportas"><b id="statSPR">—</b><span>SPR</span></div>
+    </div>
+    <div class="advice" id="adviceBox"></div>
+    <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:14px;">📋 Copiar resumen de la mano</button>
+  </section>
+
+  <section class="panel" id="historyPanel" style="display:none;">
+    <div class="panel-head"><div class="panel-num">📜</div><h2>Historial de manos</h2></div>
+    <div id="historyList"></div>
+  </section>
+
+  <footer>Herramienta de estudio. No sustituye tu propio criterio en la mesa.</footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="picker">
+    <div class="picker-head">
+      <h3 id="pickerTitle">Elige el valor</h3>
+      <button type="button" id="closePicker" aria-label="Cerrar">&times;</button>
+    </div>
+    <div id="pickerBody"></div>
+    <button class="clear-btn" id="clearSlotBtn">Quitar esta carta</button>
+  </div>
+</div>
+
+<div class="overlay" id="paywall">
+  <div class="picker paywall-card">
+    <div class="picker-head">
+      <h3>Has agotado tus análisis gratis</h3>
+      <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
+    </div>
+    <p class="paywall-copy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa.</p>
+    <ul class="paywall-features">
+      <li>♠ Análisis de manos ilimitados</li>
+      <li>♥ Historial completo de tus últimas manos</li>
+      <li>♦ Consejo por posición en cada calle</li>
+      <li>♣ Sin anuncios ni interrupciones</li>
+    </ul>
+    <div class="paywall-price"><span>4,99&nbsp;€</span><small>/ mes</small></div>
+    <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 4,99€</button>
+    <div class="restore-box">
+      <div class="hint" style="margin-top:14px;">¿Ya pagaste? Escribe el email con el que te suscribiste:</div>
+      <input type="email" id="proEmail" placeholder="tu@email.com" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
+      <button class="btn-secondary" id="restoreBtn" style="width:100%; margin-top:10px;">Comprobar suscripción</button>
+      <div id="restoreMsg" class="restore-msg"></div>
+    </div>
+    <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const RANKS = [14,13,12,11,10,9,8,7,6,5,4,3,2];
+  const SUITS = ['s','h','d','c'];
+  const SUIT_SYMBOL = {s:'♠', h:'♥', d:'♦', c:'♣'};
+  const SUIT_NAME = {s:'Picas', h:'Corazones', d:'Diamantes', c:'Tréboles'};
+  const SUIT_CRIMSON = {s:false, h:true, d:true, c:false};
+  const RANK_LABEL = r => r<=10 ? String(r) : ({11:'J',12:'Q',13:'K',14:'A'}[r]);
+  const RANK_PLURAL = {14:'Ases',13:'Reyes',12:'Reinas',11:'Jotas',10:'Dieces',9:'Nueves',8:'Ochos',7:'Sietes',6:'Seises',5:'Cincos',4:'Cuatros',3:'Treses',2:'Doses'};
+  const SLOT_ORDER = [{zone:'hole',idx:0},{zone:'hole',idx:1},{zone:'board',idx:0},{zone:'board',idx:1},{zone:'board',idx:2},{zone:'board',idx:3},{zone:'board',idx:4}];
+
+  const FREE_LIMIT = 5;
+  const PAYMENT_LINK = 'https://buy.stripe.com/tu-enlace-de-pago'; // tu Payment Link real de Stripe
+  const API_ENDPOINT = '/api/check-pro'; // ruta relativa: funciona sola una vez desplegado en Vercel junto a la carpeta /api
+
+  function storageGet(key, fallback){
+    try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); }
+    catch(e){ return fallback; }
+  }
+  function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
+  function isPro(){ return storageGet('rio_pro', false) === true; }
+  function usesCount(){ return storageGet('rio_uses', 0); }
+  function bumpUses(){ storageSet('rio_uses', usesCount()+1); }
+  function getHistory(){ return storageGet('rio_history', []); }
+  function pushHistory(entry){
+    const h = getHistory(); h.unshift(entry);
+    storageSet('rio_history', h.slice(0, 10));
+  }
+
+  // Pregunta a nuestro pequeño servidor (que a su vez pregunta a Stripe) si ese
+  // email tiene una suscripción activa. Devuelve true/false, nunca lanza error.
+  async function verifyProByEmail(email){
+    try {
+      const r = await fetch(`${API_ENDPOINT}?email=${encodeURIComponent(email)}`);
+      const data = await r.json();
+      return data.pro === true;
+    } catch(e){ return null; } // null = no se pudo comprobar (servidor no desplegado aún, sin conexión…)
+  }
+
+  // Si ya verificamos antes un email en este navegador, lo revalidamos en
+  // segundo plano al cargar la página (por si la suscripción caducó o se canceló).
+  (function revalidateOnLoad(){
+    const savedEmail = storageGet('rio_email', null);
+    if (!savedEmail) return;
+    verifyProByEmail(savedEmail).then(pro => {
+      if (pro === null) return; // sin respuesta del servidor: no tocamos nada
+      storageSet('rio_pro', pro);
+      if (typeof updateUsageBadge === 'function') updateUsageBadge();
+    });
+  })();
+
+  let hole = [null, null];
+  let board = [null, null, null, null, null];
+  let numRivals = 1;
+  let actionOrder = 'oop';
+  let activeSlot = null;
+  let pickStep = 'rank';
+  let pickedRank = null;
+
+  const holeRow = document.getElementById('holeRow');
+  const flopRow = document.getElementById('flopRow');
+  const turnRow = document.getElementById('turnRow');
+  const riverRow = document.getElementById('riverRow');
+  const currentHandEl = document.getElementById('currentHand');
+  const overlay = document.getElementById('overlay');
+  const pickerBody = document.getElementById('pickerBody');
+  const pickerTitle = document.getElementById('pickerTitle');
+  const resultPanel = document.getElementById('resultPanel');
+
+  function allUsedCards(){ return [...hole, ...board].filter(Boolean); }
+  function cardKey(c){ return c.rank+'-'+c.suit; }
+  function isUsed(rank,suit){ return allUsedCards().some(c=>c.rank===rank && c.suit===suit); }
+
+  function makeSlotBtn(zone, idx, card){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cardslot ' + (card ? 'filled' : 'empty');
+    if (card && SUIT_CRIMSON[card.suit]) btn.classList.add('crimson');
+    if (card){
+      btn.innerHTML = `<span class="r">${RANK_LABEL(card.rank)}</span><span class="s">${SUIT_SYMBOL[card.suit]}</span>`;
+    } else {
+      btn.textContent = '+';
+    }
+    btn.addEventListener('click', () => openPicker(zone, idx));
+    return btn;
+  }
+
+  function render(justFilled){
+    holeRow.innerHTML=''; flopRow.innerHTML=''; turnRow.innerHTML=''; riverRow.innerHTML='';
+    holeRow.appendChild(makeSlotBtn('hole',0,hole[0]));
+    holeRow.appendChild(makeSlotBtn('hole',1,hole[1]));
+    for (let i=0;i<3;i++) flopRow.appendChild(makeSlotBtn('board', i, board[i]));
+    turnRow.appendChild(makeSlotBtn('board', 3, board[3]));
+    riverRow.appendChild(makeSlotBtn('board', 4, board[4]));
+
+    if (justFilled){
+      const sel = justFilled.zone==='hole'
+        ? holeRow.children[justFilled.idx]
+        : (justFilled.idx<3 ? flopRow.children[justFilled.idx] : justFilled.idx===3 ? turnRow.children[0] : riverRow.children[0]);
+      if (sel){ sel.classList.add('pop'); }
+    }
+
+    const boardCount = board.filter(Boolean).length;
+    let street = 'preflop';
+    if (boardCount>=5) street='river'; else if (boardCount>=4) street='turn'; else if (boardCount>=3) street='flop';
+    const order = ['preflop','flop','turn','river'];
+    const si = order.indexOf(street);
+    ['Preflop','Flop','Turn','River'].forEach((name, i) => {
+      const dot = document.getElementById('dot'+name);
+      const lbl = document.getElementById('lbl'+name);
+      dot.classList.toggle('done', i < si);
+      dot.classList.toggle('active', i === si);
+      lbl.classList.toggle('active', i === si);
+    });
+
+    updateCurrentHand();
+    resultPanel.classList.remove('show');
+  }
+
+  function updateCurrentHand(){
+    const known = [...hole, ...board].filter(Boolean);
+    if (!hole[0] || !hole[1]){ currentHandEl.textContent = 'Elige tus dos cartas para empezar.'; return; }
+    if (known.length < 5){
+      const [a,b] = hole;
+      if (a.rank === b.rank){
+        currentHandEl.innerHTML = `Mano de partida: <b>Pareja de ${RANK_PLURAL[a.rank]}</b>`;
+      } else {
+        const suited = a.suit === b.suit ? ' (mismo palo)' : '';
+        const hi = a.rank>b.rank?a:b, lo=a.rank>b.rank?b:a;
+        currentHandEl.innerHTML = `Mano de partida: <b>${RANK_LABEL(hi.rank)}-${RANK_LABEL(lo.rank)}${suited}</b>`;
+      }
+      return;
+    }
+    const best = bestHand(known);
+    currentHandEl.innerHTML = `Mano actual: <b>${categoryName(best.category, best.tiebreak)}</b>`;
+  }
+
+  function nextEmptySlot(afterZone, afterIdx){
+    const curIndex = SLOT_ORDER.findIndex(o=>o.zone===afterZone && o.idx===afterIdx);
+    for (let i=curIndex+1;i<SLOT_ORDER.length;i++){
+      const o = SLOT_ORDER[i];
+      const val = o.zone==='hole' ? hole[o.idx] : board[o.idx];
+      if (!val) return o;
+    }
+    return null;
+  }
+
+  function openPicker(zone, idx){
+    activeSlot = {zone, idx};
+    pickStep = 'rank';
+    pickedRank = null;
+    document.getElementById('clearSlotBtn').style.display = (zone==='hole'?hole[idx]:board[idx]) ? 'block' : 'none';
+    renderPickerStep();
+    overlay.classList.add('show');
+  }
+  function closePicker(){ overlay.classList.remove('show'); activeSlot = null; }
+  document.getElementById('closePicker').addEventListener('click', closePicker);
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closePicker(); });
+
+  function renderPickerStep(){
+    pickerBody.innerHTML = '';
+    if (pickStep === 'rank'){
+      pickerTitle.textContent = 'Elige el valor';
+      const grid = document.createElement('div');
+      grid.className = 'rank-grid';
+      for (const rank of RANKS){
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'rank-btn'; b.textContent = RANK_LABEL(rank);
+        const available = SUITS.some(s => !isUsed(rank, s) || (activeSlot && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]).rank===rank && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]).suit===s));
+        b.disabled = !available;
+        b.addEventListener('click', () => { pickedRank = rank; pickStep = 'suit'; renderPickerStep(); });
+        grid.appendChild(b);
+      }
+      pickerBody.appendChild(grid);
+    } else {
+      pickerTitle.textContent = RANK_LABEL(pickedRank) + ' — elige el palo';
+      const back = document.createElement('button');
+      back.type = 'button'; back.className = 'back-btn'; back.textContent = '← Cambiar valor';
+      back.addEventListener('click', () => { pickStep = 'rank'; renderPickerStep(); });
+      pickerBody.appendChild(back);
+      const grid = document.createElement('div');
+      grid.className = 'suit-grid';
+      for (const suit of SUITS){
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'suit-btn ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
+        b.innerHTML = `${SUIT_SYMBOL[suit]}<small>${SUIT_NAME[suit]}</small>`;
+        const current = activeSlot ? (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) : null;
+        const usedByOther = isUsed(pickedRank, suit) && !(current && current.rank===pickedRank && current.suit===suit);
+        b.disabled = usedByOther;
+        b.addEventListener('click', () => selectCard(pickedRank, suit));
+        grid.appendChild(b);
+      }
+      pickerBody.appendChild(grid);
+    }
+  }
+
+  function selectCard(rank, suit){
+    if (!activeSlot) return;
+    const card = {rank, suit};
+    const slot = activeSlot;
+    if (slot.zone === 'hole') hole[slot.idx] = card; else board[slot.idx] = card;
+    closePicker();
+    render(slot);
+    const nxt = nextEmptySlot(slot.zone, slot.idx);
+    // Solo avanza automáticamente dentro de la misma zona (mano→mano o comunitarias→comunitarias).
+    // Al pasar de la mano a las comunitarias hace falta pinchar tú la primera.
+    if (nxt && nxt.zone === slot.zone){
+      setTimeout(() => openPicker(nxt.zone, nxt.idx), 320);
+    }
+  }
+
+  document.getElementById('clearSlotBtn').addEventListener('click', () => {
+    if (!activeSlot) return;
+    if (activeSlot.zone === 'hole') hole[activeSlot.idx] = null; else board[activeSlot.idx] = null;
+    closePicker();
+    render();
+  });
+
+  function combinations(arr,k){
+    const res=[]; const combo=[];
+    (function helper(start){
+      if (combo.length===k){ res.push(combo.slice()); return; }
+      for (let i=start;i<arr.length;i++){ combo.push(arr[i]); helper(i+1); combo.pop(); }
+    })(0);
+    return res;
+  }
+
+  function eval5(cards){
+    const ranks = cards.map(c=>c.rank).sort((a,b)=>b-a);
+    const suits = cards.map(c=>c.suit);
+    const isFlush = suits.every(s=>s===suits[0]);
+    const uniq = [...new Set(ranks)];
+    let isStraight=false, straightHigh=0;
+    if (uniq.length===5){
+      if (uniq[0]-uniq[4]===4){ isStraight=true; straightHigh=uniq[0]; }
+      else if (uniq[0]===14 && uniq[1]===5 && uniq[2]===4 && uniq[3]===3 && uniq[4]===2){ isStraight=true; straightHigh=5; }
+    }
+    const countMap={};
+    ranks.forEach(r=>countMap[r]=(countMap[r]||0)+1);
+    const groups = Object.entries(countMap).map(([r,c])=>({r:Number(r),c})).sort((a,b)=> b.c-a.c || b.r-a.r);
+    let category, tiebreak;
+    if (isStraight && isFlush){ category=8; tiebreak=[straightHigh,0,0,0,0]; }
+    else if (groups[0].c===4){ category=7; tiebreak=[groups[0].r, groups[1].r,0,0,0]; }
+    else if (groups[0].c===3 && groups[1] && groups[1].c===2){ category=6; tiebreak=[groups[0].r, groups[1].r,0,0,0]; }
+    else if (isFlush){ category=5; tiebreak=ranks; }
+    else if (isStraight){ category=4; tiebreak=[straightHigh,0,0,0,0]; }
+    else if (groups[0].c===3){ const kick=groups.filter(g=>g.c===1).map(g=>g.r); category=3; tiebreak=[groups[0].r, ...kick, 0,0].slice(0,5); }
+    else if (groups[0].c===2 && groups[1] && groups[1].c===2){
+      const pr=[groups[0].r, groups[1].r].sort((a,b)=>b-a);
+      const kicker = groups.find(g=>g.c===1).r;
+      category=2; tiebreak=[pr[0], pr[1], kicker, 0,0];
+    }
+    else if (groups[0].c===2){ const kick=groups.filter(g=>g.c===1).map(g=>g.r).sort((a,b)=>b-a); category=1; tiebreak=[groups[0].r, ...kick, 0].slice(0,5); }
+    else { category=0; tiebreak=ranks; }
+    let score=category;
+    for (const t of tiebreak){ score = score*15+t; }
+    return { score, category, tiebreak };
+  }
+
+  function bestHand(cards){
+    if (cards.length===5) return eval5(cards);
+    const combos = combinations(cards,5);
+    let best=null;
+    for (const c of combos){ const r=eval5(c); if (!best || r.score>best.score) best=r; }
+    return best;
+  }
+
+  function categoryName(category, tb){
+    switch(category){
+      case 8: return tb[0]===14 ? 'Escalera Real de Color' : 'Escalera de Color a '+RANK_LABEL(tb[0]);
+      case 7: return 'Póker de '+RANK_PLURAL[tb[0]];
+      case 6: return 'Full de '+RANK_PLURAL[tb[0]]+' sobre '+RANK_PLURAL[tb[1]];
+      case 5: return 'Color';
+      case 4: return 'Escalera a '+RANK_LABEL(tb[0]);
+      case 3: return 'Trío de '+RANK_PLURAL[tb[0]];
+      case 2: return 'Doble pareja: '+RANK_PLURAL[tb[0]]+' y '+RANK_PLURAL[tb[1]];
+      case 1: return 'Pareja de '+RANK_PLURAL[tb[0]];
+      default: return 'Carta alta: '+RANK_LABEL(tb[0]);
+    }
+  }
+
+  function fullDeck(){ const d=[]; for (const s of SUITS) for (const r of RANKS) d.push({rank:r,suit:s}); return d; }
+  function remainingDeck(used){ const usedKeys = new Set(used.map(cardKey)); return fullDeck().filter(c=>!usedKeys.has(cardKey(c))); }
+  function drawN(deck, n){
+    const arr = deck.slice(); const res = [];
+    for (let i=0;i<n;i++){
+      const idx = i + Math.floor(Math.random()*(arr.length-i));
+      const tmp = arr[i]; arr[i]=arr[idx]; arr[idx]=tmp;
+      res.push(arr[i]);
+    }
+    return res;
+  }
+
+  function runEquity(holeCards, boardCards, rivals, iterations){
+    const filledBoard = boardCards.filter(Boolean);
+    const known = [...holeCards, ...filledBoard];
+    const deck = remainingDeck(known);
+    const boardNeeded = 5 - filledBoard.length;
+    let equitySum = 0, tieSum = 0;
+    for (let i=0;i<iterations;i++){
+      const drawn = drawN(deck, boardNeeded + rivals*2);
+      const fb = [...filledBoard, ...drawn.slice(0, boardNeeded)];
+      const myScore = bestHand([...holeCards, ...fb]).score;
+      const scores = [myScore];
+      let idx = boardNeeded;
+      for (let o=0;o<rivals;o++){
+        const oc = [drawn[idx], drawn[idx+1]]; idx += 2;
+        scores.push(bestHand([...oc, ...fb]).score);
+      }
+      const max = Math.max(...scores);
+      const winners = scores.filter(s=>s===max).length;
+      if (myScore === max){ if (winners > 1) tieSum += 1/winners; else equitySum += 1; }
+    }
+    return { win: (equitySum/iterations)*100, tie: (tieSum/iterations)*100 };
+  }
+
+  const rivVal = document.getElementById('rivVal');
+  document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
+  document.getElementById('rivPlus').addEventListener('click', ()=>{ numRivals = Math.min(9, numRivals+1); rivVal.textContent = numRivals; });
+
+  const orderBtns = document.querySelectorAll('#orderToggle .toggle-btn');
+  orderBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      actionOrder = btn.dataset.val;
+      orderBtns.forEach(b => b.classList.toggle('active', b === btn));
+    });
+  });
+
+  const usageRow = document.getElementById('usageRow');
+  const historyPanel = document.getElementById('historyPanel');
+  const historyList = document.getElementById('historyList');
+  const paywall = document.getElementById('paywall');
+
+  function updateUsageBadge(){
+    if (isPro()){ usageRow.innerHTML = '<span class="pro-tag">★ RÍO PRO — análisis ilimitados</span>'; return; }
+    const left = Math.max(0, FREE_LIMIT - usesCount());
+    usageRow.innerHTML = left <= 1
+      ? `<span class="low">Te queda${left===1?'':'n'} ${left} análisis gratis</span>`
+      : `${left} de ${FREE_LIMIT} análisis gratis restantes`;
+  }
+
+  function renderHistory(){
+    const hist = getHistory();
+    if (!hist.length){ historyPanel.style.display = 'none'; return; }
+    historyPanel.style.display = 'block';
+    historyList.innerHTML = '';
+    const visible = isPro() ? hist : hist.slice(0,1);
+    visible.forEach(h => {
+      const row = document.createElement('div');
+      row.className = 'history-item';
+      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${h.equity}% equity · ${h.rivals} rival(es) · ${h.when}</div></div><span class="history-tag ${h.cls}">${h.decision}</span>`;
+      historyList.appendChild(row);
+    });
+    if (!isPro() && hist.length > 1){
+      const lock = document.createElement('div');
+      lock.className = 'history-locked';
+      lock.innerHTML = `+${hist.length-1} manos más guardadas. <a id="unlockHistoryLink">Desbloquea el historial completo con RÍO PRO →</a>`;
+      historyList.appendChild(lock);
+      document.getElementById('unlockHistoryLink').addEventListener('click', openPaywall);
+    }
+  }
+
+  function openPaywall(){ paywall.classList.add('show'); }
+  function closePaywall(){ paywall.classList.remove('show'); }
+  document.getElementById('closePaywall').addEventListener('click', closePaywall);
+  paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
+  document.getElementById('subscribeBtn').addEventListener('click', () => { window.open(PAYMENT_LINK, '_blank'); });
+  document.getElementById('restoreBtn').addEventListener('click', async () => {
+    const emailInput = document.getElementById('proEmail');
+    const msg = document.getElementById('restoreMsg');
+    const email = emailInput.value.trim();
+    if (!email || !email.includes('@')){
+      msg.textContent = 'Escribe un email válido.'; msg.className = 'restore-msg no'; return;
+    }
+    const btn = document.getElementById('restoreBtn');
+    btn.disabled = true; btn.textContent = 'Comprobando…';
+    msg.textContent = ''; msg.className = 'restore-msg';
+
+    const pro = await verifyProByEmail(email);
+    btn.disabled = false; btn.textContent = 'Comprobar suscripción';
+
+    if (pro === null){
+      msg.textContent = 'No se pudo contactar con el servidor de verificación. Inténtalo de nuevo en unos segundos.';
+      msg.className = 'restore-msg no';
+    } else if (pro){
+      storageSet('rio_pro', true);
+      storageSet('rio_email', email);
+      msg.textContent = '¡Suscripción activa! Desbloqueando RÍO PRO…';
+      msg.className = 'restore-msg ok';
+      updateUsageBadge(); renderHistory();
+      setTimeout(closePaywall, 900);
+    } else {
+      msg.textContent = 'No encontramos una suscripción activa con ese email.';
+      msg.className = 'restore-msg no';
+    }
+  });
+
+  updateUsageBadge();
+  renderHistory();
+
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  analyzeBtn.addEventListener('click', () => {
+    if (!hole[0] || !hole[1]){ alert('Elige tus dos cartas antes de analizar.'); return; }
+    if (!isPro() && usesCount() >= FREE_LIMIT){ openPaywall(); return; }
+    analyzeBtn.disabled = true; analyzeBtn.textContent = 'Calculando…';
+    setTimeout(() => {
+      const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
+      const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
+      const { win, tie } = runEquity(hole, board, numRivals, 1500);
+      const needed = (pot+call) > 0 ? (call/(pot+call))*100 : 0;
+
+      const known = [...hole, ...board].filter(Boolean);
+      let handLabel;
+      if (known.length < 5){
+        const [a,b] = hole;
+        handLabel = a.rank===b.rank ? 'Pareja de '+RANK_PLURAL[a.rank] : RANK_LABEL(Math.max(a.rank,b.rank))+'-'+RANK_LABEL(Math.min(a.rank,b.rank));
+      } else {
+        const best = bestHand(known);
+        handLabel = categoryName(best.category, best.tiebreak);
+      }
+      document.getElementById('resultHandName').textContent = handLabel;
+
+      const badge = document.getElementById('decisionBadge');
+      const oop = actionOrder === 'oop';
+      // Fuera de posición exige más margen (juegas a ciegas del rival); en posición puedes apretar con menos margen.
+      const raiseBuffer = oop ? 8 : 4;
+      const callBuffer = oop ? -1 : -5;
+      let text, cls;
+      if (call === 0){ text = 'VA GRATIS'; cls = 'ok'; }
+      else if (win >= needed + raiseBuffer){ text = 'SUBE'; cls = 'ok'; }
+      else if (win >= needed + callBuffer){ text = 'IGUALA'; cls = 'warn'; }
+      else { text = 'RETÍRATE'; cls = 'no'; }
+      badge.textContent = text;
+      badge.className = 'decision-badge ' + cls;
+
+      const posPhrase = oop ? 'Vas fuera de posición: actúas antes que tu rival, así que juegas con menos información' : 'Tienes posición: tu rival actúa primero, así que ves lo que hace antes de decidir';
+      const edge = (win - needed).toFixed(1);
+      let adviceText;
+      if (call === 0){
+        adviceText = `No hay nada que igualar, así que ver la siguiente carta no cuesta fichas. Aprovecha para observar cómo actúan tus rivales.`;
+      } else if (text === 'SUBE'){
+        adviceText = `Tu equity (<b>${win.toFixed(1)}%</b>) supera con margen el <b>${needed.toFixed(1)}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
+      } else if (text === 'IGUALA'){
+        adviceText = `Estás cerca del punto de equilibrio (diferencia de ${edge}%). ${posPhrase}. ${oop ? 'Fuera de posición conviene ser algo más conservador: iguala pero no metas más fichas todavía.' : 'Con posición puedes igualar tranquilo y decidir la siguiente calle ya con más información.'}`;
+      } else {
+        adviceText = `Necesitas <b>${needed.toFixed(1)}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1)}%</b>. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
+      }
+      document.getElementById('adviceBox').innerHTML = adviceText;
+
+      requestAnimationFrame(() => {
+        document.getElementById('gaugeFill').style.width = Math.max(2, Math.min(100, win)) + '%';
+        document.getElementById('gaugeMark').style.left = Math.max(0, Math.min(100, needed)) + '%';
+      });
+      document.getElementById('markLabel').textContent = call > 0 ? `Necesitas ${needed.toFixed(0)}%` : 'Sin coste';
+
+      document.getElementById('statEquity').textContent = win.toFixed(1)+'%';
+      document.getElementById('statTie').textContent = tie.toFixed(1)+'%';
+      document.getElementById('statNeeded').textContent = call>0 ? needed.toFixed(1)+'%' : '—';
+
+      const stack = Math.max(0, Number(document.getElementById('stackInput').value) || 0);
+      document.getElementById('statRatio').textContent = call>0 ? (pot/call).toFixed(1)+' : 1' : '—';
+      const effWin = (win + tie/2) / 100;
+      const ev = call>0 ? (effWin*pot - (1-effWin)*call) : 0;
+      const evEl = document.getElementById('statEV');
+      evEl.textContent = call>0 ? (ev>=0 ? '+' : '') + ev.toFixed(1) : '—';
+      evEl.style.color = call>0 ? (ev>=0 ? 'var(--ok)' : 'var(--crimson)') : 'var(--cream)';
+      document.getElementById('statSPR').textContent = (stack>0 && pot>0) ? (stack/pot).toFixed(1) : '—';
+
+      resultPanel.classList.add('show');
+      analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
+      resultPanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+      if (!isPro()) bumpUses();
+      pushHistory({
+        hand: handLabel, equity: win.toFixed(1), rivals: numRivals,
+        decision: text, cls: cls,
+        when: new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})
+      });
+      updateUsageBadge();
+      renderHistory();
+
+      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nEquity: ${win.toFixed(1)}% (empate ${tie.toFixed(1)}%)\nOdds necesarias: ${call>0?needed.toFixed(1)+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1)+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1):'—'}\nDecisión: ${text}`;
+    }, 30);
+  });
+
+  let lastSummary = '';
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('copyBtn');
+    if (!lastSummary){ return; }
+    try {
+      await navigator.clipboard.writeText(lastSummary);
+      const original = btn.textContent;
+      btn.textContent = '✓ Copiado';
+      setTimeout(() => { btn.textContent = original; }, 1600);
+    } catch(e){
+      alert(lastSummary);
+    }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    hole = [null,null]; board = [null,null,null,null,null];
+    numRivals = 1; rivVal.textContent = '1';
+    document.getElementById('potInput').value = '';
+    document.getElementById('callInput').value = '';
+    actionOrder = 'oop';
+    orderBtns.forEach(b => b.classList.toggle('active', b.dataset.val === 'oop'));
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
