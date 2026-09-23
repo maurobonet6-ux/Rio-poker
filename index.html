@@ -300,6 +300,27 @@
   .paywall-price span { font-family: 'Bricolage Grotesque', sans-serif; font-size: 2.1rem; font-weight: 800; color: var(--gold); }
   .paywall-price small { color: var(--cream-dim); font-size: 0.85rem; }
   .paywall-fine { font-size: 0.72rem; color: var(--cream-dim); text-align: center; margin: 12px 0 0; }
+
+  .plan-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 4px 0 6px; }
+  @media (max-width: 480px) { .plan-cards { grid-template-columns: 1fr; } }
+  .plan-card {
+    position: relative; background: var(--panel-2); border: 1.5px solid var(--line); border-radius: 18px;
+    padding: 22px 18px 20px; display: flex; flex-direction: column;
+  }
+  .plan-card.pro { background: linear-gradient(165deg, rgba(232,40,63,0.14), var(--panel-2) 65%); border-color: rgba(232,40,63,0.30); }
+  .plan-card.active { border-color: var(--gold); box-shadow: 0 0 0 1.5px var(--gold); }
+  .plan-card-badge {
+    position: absolute; top: -11px; left: 16px; background: var(--gold); color: var(--ink);
+    font-size: 0.64rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .plan-card h4 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.15rem; margin: 4px 0 10px; }
+  .plan-card-price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 16px; }
+  .plan-card-price span { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.9rem; font-weight: 800; color: var(--gold); }
+  .plan-card-price small { color: var(--cream-dim); font-size: 0.8rem; }
+  .plan-card-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+  .plan-card-features li { font-size: 0.85rem; color: var(--cream-dim); padding-left: 22px; position: relative; line-height: 1.35; }
+  .plan-card-features li::before { content: '✓'; position: absolute; left: 0; color: var(--ok); font-weight: 700; }
   .restore-msg { font-size: 0.82rem; margin-top: 10px; text-align: center; min-height: 1em; }
   .restore-msg.ok { color: var(--ok); }
   .restore-msg.no { color: var(--crimson); }
@@ -549,8 +570,8 @@
   <div class="hint" id="sidebarProfile" style="margin-bottom:14px;"></div>
   <div class="sidebar-nav">
     <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span> Analizador</button>
-    <button type="button" class="sidebar-link" id="navHistory"><span class="ic">📜</span> Historial</button>
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span> Iniciar sesión</button>
+    <button type="button" class="sidebar-link" id="navPlan"><span class="ic">💎</span> Plan</button>
     <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span> Configuración</button>
   </div>
   <div class="sidebar-foot" id="sidebarFoot"></div>
@@ -608,20 +629,48 @@
     </div>
 
     <div class="settings-group">
-      <div class="settings-label">Tu plan</div>
-      <div class="hint" id="subStatusBox">—</div>
-      <div class="hint" id="photoUsageBox" style="margin-top:4px;"></div>
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <button class="btn-secondary" id="manageSubBtn" style="flex:1;">Gestionar</button>
-        <button class="btn-secondary" id="buyCreditsSettingsBtn" style="flex:1; display:none;">Comprar 50 fotos más</button>
-      </div>
-    </div>
-
-    <div class="settings-group">
       <button class="btn-secondary" id="clearHistoryBtn" style="width:100%;">Borrar historial de manos</button>
     </div>
 
     <p class="paywall-fine">RÍO v1.1 · Herramienta de estudio, no sustituye tu criterio en la mesa.</p>
+  </div>
+</div>
+
+<div class="overlay" id="planPanel">
+  <div class="picker paywall-card" style="max-width:640px;">
+    <div class="picker-head">
+      <h3>Tu plan</h3>
+      <button type="button" id="closePlanPanel" aria-label="Cerrar">&times;</button>
+    </div>
+
+    <div class="plan-cards">
+      <div class="plan-card" id="freePlanCard">
+        <div class="plan-card-badge" id="freePlanBadge" style="display:none;">Tu plan actual</div>
+        <h4>Free</h4>
+        <div class="plan-card-price"><span>0€</span></div>
+        <ul class="plan-card-features">
+          <li>5 análisis de mano gratis</li>
+          <li>1 mano guardada en el historial</li>
+          <li>Sin lectura automática de fotos</li>
+        </ul>
+      </div>
+
+      <div class="plan-card pro" id="proPlanCard">
+        <div class="plan-card-badge" id="proPlanBadge" style="display:none;">Tu plan actual</div>
+        <h4>RÍO PRO</h4>
+        <div class="plan-card-price"><span>4,99€</span><small>/ mes</small></div>
+        <ul class="plan-card-features">
+          <li>Análisis de mano ilimitados</li>
+          <li>Historial completo</li>
+          <li>Hasta 150 fotos de mesa analizadas al mes</li>
+        </ul>
+        <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
+        <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 4,99€</button>
+        <button class="btn-secondary" id="buyCreditsSettingsBtn" style="width:100%; margin-top:10px; display:none;">Comprar 50 fotos más</button>
+      </div>
+    </div>
+
+    <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
   </div>
 </div>
 
@@ -723,27 +772,34 @@
     renderPlanInfo();
   }
   function renderPlanInfo(){
+    const pro = isPro();
     const sidebarFootEl = document.getElementById('sidebarFoot');
     if (sidebarFootEl){
-      sidebarFootEl.innerHTML = isPro()
+      sidebarFootEl.innerHTML = pro
         ? `<span class="pro-pill">★ RÍO PRO</span><br>${photoUsage.used}/${photoUsage.limit} fotos este mes${photoUsage.extra > 0 ? ' + ' + photoUsage.extra + ' extra' : ''}`
         : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes`;
     }
-    const subBox = document.getElementById('subStatusBox');
+    const freeBadge = document.getElementById('freePlanBadge');
+    const proBadge = document.getElementById('proPlanBadge');
+    const freeCard = document.getElementById('freePlanCard');
+    const proCard = document.getElementById('proPlanCard');
+    if (freeBadge) freeBadge.style.display = pro ? 'none' : 'inline-block';
+    if (proBadge) proBadge.style.display = pro ? 'inline-block' : 'none';
+    if (freeCard) freeCard.classList.toggle('active', !pro);
+    if (proCard) proCard.classList.toggle('active', pro);
+
+    const subscribeFromPlanBtn = document.getElementById('subscribeFromPlanBtn');
+    if (subscribeFromPlanBtn) subscribeFromPlanBtn.style.display = pro ? 'none' : 'inline-block';
+
     const photoBox = document.getElementById('photoUsageBox');
     const buyBtn = document.getElementById('buyCreditsSettingsBtn');
-    if (subBox){
-      subBox.textContent = isPro()
-        ? 'RÍO PRO activo — análisis e historial ilimitados.'
-        : `Plan gratis — ${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes.`;
-    }
     if (photoBox){
       const left = Math.max(0, photoUsage.limit - photoUsage.used);
-      photoBox.textContent = isPro()
+      photoBox.textContent = pro
         ? `${left} de ${photoUsage.limit} fotos incluidas restantes este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} fotos extra compradas` : ''}`
-        : '';
+        : 'Incluye hasta 150 fotos de mesa analizadas automáticamente al mes.';
     }
-    if (buyBtn) buyBtn.style.display = isPro() ? 'inline-block' : 'none';
+    if (buyBtn) buyBtn.style.display = pro ? 'inline-block' : 'none';
   }
 
   function getProfile(){
@@ -1208,6 +1264,19 @@
     }
   });
   document.getElementById('subscribeBtn').addEventListener('click', () => { window.open(PAYMENT_LINK, '_blank'); });
+  document.getElementById('subscribeFromPlanBtn').addEventListener('click', () => { window.open(PAYMENT_LINK, '_blank'); });
+
+  // ---- Panel de Plan ----
+  const planPanel = document.getElementById('planPanel');
+  function openPlanPanel(){
+    renderPlanInfo();
+    refreshPhotoUsage();
+    planPanel.classList.add('show');
+  }
+  function closePlanPanel(){ planPanel.classList.remove('show'); }
+  document.getElementById('navPlan').addEventListener('click', () => { closeSidebar(); openPlanPanel(); });
+  document.getElementById('closePlanPanel').addEventListener('click', closePlanPanel);
+  planPanel.addEventListener('click', (e)=>{ if (e.target === planPanel) closePlanPanel(); });
 
   // ---- Barra lateral (menú) ----
   const sidebar = document.getElementById('sidebar');
@@ -1225,12 +1294,6 @@
   document.getElementById('navAnalyzer').addEventListener('click', () => {
     closeSidebar(); window.scrollTo({top:0, behavior:'smooth'});
   });
-  document.getElementById('navHistory').addEventListener('click', () => {
-    closeSidebar();
-    const el = document.getElementById('historyPanel');
-    if (el.style.display !== 'none') el.scrollIntoView({behavior:'smooth', block:'start'});
-  });
-
   // ---- Configuración ----
   const settingsPanel = document.getElementById('settingsPanel');
   function openSettings(){
@@ -1241,7 +1304,6 @@
     document.getElementById('rememberDefaultsToggle').checked = storageGet('rio_remember_defaults', true);
     renderPlanInfo();
     refreshPhotoUsage();
-    document.getElementById('manageSubBtn').textContent = isPro() ? 'Gestionar / cancelar' : 'Ver planes';
     settingsPanel.classList.add('show');
   }
   function closeSettings(){ settingsPanel.classList.remove('show'); }
@@ -1367,10 +1429,6 @@
     storageSet('rio_remember_defaults', e.target.checked);
     if (!e.target.checked) storageSet('rio_defaults', null);
   });
-  document.getElementById('manageSubBtn').addEventListener('click', () => {
-    if (isPro()){ window.open('mailto:soporte@rio-poker.app?subject=Cancelar%20suscripción%20RÍO', '_blank'); }
-    else { closeSettings(); openPaywall('plans'); }
-  });
   const clearHistoryBtn = document.getElementById('clearHistoryBtn');
   let clearArmed = false;
   clearHistoryBtn.addEventListener('click', () => {
@@ -1390,9 +1448,6 @@
     storageSet('rio_history', []); renderHistory();
     clearHistoryBtn.textContent = '✅ Historial borrado';
     clearHistoryBtn.style.color = 'var(--ok)'; clearHistoryBtn.style.borderColor = 'var(--ok)';
-    document.getElementById('subStatusBox').textContent = isPro()
-      ? 'RÍO PRO activo — análisis e historial ilimitados.'
-      : `Plan gratis — ${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes.`;
     setTimeout(() => {
       clearHistoryBtn.textContent = 'Borrar historial de manos';
       clearHistoryBtn.style.color = ''; clearHistoryBtn.style.borderColor = '';
