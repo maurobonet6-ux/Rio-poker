@@ -1,28 +1,19 @@
 // Función serverless de Vercel. Recibe una captura de la mesa (imagen en base64)
 // y le pide a Claude que extraiga mano, board, bote, stacks y posiciones.
-// Solo para suscriptores: comprueba con Stripe que el email enviado tiene una
-// suscripción activa ANTES de llamar a la IA, para no pagar por usos no pagados.
-// Requiere las variables de entorno ANTHROPIC_API_KEY y STRIPE_SECRET_KEY en Vercel
-// (Project Settings → Environment Variables).
+//
+// Solo para suscriptores PRO. Además tiene un límite de 150 fotos/mes incluidas
+// en la suscripción; a partir de ahí consume créditos extra comprados aparte
+// (ver /api/redeem-credits). Todo esto se guarda en Upstash Redis, no en el
+// navegador, para que no se pueda falsear.
+//
+// Variables de entorno necesarias en Vercel:
+//   ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
 
-async function hasActiveSubscription(email, stripeKey){
-  if (!email) return false;
-  const custRes = await fetch(
-    `https://api.stripe.com/v1/customers?email=${encodeURIComponent(email)}&limit=10`,
-    { headers: { Authorization: `Bearer ${stripeKey}` } }
-  );
-  const custData = await custRes.json();
-  if (!custData.data || custData.data.length === 0) return false;
-  for (const customer of custData.data) {
-    const subRes = await fetch(
-      `https://api.stripe.com/v1/subscriptions?customer=${customer.id}&status=active&limit=5`,
-      { headers: { Authorization: `Bearer ${stripeKey}` } }
-    );
-    const subData = await subRes.json();
-    if (subData.data && subData.data.length > 0) return true;
-  }
-  return false;
-}
+const { hasActiveSubscription } = require('../lib/stripe');
+const { redisCmd } = require('../lib/redis');
+
+const FREE_MONTHLY_PHOTOS = 150;
+const USED_TTL_SECONDS = 60 * 60 * 24 * 40; // 40 días, se autolimpia pasado el mes
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,16 +28,43 @@ module.exports = async (req, res) => {
 
   const { image, mediaType, email } = req.body || {};
   if (!image) { res.status(400).json({ error: 'Falta la imagen' }); return; }
+  const cleanEmail = (email || '').trim().toLowerCase();
 
   try {
-    const pro = await hasActiveSubscription((email || '').trim().toLowerCase(), stripeKey);
+    const pro = await hasActiveSubscription(cleanEmail, stripeKey);
     if (!pro) {
       res.status(402).json({ error: 'Esta función es solo para suscriptores de RÍO PRO.' });
       return;
     }
   } catch (e) {
-    res.status(500).json({ error: 'No se pudo comprobar la suscripción' });
-    return;
+    res.status(500).json({ error: 'No se pudo comprobar la suscripción' }); return;
+  }
+
+  // --- Límite de 150 fotos/mes + créditos extra ---
+  try {
+    const period = new Date().toISOString().slice(0, 7); // "2026-09"
+    const usedKey = `rio:used:${cleanEmail}:${period}`;
+    const extraKey = `rio:extra:${cleanEmail}`;
+
+    const used = parseInt((await redisCmd(['GET', usedKey])) || '0', 10);
+
+    if (used < FREE_MONTHLY_PHOTOS) {
+      await redisCmd(['INCR', usedKey]);
+      await redisCmd(['EXPIRE', usedKey, USED_TTL_SECONDS]);
+    } else {
+      const extra = parseInt((await redisCmd(['GET', extraKey])) || '0', 10);
+      if (extra > 0) {
+        await redisCmd(['DECR', extraKey]);
+      } else {
+        res.status(403).json({
+          error: 'LIMIT_REACHED',
+          message: 'Has usado tus 150 fotos incluidas este mes. Compra más créditos para seguir.'
+        });
+        return;
+      }
+    }
+  } catch (e) {
+    res.status(500).json({ error: 'No se pudo comprobar tu saldo de fotos' }); return;
   }
 
   const prompt = `Eres un asistente que lee capturas de pantalla de mesas de póker online (PokerStars, GGPoker, partypoker, apps de móvil, etc.).
