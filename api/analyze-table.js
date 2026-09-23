@@ -1,8 +1,28 @@
 // Función serverless de Vercel. Recibe una captura de la mesa (imagen en base64)
 // y le pide a Claude que extraiga mano, board, bote, stacks y posiciones.
-// Requiere la variable de entorno ANTHROPIC_API_KEY en Vercel
-// (Project Settings → Environment Variables), con una API key de
-// https://console.anthropic.com. Las llamadas se facturan a esa cuenta.
+// Solo para suscriptores: comprueba con Stripe que el email enviado tiene una
+// suscripción activa ANTES de llamar a la IA, para no pagar por usos no pagados.
+// Requiere las variables de entorno ANTHROPIC_API_KEY y STRIPE_SECRET_KEY en Vercel
+// (Project Settings → Environment Variables).
+
+async function hasActiveSubscription(email, stripeKey){
+  if (!email) return false;
+  const custRes = await fetch(
+    `https://api.stripe.com/v1/customers?email=${encodeURIComponent(email)}&limit=10`,
+    { headers: { Authorization: `Bearer ${stripeKey}` } }
+  );
+  const custData = await custRes.json();
+  if (!custData.data || custData.data.length === 0) return false;
+  for (const customer of custData.data) {
+    const subRes = await fetch(
+      `https://api.stripe.com/v1/subscriptions?customer=${customer.id}&status=active&limit=5`,
+      { headers: { Authorization: `Bearer ${stripeKey}` } }
+    );
+    const subData = await subRes.json();
+    if (subData.data && subData.data.length > 0) return true;
+  }
+  return false;
+}
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,9 +32,22 @@ module.exports = async (req, res) => {
 
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) { res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada en Vercel' }); return; }
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) { res.status(500).json({ error: 'STRIPE_SECRET_KEY no configurada en Vercel' }); return; }
 
-  const { image, mediaType } = req.body || {};
+  const { image, mediaType, email } = req.body || {};
   if (!image) { res.status(400).json({ error: 'Falta la imagen' }); return; }
+
+  try {
+    const pro = await hasActiveSubscription((email || '').trim().toLowerCase(), stripeKey);
+    if (!pro) {
+      res.status(402).json({ error: 'Esta función es solo para suscriptores de RÍO PRO.' });
+      return;
+    }
+  } catch (e) {
+    res.status(500).json({ error: 'No se pudo comprobar la suscripción' });
+    return;
+  }
 
   const prompt = `Eres un asistente que lee capturas de pantalla de mesas de póker online (PokerStars, GGPoker, partypoker, apps de móvil, etc.).
 Analiza la imagen y devuelve ÚNICAMENTE un objeto JSON (sin texto adicional, sin markdown, sin comillas triples) con esta forma exacta:
