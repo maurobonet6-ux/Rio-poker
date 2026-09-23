@@ -67,6 +67,18 @@
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .brand p { margin: 8px 0 0; color: var(--cream-dim); font-size: 1rem; }
+  .tagline-actions {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.9rem, 7vw, 3.2rem);
+    letter-spacing: -0.01em;
+    margin: 10px 0 0;
+    line-height: 1;
+  }
+  .tagline-actions .call { color: var(--lavender); }
+  .tagline-actions .raise { color: var(--ok); }
+  .tagline-actions .fold { color: var(--crimson); }
+  .tagline-actions .sep { color: var(--cream-dim); font-weight: 600; font-size: 0.55em; margin: 0 2px; }
 
   .steps-nav { display: flex; gap: 6px; margin-top: 16px; }
   .steps-nav .dot {
@@ -165,7 +177,7 @@
   .stepper button { background: none; border: none; color: var(--gold); width: 44px; height: 46px; font-size: 1.25rem; cursor: pointer; transition: background .15s; }
   .stepper button:hover { background: var(--gold-soft); }
   .stepper span { flex: 1; text-align: center; font-weight: 700; font-size: 1.1rem; font-family: 'Bricolage Grotesque', sans-serif; }
-  .field input[type=number] {
+  .field input[type=number], .field input[type=text] {
     width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line);
     background: var(--panel-2); color: var(--cream); font-size: 1.1rem; font-weight: 600;
     font-family: 'Space Grotesk', sans-serif;
@@ -293,6 +305,69 @@
   .restore-msg.no { color: var(--crimson); }
 
   footer { text-align: center; color: var(--cream-dim); font-size: 0.8rem; margin-top: 34px; }
+
+  .upload-box {
+    display: block; border: 1.5px dashed var(--line); border-radius: 14px;
+    padding: 22px 16px; text-align: center; cursor: pointer; transition: .2s;
+  }
+  .upload-box:hover { border-color: var(--gold); background: var(--panel-2); }
+  .upload-box input { display: none; }
+  .upload-box .up-ic { font-size: 1.7rem; margin-bottom: 6px; }
+  .upload-box .up-text { font-weight: 700; font-size: 0.95rem; }
+  .upload-box .up-sub { font-size: 0.78rem; color: var(--cream-dim); margin-top: 3px; }
+
+  .menu-btn {
+    width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--cream); font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .menu-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .sidebar-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); opacity: 0; pointer-events: none;
+    transition: opacity .25s; z-index: 60;
+  }
+  .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; width: 270px; max-width: 82vw;
+    background: var(--panel); border-right: 1px solid var(--line);
+    transform: translateX(-100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 61; display: flex; flex-direction: column; padding: 22px 18px;
+    padding-top: calc(22px + env(safe-area-inset-top, 0px));
+  }
+  .sidebar.show { transform: translateX(0); }
+  .sidebar-brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .sidebar-brand b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.3rem; color: var(--gold); }
+  .sidebar-close { background: none; border: none; color: var(--cream-dim); font-size: 1.4rem; cursor: pointer; line-height: 1; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .sidebar-link {
+    display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px;
+    background: none; border: none; color: var(--cream); font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem; font-weight: 600; cursor: pointer; text-align: left; width: 100%;
+  }
+  .sidebar-link:hover { background: var(--panel-2); }
+  .sidebar-link .ic { width: 20px; text-align: center; }
+  .sidebar-foot { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 10px; font-size: 0.78rem; color: var(--cream-dim); }
+  .sidebar-foot .pro-pill {
+    display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--gold-soft);
+    color: var(--gold); font-weight: 700; font-size: 0.72rem; margin-bottom: 6px;
+  }
+
+  .settings-group { margin-bottom: 18px; }
+  .settings-label { font-weight: 700; font-size: 0.88rem; margin-bottom: 6px; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .switch { position: relative; display: inline-block; width: 44px; height: 26px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute; cursor: pointer; inset: 0; background: var(--panel-2);
+    border: 1px solid var(--line); transition: .2s; border-radius: 999px;
+  }
+  .switch .slider::before {
+    content: ''; position: absolute; height: 18px; width: 18px; left: 2px; top: 2px;
+    background: var(--cream-dim); border-radius: 50%; transition: .2s;
+  }
+  .switch input:checked + .slider { background: var(--gold-soft); border-color: var(--gold); }
+  .switch input:checked + .slider::before { transform: translateX(18px); background: var(--gold); }
 </style>
 </head>
 <body>
@@ -305,8 +380,9 @@
     <div class="brand-row">
       <div class="brand">
         <h1>RÍO</h1>
-        <p>Decide en cada calle — equity en vivo, sin adivinar</p>
+        <p class="tagline-actions"><span class="call">CALL</span><span class="sep">,</span> <span class="raise">RAISE</span> <span class="sep">O</span> <span class="fold">FOLD</span></p>
       </div>
+      <button type="button" class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
     </div>
     <div class="steps-nav">
       <div class="dot" id="dotPreflop"></div>
@@ -321,6 +397,18 @@
       <span id="lblRiver">Río</span>
     </div>
   </header>
+
+  <section class="panel">
+    <div class="panel-head"><div class="panel-num">0</div><h2>Lee la mesa por ti</h2></div>
+    <div class="panel-hint">Sube una captura y rellenamos mano, board, bote y posiciones automáticamente (beta)</div>
+    <label class="upload-box" for="screenshotInput" id="uploadBox">
+      <div class="up-ic">📸</div>
+      <div class="up-text">Sube una captura de la mesa</div>
+      <div class="up-sub">JPG o PNG, hasta ~4&nbsp;MB</div>
+      <input type="file" id="screenshotInput" accept="image/*">
+    </label>
+    <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin-top:10px;"></div>
+  </section>
 
   <section class="panel">
     <div class="panel-head"><div class="panel-num">1</div><h2>Tu mano y la mesa</h2></div>
@@ -368,13 +456,39 @@
         <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
         <div class="hint">Fichas que te quedan detrás</div>
       </div>
+      <div class="field">
+        <label>Stack del rival</label>
+        <input type="number" id="villStackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
+        <div class="hint">Para el SPR efectivo</div>
+      </div>
+      <div class="field">
+        <label>Tu posición</label>
+        <select id="heroPosInput">
+          <option value="UTG">UTG — primera en hablar</option>
+          <option value="HJ">HJ — media-temprana</option>
+          <option value="CO">CO — media-tardía</option>
+          <option value="BTN" selected>BTN — botón (mejor posición)</option>
+          <option value="SB">SB — ciega pequeña</option>
+          <option value="BB">BB — ciega grande</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Posición del rival</label>
+        <select id="villPosInput">
+          <option value="UTG">UTG — primera en hablar</option>
+          <option value="HJ">HJ — media-temprana</option>
+          <option value="CO">CO — media-tardía</option>
+          <option value="BTN">BTN — botón (mejor posición)</option>
+          <option value="SB">SB — ciega pequeña</option>
+          <option value="BB" selected>BB — ciega grande</option>
+        </select>
+      </div>
       <div class="field field-wide">
-        <label>¿Quién actúa primero en esta calle?</label>
-        <div class="toggle-group" id="orderToggle" role="group">
-          <button type="button" class="toggle-btn active" data-val="oop">Yo actúo primero<small>Fuera de posición</small></button>
-          <button type="button" class="toggle-btn" data-val="ip">El rival actúa primero<small>Tú tienes posición</small></button>
+        <div class="hint" id="posInfoBox">
+          Cuanto más tarde hables, más información tienes: <b>BTN</b> es la mejor posición y <b>UTG</b> la peor.
+          Si no sabes cuál es la tuya, deja <b>BTN</b> (tú) y <b>BB</b> (rival) — es la combinación más habitual.
         </div>
-        <div class="hint">Afecta al margen de seguridad del consejo, no al cálculo de equity</div>
+        <div class="hint" id="orderHint">Afecta al margen de seguridad del consejo, no al cálculo de equity</div>
       </div>
     </div>
     <div class="actions">
@@ -398,6 +512,8 @@
     <div class="stat-grid">
       <div class="stat" title="Probabilidad de tener la mejor mano al final, según la simulación"><b id="statEquity">—</b><span>Prob. de ganar</span></div>
       <div class="stat" title="Probabilidad de empatar el bote con un rival"><b id="statTie">—</b><span>Prob. de empate</span></div>
+      <div class="stat" title="Probabilidad de que tu mano acabe perdiendo"><b id="statLose">—</b><span>Prob. de perder</span></div>
+      <div class="stat" title="Cartas que mejoran la categoría de tu mano en la próxima calle (flop/turn)"><b id="statOuts">—</b><span>Outs</span></div>
       <div class="stat" title="Equity mínima que necesitas para que pagar sea rentable a largo plazo"><b id="statNeeded">—</b><span>Odds del bote</span></div>
       <div class="stat" title="Por cada ficha que pagas, esto es lo que hay en juego"><b id="statRatio">—</b><span>Ratio del bote</span></div>
       <div class="stat" title="Ganancia o pérdida media esperada de pagar, en fichas"><b id="statEV">—</b><span>EV de igualar</span></div>
@@ -415,6 +531,87 @@
   <footer>Herramienta de estudio. No sustituye tu propio criterio en la mesa.</footer>
 </div>
 
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav class="sidebar" id="sidebar" aria-label="Menú principal">
+  <div class="sidebar-brand">
+    <b>RÍO</b>
+    <button type="button" class="sidebar-close" id="closeSidebar" aria-label="Cerrar menú">&times;</button>
+  </div>
+  <div class="hint" id="sidebarProfile" style="margin-bottom:14px;"></div>
+  <div class="sidebar-nav">
+    <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span> Analizador</button>
+    <button type="button" class="sidebar-link" id="navHistory"><span class="ic">📜</span> Historial</button>
+    <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span> Iniciar sesión</button>
+    <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span> Configuración</button>
+  </div>
+  <div class="sidebar-foot" id="sidebarFoot"></div>
+</nav>
+
+<div class="overlay" id="settingsPanel">
+  <div class="picker paywall-card">
+    <div class="picker-head">
+      <h3>Configuración</h3>
+      <button type="button" id="closeSettings" aria-label="Cerrar">&times;</button>
+    </div>
+
+    <div class="settings-group field">
+      <label>Tu perfil</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="profileNameInput" maxlength="24" placeholder="Tu nombre o apodo">
+        <button class="btn-secondary" id="saveProfileBtn" style="white-space:nowrap; width:auto; padding:0 16px;">Guardar</button>
+      </div>
+      <div class="hint">Se guarda en este navegador. Si tienes RÍO PRO, tu suscripción viaja contigo por email aunque cambies de dispositivo.</div>
+    </div>
+
+    <div class="settings-group field">
+      <label>Unidad de las fichas</label>
+      <select id="unitSelect">
+        <option value="fichas">Fichas (genérico)</option>
+        <option value="€">Euros (€)</option>
+        <option value="$">Dólares ($)</option>
+        <option value="£">Libras (£)</option>
+      </select>
+    </div>
+
+    <div class="settings-group field">
+      <label>Precisión de la simulación</label>
+      <select id="simQualitySelect">
+        <option value="rapida">Rápida (1.500 manos) — recomendada</option>
+        <option value="precisa">Precisa (5.000 manos) — más lenta</option>
+      </select>
+      <div class="hint">Más manos simuladas = equity más exacta, pero tarda un poco más</div>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Guardar historial de manos</div>
+        <div class="hint">Recuerda tus últimos análisis en este navegador</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="saveHistoryToggle"><span class="slider"></span></label>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Recordar rivales y posiciones</div>
+        <div class="hint">Precarga tu última configuración de la mesa al volver</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="rememberDefaultsToggle"><span class="slider"></span></label>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">Suscripción</div>
+      <div class="hint" id="subStatusBox">—</div>
+      <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:8px;">Gestionar</button>
+    </div>
+
+    <div class="settings-group">
+      <button class="btn-secondary" id="clearHistoryBtn" style="width:100%;">Borrar historial de manos</button>
+    </div>
+
+    <p class="paywall-fine">RÍO v1.1 · Herramienta de estudio, no sustituye tu criterio en la mesa.</p>
+  </div>
+</div>
+
 <div class="overlay" id="overlay">
   <div class="picker">
     <div class="picker-head">
@@ -429,10 +626,10 @@
 <div class="overlay" id="paywall">
   <div class="picker paywall-card">
     <div class="picker-head">
-      <h3>Has agotado tus análisis gratis</h3>
+      <h3 id="paywallTitle">Has agotado tus análisis gratis</h3>
       <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
     </div>
-    <p class="paywall-copy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa.</p>
+    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa.</p>
     <ul class="paywall-features">
       <li>♠ Análisis de manos ilimitados</li>
       <li>♥ Historial completo de tus últimas manos</li>
@@ -441,10 +638,11 @@
     </ul>
     <div class="paywall-price"><span>4,99&nbsp;€</span><small>/ mes</small></div>
     <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 4,99€</button>
-    <div class="restore-box">
-      <div class="hint" style="margin-top:14px;">¿Ya pagaste? Escribe el email con el que te suscribiste:</div>
+    <div class="restore-box" id="restoreBox">
+      <div class="settings-label" style="margin-top:16px;">🔑 Iniciar sesión</div>
+      <div class="hint" style="margin-top:2px;">¿Ya pagaste? Escribe el email con el que te suscribiste:</div>
       <input type="email" id="proEmail" placeholder="tu@email.com" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
-      <button class="btn-secondary" id="restoreBtn" style="width:100%; margin-top:10px;">Comprobar suscripción</button>
+      <button class="btn-secondary" id="restoreBtn" style="width:100%; margin-top:10px;">Iniciar sesión</button>
       <div id="restoreMsg" class="restore-msg"></div>
     </div>
     <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
@@ -475,9 +673,31 @@
 
   function isPro(){ return storageGet('rio_pro', false) === true; }
   function usesCount(){ return storageGet('rio_uses', 0); }
+
+  function getProfile(){
+    let p = storageGet('rio_profile', null);
+    if (!p || !p.name){
+      p = { id: 'u_' + Math.random().toString(36).slice(2,10), name: 'Jugador ' + Math.floor(1000+Math.random()*9000), createdAt: Date.now() };
+      storageSet('rio_profile', p);
+    }
+    return p;
+  }
+  function saveProfileName(name){
+    const p = getProfile();
+    p.name = (name || '').trim().slice(0,24) || p.name;
+    storageSet('rio_profile', p);
+    return p;
+  }
+  function updateProfileUI(){
+    const p = getProfile();
+    document.getElementById('sidebarProfile').textContent = '👤 ' + p.name;
+    const nameInput = document.getElementById('profileNameInput');
+    if (nameInput) nameInput.value = p.name;
+  }
   function bumpUses(){ storageSet('rio_uses', usesCount()+1); }
   function getHistory(){ return storageGet('rio_history', []); }
   function pushHistory(entry){
+    if (!storageGet('rio_save_history', true)) return;
     const h = getHistory(); h.unshift(entry);
     storageSet('rio_history', h.slice(0, 10));
   }
@@ -507,8 +727,24 @@
   let hole = [null, null];
   let board = [null, null, null, null, null];
   let numRivals = 1;
-  let actionOrder = 'oop';
   let activeSlot = null;
+  // Orden de acción postflop estándar: la ciega pequeña actúa primero en cada calle
+  // y el botón el último. Con esto derivamos automáticamente quién va "en posición".
+  const POSITION_ORDER = ['SB','BB','UTG','HJ','CO','BTN'];
+  function heroIsOOP(){
+    const heroPos = document.getElementById('heroPosInput').value;
+    const villPos = document.getElementById('villPosInput').value;
+    const hi = POSITION_ORDER.indexOf(heroPos), vi = POSITION_ORDER.indexOf(villPos);
+    return hi <= vi; // actúa igual o antes que el rival → fuera de posición
+  }
+  function updateOrderHint(){
+    const heroPos = document.getElementById('heroPosInput').value;
+    const villPos = document.getElementById('villPosInput').value;
+    const oop = heroIsOOP();
+    document.getElementById('orderHint').textContent = oop
+      ? `Con ${heroPos} vs ${villPos}: vas fuera de posición — actúas antes que tu rival.`
+      : `Con ${heroPos} vs ${villPos}: tienes posición — tu rival actúa antes que tú.`;
+  }
   let pickStep = 'rank';
   let pickedRank = null;
 
@@ -735,6 +971,21 @@
     }
   }
 
+  // Cuenta las cartas que, al caer, mejoran la categoría de tu mano actual
+  // (p.ej. de proyecto de color a color hecho). Solo tiene sentido en flop/turn.
+  function countOuts(holeCards, filledBoard){
+    if (filledBoard.length !== 3 && filledBoard.length !== 4) return null;
+    const known = [...holeCards, ...filledBoard];
+    const before = bestHand(known).category;
+    const deck = remainingDeck(known);
+    let outs = 0;
+    for (const c of deck){
+      const after = bestHand([...known, c]).category;
+      if (after > before) outs++;
+    }
+    return outs;
+  }
+
   function fullDeck(){ const d=[]; for (const s of SUITS) for (const r of RANKS) d.push({rank:r,suit:s}); return d; }
   function remainingDeck(used){ const usedKeys = new Set(used.map(cardKey)); return fullDeck().filter(c=>!usedKeys.has(cardKey(c))); }
   function drawN(deck, n){
@@ -774,13 +1025,9 @@
   document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
   document.getElementById('rivPlus').addEventListener('click', ()=>{ numRivals = Math.min(9, numRivals+1); rivVal.textContent = numRivals; });
 
-  const orderBtns = document.querySelectorAll('#orderToggle .toggle-btn');
-  orderBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      actionOrder = btn.dataset.val;
-      orderBtns.forEach(b => b.classList.toggle('active', b === btn));
-    });
-  });
+  document.getElementById('heroPosInput').addEventListener('change', updateOrderHint);
+  document.getElementById('villPosInput').addEventListener('change', updateOrderHint);
+  updateOrderHint();
 
   const usageRow = document.getElementById('usageRow');
   const historyPanel = document.getElementById('historyPanel');
@@ -812,15 +1059,208 @@
       lock.className = 'history-locked';
       lock.innerHTML = `+${hist.length-1} manos más guardadas. <a id="unlockHistoryLink">Desbloquea el historial completo con RÍO PRO →</a>`;
       historyList.appendChild(lock);
-      document.getElementById('unlockHistoryLink').addEventListener('click', openPaywall);
+      document.getElementById('unlockHistoryLink').addEventListener('click', () => openPaywall('plans'));
     }
   }
 
-  function openPaywall(){ paywall.classList.add('show'); }
+  function openPaywall(mode){
+    if (mode === 'login'){
+      document.getElementById('paywallTitle').textContent = 'Inicia sesión con tu RÍO PRO';
+      document.getElementById('paywallCopy').innerHTML = 'Escribe el email con el que te suscribiste para desbloquear tu cuenta <b>en este dispositivo</b>. No hace falta contraseña: lo comprobamos directamente con Stripe.';
+    } else if (mode === 'plans'){
+      document.getElementById('paywallTitle').textContent = 'RÍO PRO';
+      document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
+    } else {
+      document.getElementById('paywallTitle').textContent = 'Has agotado tus análisis gratis';
+      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa.';
+    }
+    paywall.classList.add('show');
+    if (mode === 'login'){
+      setTimeout(() => {
+        document.getElementById('restoreBox').scrollIntoView({block:'center'});
+        document.getElementById('proEmail').focus();
+      }, 200);
+    }
+  }
   function closePaywall(){ paywall.classList.remove('show'); }
   document.getElementById('closePaywall').addEventListener('click', closePaywall);
   paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
   document.getElementById('subscribeBtn').addEventListener('click', () => { window.open(PAYMENT_LINK, '_blank'); });
+
+  // ---- Barra lateral (menú) ----
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  function openSidebar(){
+    updateProfileUI();
+    document.getElementById('sidebarFoot').innerHTML = isPro()
+      ? '<span class="pro-pill">★ RÍO PRO</span><br>Análisis ilimitados'
+      : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes`;
+    sidebar.classList.add('show'); sidebarOverlay.classList.add('show');
+  }
+  function closeSidebar(){ sidebar.classList.remove('show'); sidebarOverlay.classList.remove('show'); }
+  document.getElementById('menuBtn').addEventListener('click', openSidebar);
+  document.getElementById('closeSidebar').addEventListener('click', closeSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
+  document.getElementById('navAnalyzer').addEventListener('click', () => {
+    closeSidebar(); window.scrollTo({top:0, behavior:'smooth'});
+  });
+  document.getElementById('navHistory').addEventListener('click', () => {
+    closeSidebar();
+    const el = document.getElementById('historyPanel');
+    if (el.style.display !== 'none') el.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  // ---- Configuración ----
+  const settingsPanel = document.getElementById('settingsPanel');
+  function openSettings(){
+    updateProfileUI();
+    document.getElementById('unitSelect').value = storageGet('rio_unit', 'fichas');
+    document.getElementById('simQualitySelect').value = storageGet('rio_sim_quality', 'rapida');
+    document.getElementById('saveHistoryToggle').checked = storageGet('rio_save_history', true);
+    document.getElementById('rememberDefaultsToggle').checked = storageGet('rio_remember_defaults', true);
+    document.getElementById('subStatusBox').textContent = isPro()
+      ? 'RÍO PRO activo — análisis e historial ilimitados.'
+      : `Plan gratis — ${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes.`;
+    document.getElementById('manageSubBtn').textContent = isPro() ? 'Gestionar / cancelar' : 'Ver planes';
+    settingsPanel.classList.add('show');
+  }
+  function closeSettings(){ settingsPanel.classList.remove('show'); }
+  document.getElementById('navLogin').addEventListener('click', () => {
+    closeSidebar(); openPaywall('login');
+  });
+  document.getElementById('navSettings').addEventListener('click', () => { closeSidebar(); openSettings(); });
+  document.getElementById('closeSettings').addEventListener('click', closeSettings);
+  settingsPanel.addEventListener('click', (e)=>{ if (e.target === settingsPanel) closeSettings(); });
+
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
+  saveProfileBtn.addEventListener('click', () => {
+    saveProfileName(document.getElementById('profileNameInput').value);
+    updateProfileUI();
+    const old = saveProfileBtn.textContent;
+    saveProfileBtn.textContent = '✅';
+    setTimeout(() => { saveProfileBtn.textContent = old; }, 1200);
+  });
+  document.getElementById('profileNameInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveProfileBtn.click();
+  });
+
+  // ---- Lectura de capturas de mesa (beta) ----
+  const VALID_POS = ['UTG','HJ','CO','BTN','SB','BB'];
+  function parseCardToken(tok){
+    if (!tok || tok.length < 2) return null;
+    const rankMap = {A:14,K:13,Q:12,J:11,T:10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
+    const rank = rankMap[tok[0].toUpperCase()];
+    const suit = tok[1].toLowerCase();
+    if (!rank || !SUITS.includes(suit)) return null;
+    return { rank, suit };
+  }
+  function applyScreenshotData(data){
+    if (data.hand){
+      data.hand.trim().split(/\s+/).slice(0,2).forEach((t,i) => {
+        const c = parseCardToken(t); if (c) hole[i] = c;
+      });
+    }
+    if (data.board){
+      data.board.trim().split(/\s+/).slice(0,5).forEach((t,i) => {
+        const c = parseCardToken(t); if (c) board[i] = c;
+      });
+    }
+    if (data.pot != null && !isNaN(data.pot)) document.getElementById('potInput').value = data.pot;
+    if (data.call != null && !isNaN(data.call)) document.getElementById('callInput').value = data.call;
+    if (data.heroStack != null && !isNaN(data.heroStack)) document.getElementById('stackInput').value = data.heroStack;
+    if (data.villStack != null && !isNaN(data.villStack)) document.getElementById('villStackInput').value = data.villStack;
+    if (VALID_POS.includes(data.heroPos)) document.getElementById('heroPosInput').value = data.heroPos;
+    if (VALID_POS.includes(data.villPos)) document.getElementById('villPosInput').value = data.villPos;
+    if (data.numRivals){ numRivals = Math.max(1, Math.min(9, data.numRivals)); rivVal.textContent = numRivals; }
+    updateOrderHint();
+    render();
+  }
+  document.getElementById('screenshotInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    const statusEl = document.getElementById('screenshotStatus');
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--cream-dim)';
+    statusEl.textContent = 'Leyendo la imagen…';
+    try{
+      const dataUrl = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = () => reject(new Error('No se pudo leer el archivo'));
+        r.readAsDataURL(file);
+      });
+      statusEl.textContent = 'Analizando la mesa…';
+      const resp = await fetch('/api/analyze-table', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: dataUrl.split(',')[1], mediaType: file.type || 'image/png' })
+      });
+      const data = await resp.json();
+      if (!resp.ok || data.error) throw new Error(data.error || 'No se pudo analizar la captura');
+      applyScreenshotData(data);
+      statusEl.style.color = 'var(--ok)';
+      statusEl.textContent = '✅ Datos detectados — revisa los campos antes de analizar.';
+    } catch(err){
+      statusEl.style.color = 'var(--crimson)';
+      statusEl.textContent = '⚠️ ' + (err.message || 'No se pudo leer la captura. Rellena los datos a mano.');
+    }
+  });
+
+  function updateUnitHints(){
+    const unit = storageGet('rio_unit', 'fichas');
+    const label = unit === 'fichas' ? 'fichas' : unit;
+    document.getElementById('potInput').nextElementSibling.textContent = `Bote actual, en ${label}`;
+    document.getElementById('callInput').nextElementSibling.textContent = `Lo que cuesta pagar ahora, en ${label}`;
+    document.getElementById('stackInput').nextElementSibling.textContent = `Fichas que te quedan detrás, en ${label}`;
+    document.getElementById('villStackInput').nextElementSibling.textContent = `Para el SPR efectivo, en ${label}`;
+  }
+  function simIterations(){ return storageGet('rio_sim_quality', 'rapida') === 'precisa' ? 5000 : 1500; }
+  document.getElementById('unitSelect').addEventListener('change', (e) => {
+    storageSet('rio_unit', e.target.value); updateUnitHints();
+  });
+  document.getElementById('simQualitySelect').addEventListener('change', (e) => {
+    storageSet('rio_sim_quality', e.target.value);
+  });
+  document.getElementById('saveHistoryToggle').addEventListener('change', (e) => {
+    storageSet('rio_save_history', e.target.checked);
+  });
+  document.getElementById('rememberDefaultsToggle').addEventListener('change', (e) => {
+    storageSet('rio_remember_defaults', e.target.checked);
+    if (!e.target.checked) storageSet('rio_defaults', null);
+  });
+  document.getElementById('manageSubBtn').addEventListener('click', () => {
+    if (isPro()){ window.open('mailto:soporte@rio-poker.app?subject=Cancelar%20suscripción%20RÍO', '_blank'); }
+    else { closeSettings(); openPaywall('plans'); }
+  });
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  let clearArmed = false;
+  clearHistoryBtn.addEventListener('click', () => {
+    if (!clearArmed){
+      clearArmed = true;
+      clearHistoryBtn.textContent = '¿Seguro? Toca otra vez para borrar';
+      clearHistoryBtn.style.color = 'var(--crimson)';
+      clearHistoryBtn.style.borderColor = 'var(--crimson)';
+      setTimeout(() => {
+        clearArmed = false;
+        clearHistoryBtn.textContent = 'Borrar historial de manos';
+        clearHistoryBtn.style.color = ''; clearHistoryBtn.style.borderColor = '';
+      }, 3000);
+      return;
+    }
+    clearArmed = false;
+    storageSet('rio_history', []); renderHistory();
+    clearHistoryBtn.textContent = '✅ Historial borrado';
+    clearHistoryBtn.style.color = 'var(--ok)'; clearHistoryBtn.style.borderColor = 'var(--ok)';
+    document.getElementById('subStatusBox').textContent = isPro()
+      ? 'RÍO PRO activo — análisis e historial ilimitados.'
+      : `Plan gratis — ${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes.`;
+    setTimeout(() => {
+      clearHistoryBtn.textContent = 'Borrar historial de manos';
+      clearHistoryBtn.style.color = ''; clearHistoryBtn.style.borderColor = '';
+    }, 1800);
+  });
+  updateUnitHints();
   document.getElementById('restoreBtn').addEventListener('click', async () => {
     const emailInput = document.getElementById('proEmail');
     const msg = document.getElementById('restoreMsg');
@@ -853,6 +1293,7 @@
 
   updateUsageBadge();
   renderHistory();
+  getProfile();
 
   const analyzeBtn = document.getElementById('analyzeBtn');
   analyzeBtn.addEventListener('click', () => {
@@ -862,7 +1303,7 @@
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
       const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
-      const { win, tie } = runEquity(hole, board, numRivals, 1500);
+      const { win, tie } = runEquity(hole, board, numRivals, simIterations());
       const needed = (pot+call) > 0 ? (call/(pot+call))*100 : 0;
 
       const known = [...hole, ...board].filter(Boolean);
@@ -877,26 +1318,30 @@
       document.getElementById('resultHandName').textContent = handLabel;
 
       const badge = document.getElementById('decisionBadge');
-      const oop = actionOrder === 'oop';
+      const heroPos = document.getElementById('heroPosInput').value;
+      const villPos = document.getElementById('villPosInput').value;
+      const oop = heroIsOOP();
       // Fuera de posición exige más margen (juegas a ciegas del rival); en posición puedes apretar con menos margen.
       const raiseBuffer = oop ? 8 : 4;
       const callBuffer = oop ? -1 : -5;
       let text, cls;
-      if (call === 0){ text = 'VA GRATIS'; cls = 'ok'; }
-      else if (win >= needed + raiseBuffer){ text = 'SUBE'; cls = 'ok'; }
-      else if (win >= needed + callBuffer){ text = 'IGUALA'; cls = 'warn'; }
-      else { text = 'RETÍRATE'; cls = 'no'; }
+      if (call === 0){ text = 'CHECK'; cls = 'ok'; }
+      else if (win >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
+      else if (win >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
+      else { text = 'FOLD'; cls = 'no'; }
       badge.textContent = text;
       badge.className = 'decision-badge ' + cls;
 
-      const posPhrase = oop ? 'Vas fuera de posición: actúas antes que tu rival, así que juegas con menos información' : 'Tienes posición: tu rival actúa primero, así que ves lo que hace antes de decidir';
+      const posPhrase = oop
+        ? `Vas fuera de posición (${heroPos} vs ${villPos}): actúas antes que tu rival, así que juegas con menos información`
+        : `Tienes posición (${heroPos} vs ${villPos}): tu rival actúa primero, así que ves lo que hace antes de decidir`;
       const edge = (win - needed).toFixed(1);
       let adviceText;
       if (call === 0){
         adviceText = `No hay nada que igualar, así que ver la siguiente carta no cuesta fichas. Aprovecha para observar cómo actúan tus rivales.`;
-      } else if (text === 'SUBE'){
+      } else if (text === 'RAISE'){
         adviceText = `Tu equity (<b>${win.toFixed(1)}%</b>) supera con margen el <b>${needed.toFixed(1)}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
-      } else if (text === 'IGUALA'){
+      } else if (text === 'CALL'){
         adviceText = `Estás cerca del punto de equilibrio (diferencia de ${edge}%). ${posPhrase}. ${oop ? 'Fuera de posición conviene ser algo más conservador: iguala pero no metas más fichas todavía.' : 'Con posición puedes igualar tranquilo y decidir la siguiente calle ya con más información.'}`;
       } else {
         adviceText = `Necesitas <b>${needed.toFixed(1)}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1)}%</b>. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
@@ -909,18 +1354,27 @@
       });
       document.getElementById('markLabel').textContent = call > 0 ? `Necesitas ${needed.toFixed(0)}%` : 'Sin coste';
 
+      const lose = Math.max(0, 100 - win - tie);
+      const outs = countOuts(hole, board.filter(Boolean));
+
       document.getElementById('statEquity').textContent = win.toFixed(1)+'%';
       document.getElementById('statTie').textContent = tie.toFixed(1)+'%';
+      document.getElementById('statLose').textContent = lose.toFixed(1)+'%';
+      document.getElementById('statOuts').textContent = outs===null ? '—' : outs+' cartas';
       document.getElementById('statNeeded').textContent = call>0 ? needed.toFixed(1)+'%' : '—';
 
       const stack = Math.max(0, Number(document.getElementById('stackInput').value) || 0);
+      const villStack = Math.max(0, Number(document.getElementById('villStackInput').value) || 0);
+      const effStack = villStack>0 ? Math.min(stack, villStack) : stack;
       document.getElementById('statRatio').textContent = call>0 ? (pot/call).toFixed(1)+' : 1' : '—';
       const effWin = (win + tie/2) / 100;
       const ev = call>0 ? (effWin*pot - (1-effWin)*call) : 0;
       const evEl = document.getElementById('statEV');
-      evEl.textContent = call>0 ? (ev>=0 ? '+' : '') + ev.toFixed(1) : '—';
+      const unitLabel = storageGet('rio_unit', 'fichas');
+      const evUnitSuffix = unitLabel === 'fichas' ? '' : ' ' + unitLabel;
+      evEl.textContent = call>0 ? (ev>=0 ? '+' : '') + ev.toFixed(1) + evUnitSuffix : '—';
       evEl.style.color = call>0 ? (ev>=0 ? 'var(--ok)' : 'var(--crimson)') : 'var(--cream)';
-      document.getElementById('statSPR').textContent = (stack>0 && pot>0) ? (stack/pot).toFixed(1) : '—';
+      document.getElementById('statSPR').textContent = (effStack>0 && pot>0) ? (effStack/pot).toFixed(1) : '—';
 
       resultPanel.classList.add('show');
       analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
@@ -935,7 +1389,11 @@
       updateUsageBadge();
       renderHistory();
 
-      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nEquity: ${win.toFixed(1)}% (empate ${tie.toFixed(1)}%)\nOdds necesarias: ${call>0?needed.toFixed(1)+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1)+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1):'—'}\nDecisión: ${text}`;
+      if (storageGet('rio_remember_defaults', true)){
+        storageSet('rio_defaults', { heroPos, villPos, numRivals });
+      }
+
+      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nPosiciones: tú ${heroPos} vs rival ${villPos}\nGanar ${win.toFixed(1)}% · Empatar ${tie.toFixed(1)}% · Perder ${lose.toFixed(1)}%\nOuts: ${outs===null?'—':outs}\nOdds necesarias: ${call>0?needed.toFixed(1)+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1)+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1):'—'}\nDecisión: ${text}`;
     }, 30);
   });
 
@@ -958,10 +1416,23 @@
     numRivals = 1; rivVal.textContent = '1';
     document.getElementById('potInput').value = '';
     document.getElementById('callInput').value = '';
-    actionOrder = 'oop';
-    orderBtns.forEach(b => b.classList.toggle('active', b.dataset.val === 'oop'));
+    document.getElementById('stackInput').value = '';
+    document.getElementById('villStackInput').value = '';
+    document.getElementById('heroPosInput').value = 'BTN';
+    document.getElementById('villPosInput').value = 'BB';
+    updateOrderHint();
     render();
   });
+
+  (function restoreDefaults(){
+    if (!storageGet('rio_remember_defaults', true)) return;
+    const d = storageGet('rio_defaults', null);
+    if (!d) return;
+    if (d.heroPos) document.getElementById('heroPosInput').value = d.heroPos;
+    if (d.villPos) document.getElementById('villPosInput').value = d.villPos;
+    if (d.numRivals){ numRivals = Math.max(1, Math.min(9, d.numRivals)); rivVal.textContent = numRivals; }
+    updateOrderHint();
+  })();
 
   render();
 })();
