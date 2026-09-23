@@ -316,6 +316,15 @@
   .upload-box .up-text { font-weight: 700; font-size: 0.95rem; }
   .upload-box .up-sub { font-size: 0.78rem; color: var(--cream-dim); margin-top: 3px; }
 
+  .pro-badge {
+    margin-left: auto; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em;
+    color: var(--gold); background: var(--gold-soft); padding: 4px 10px; border-radius: 999px; flex-shrink: 0;
+  }
+  .upload-box.locked { cursor: pointer; position: relative; opacity: 0.88; }
+  .upload-box.locked:hover { border-color: var(--gold); }
+  .upload-box.locked .up-ic::after { content: ' 🔒'; }
+  .upload-box.locked .up-text::after { content: ' — solo con RÍO PRO'; color: var(--gold); font-weight: 700; }
+
   .menu-btn {
     width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line);
     background: var(--panel-2); color: var(--cream); font-size: 1.2rem; cursor: pointer;
@@ -399,12 +408,12 @@
   </header>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num">0</div><h2>Lee la mesa por ti</h2></div>
+    <div class="panel-head"><div class="panel-num">0</div><h2>Lee la mesa por ti</h2><span class="pro-badge" id="uploadProBadge">★ PRO</span></div>
     <div class="panel-hint">Sube una captura y rellenamos mano, board, bote y posiciones automáticamente (beta)</div>
     <label class="upload-box" for="screenshotInput" id="uploadBox">
       <div class="up-ic">📸</div>
       <div class="up-text">Sube una captura de la mesa</div>
-      <div class="up-sub">JPG o PNG, hasta ~4&nbsp;MB</div>
+      <div class="up-sub" id="uploadSub">JPG o PNG, hasta ~4&nbsp;MB</div>
       <input type="file" id="screenshotInput" accept="image/*">
     </label>
     <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin-top:10px;"></div>
@@ -1035,12 +1044,27 @@
   const paywall = document.getElementById('paywall');
 
   function updateUsageBadge(){
-    if (isPro()){ usageRow.innerHTML = '<span class="pro-tag">★ RÍO PRO — análisis ilimitados</span>'; return; }
-    const left = Math.max(0, FREE_LIMIT - usesCount());
-    usageRow.innerHTML = left <= 1
-      ? `<span class="low">Te queda${left===1?'':'n'} ${left} análisis gratis</span>`
-      : `${left} de ${FREE_LIMIT} análisis gratis restantes`;
+    if (isPro()){ usageRow.innerHTML = '<span class="pro-tag">★ RÍO PRO — análisis ilimitados</span>'; }
+    else {
+      const left = Math.max(0, FREE_LIMIT - usesCount());
+      usageRow.innerHTML = left <= 1
+        ? `<span class="low">Te queda${left===1?'':'n'} ${left} análisis gratis</span>`
+        : `${left} de ${FREE_LIMIT} análisis gratis restantes`;
+    }
+    updateUploadLockUI();
   }
+
+  const uploadBox = document.getElementById('uploadBox');
+  const uploadProBadge = document.getElementById('uploadProBadge');
+  function updateUploadLockUI(){
+    const pro = isPro();
+    uploadBox.classList.toggle('locked', !pro);
+    uploadProBadge.style.display = pro ? 'none' : 'inline-block';
+    document.getElementById('uploadSub').textContent = pro ? 'JPG o PNG, hasta ~4 MB' : 'Función exclusiva de suscriptores';
+  }
+  uploadBox.addEventListener('click', (e) => {
+    if (!isPro()){ e.preventDefault(); openPaywall(); }
+  });
 
   function renderHistory(){
     const hist = getHistory();
@@ -1179,6 +1203,7 @@
     const file = e.target.files[0];
     e.target.value = '';
     if (!file) return;
+    if (!isPro()){ openPaywall(); return; }
     const statusEl = document.getElementById('screenshotStatus');
     statusEl.style.display = 'block';
     statusEl.style.color = 'var(--cream-dim)';
@@ -1194,9 +1219,14 @@
       const resp = await fetch('/api/analyze-table', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: dataUrl.split(',')[1], mediaType: file.type || 'image/png' })
+        body: JSON.stringify({
+          image: dataUrl.split(',')[1],
+          mediaType: file.type || 'image/png',
+          email: storageGet('rio_email', '')
+        })
       });
       const data = await resp.json();
+      if (resp.status === 402){ statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Esta función es solo para suscriptores de RÍO PRO.'; openPaywall(); return; }
       if (!resp.ok || data.error) throw new Error(data.error || 'No se pudo analizar la captura');
       applyScreenshotData(data);
       statusEl.style.color = 'var(--ok)';
