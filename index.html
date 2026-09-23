@@ -658,6 +658,24 @@
   </div>
 </div>
 
+<div class="overlay" id="creditsModal">
+  <div class="picker paywall-card">
+    <div class="picker-head">
+      <h3>Se acabaron tus fotos de este mes</h3>
+      <button type="button" id="closeCreditsModal" aria-label="Cerrar">&times;</button>
+    </div>
+    <p class="paywall-copy">RÍO PRO incluye <b>150 lecturas de mesa al mes</b>. Ya las has usado todas — puedes comprar un paquete extra para seguir.</p>
+    <div class="paywall-price"><span>2,99&nbsp;€</span><small>/ 50 fotos</small></div>
+    <button class="btn-primary" id="buyCreditsBtn" style="width:100%;">Comprar 50 fotos más</button>
+    <div class="restore-box">
+      <div class="hint" style="margin-top:14px;">Después de pagar, vuelve aquí y pulsa:</div>
+      <button class="btn-secondary" id="redeemCreditsBtn" style="width:100%; margin-top:10px;">Ya las compré, actualizar créditos</button>
+      <div id="redeemMsg" class="restore-msg"></div>
+    </div>
+    <p class="paywall-fine">Los créditos comprados no caducan y se suman a tu cuenta en cuanto los confirmamos con Stripe.</p>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -672,6 +690,7 @@
 
   const FREE_LIMIT = 5;
   const PAYMENT_LINK = 'https://buy.stripe.com/test_6oUfZj9ff47M5bod6Y9AA00'; // tu Payment Link real de Stripe
+  const CREDIT_PACK_LINK = 'https://buy.stripe.com/tu-enlace-de-fotos-extra'; // Payment Link del pago único "50 fotos extra"
   const API_ENDPOINT = '/api/check-pro'; // ruta relativa: funciona sola una vez desplegado en Vercel junto a la carpeta /api
 
   function storageGet(key, fallback){
@@ -1109,6 +1128,39 @@
   function closePaywall(){ paywall.classList.remove('show'); }
   document.getElementById('closePaywall').addEventListener('click', closePaywall);
   paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
+
+  const creditsModal = document.getElementById('creditsModal');
+  function openCreditsModal(){ creditsModal.classList.add('show'); }
+  function closeCreditsModal(){ creditsModal.classList.remove('show'); }
+  document.getElementById('closeCreditsModal').addEventListener('click', closeCreditsModal);
+  creditsModal.addEventListener('click', (e)=>{ if (e.target === creditsModal) closeCreditsModal(); });
+  document.getElementById('buyCreditsBtn').addEventListener('click', () => { window.open(CREDIT_PACK_LINK, '_blank'); });
+  document.getElementById('redeemCreditsBtn').addEventListener('click', async () => {
+    const email = storageGet('rio_email', '');
+    const msg = document.getElementById('redeemMsg');
+    const btn = document.getElementById('redeemCreditsBtn');
+    if (!email){ msg.textContent = 'Primero inicia sesión con tu email de RÍO PRO.'; msg.className = 'restore-msg no'; return; }
+    btn.disabled = true; btn.textContent = 'Comprobando…';
+    msg.textContent = ''; msg.className = 'restore-msg';
+    try {
+      const r = await fetch(`/api/redeem-credits?email=${encodeURIComponent(email)}`);
+      const data = await r.json();
+      btn.disabled = false; btn.textContent = 'Ya las compré, actualizar créditos';
+      if (!r.ok || data.error){ throw new Error(data.error || 'No se pudo comprobar la compra'); }
+      if (data.added > 0){
+        msg.textContent = `¡Añadidas ${data.added} fotos! Saldo extra: ${data.balance}.`;
+        msg.className = 'restore-msg ok';
+        setTimeout(closeCreditsModal, 1400);
+      } else {
+        msg.textContent = 'Aún no vemos ninguna compra nueva. Espera unos segundos tras pagar e inténtalo de nuevo.';
+        msg.className = 'restore-msg no';
+      }
+    } catch(e){
+      btn.disabled = false; btn.textContent = 'Ya las compré, actualizar créditos';
+      msg.textContent = 'No se pudo comprobar la compra. Inténtalo de nuevo en unos segundos.';
+      msg.className = 'restore-msg no';
+    }
+  });
   document.getElementById('subscribeBtn').addEventListener('click', () => { window.open(PAYMENT_LINK, '_blank'); });
 
   // ---- Barra lateral (menú) ----
@@ -1227,10 +1279,21 @@
       });
       const data = await resp.json();
       if (resp.status === 402){ statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Esta función es solo para suscriptores de RÍO PRO.'; openPaywall(); return; }
+      if (resp.status === 403 && data.error === 'LIMIT_REACHED'){
+        statusEl.style.color = 'var(--crimson)';
+        statusEl.innerHTML = '📷 Has usado tus 150 fotos incluidas este mes.';
+        openCreditsModal();
+        return;
+      }
       if (!resp.ok || data.error) throw new Error(data.error || 'No se pudo analizar la captura');
       applyScreenshotData(data);
       statusEl.style.color = 'var(--ok)';
-      statusEl.textContent = '✅ Datos detectados — revisa los campos antes de analizar.';
+      if (hole[0] && hole[1]){
+        statusEl.textContent = '✅ Datos detectados — calculando…';
+        analyzeBtn.click();
+      } else {
+        statusEl.textContent = '✅ Datos detectados, pero no vi tu mano con claridad — elígela a mano.';
+      }
     } catch(err){
       statusEl.style.color = 'var(--crimson)';
       statusEl.textContent = '⚠️ ' + (err.message || 'No se pudo leer la captura. Rellena los datos a mano.');
