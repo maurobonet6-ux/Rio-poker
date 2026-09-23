@@ -608,9 +608,13 @@
     </div>
 
     <div class="settings-group">
-      <div class="settings-label">Suscripción</div>
+      <div class="settings-label">Tu plan</div>
       <div class="hint" id="subStatusBox">—</div>
-      <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:8px;">Gestionar</button>
+      <div class="hint" id="photoUsageBox" style="margin-top:4px;"></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn-secondary" id="manageSubBtn" style="flex:1;">Gestionar</button>
+        <button class="btn-secondary" id="buyCreditsSettingsBtn" style="flex:1; display:none;">Comprar 50 fotos más</button>
+      </div>
     </div>
 
     <div class="settings-group">
@@ -689,7 +693,8 @@
   const SLOT_ORDER = [{zone:'hole',idx:0},{zone:'hole',idx:1},{zone:'board',idx:0},{zone:'board',idx:1},{zone:'board',idx:2},{zone:'board',idx:3},{zone:'board',idx:4}];
 
   const FREE_LIMIT = 5;
-  const PAYMENT_LINK = 'https://buy.stripe.com/test_eVqbJ3ajj33IeLY5Ew9AA01'; // tu Payment Link real de Stripe
+  const PHOTOS_INCLUDED = 150;
+  const PAYMENT_LINK = 'https://buy.stripe.com/test_6oUfZj9ff47M5bod6Y9AA00'; // tu Payment Link real de Stripe
   const CREDIT_PACK_LINK = 'https://buy.stripe.com/tu-enlace-de-fotos-extra'; // Payment Link del pago único "50 fotos extra"
   const API_ENDPOINT = '/api/check-pro'; // ruta relativa: funciona sola una vez desplegado en Vercel junto a la carpeta /api
 
@@ -701,6 +706,45 @@
 
   function isPro(){ return storageGet('rio_pro', false) === true; }
   function usesCount(){ return storageGet('rio_uses', 0); }
+
+  let photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
+  async function refreshPhotoUsage(){
+    const email = storageGet('rio_email', '');
+    if (!email || !isPro()){
+      photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
+      renderPlanInfo();
+      return;
+    }
+    try {
+      const r = await fetch(`/api/photo-usage?email=${encodeURIComponent(email)}`);
+      const data = await r.json();
+      if (data && data.pro) photoUsage = data;
+    } catch(e){}
+    renderPlanInfo();
+  }
+  function renderPlanInfo(){
+    const sidebarFootEl = document.getElementById('sidebarFoot');
+    if (sidebarFootEl){
+      sidebarFootEl.innerHTML = isPro()
+        ? `<span class="pro-pill">★ RÍO PRO</span><br>${photoUsage.used}/${photoUsage.limit} fotos este mes${photoUsage.extra > 0 ? ' + ' + photoUsage.extra + ' extra' : ''}`
+        : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes`;
+    }
+    const subBox = document.getElementById('subStatusBox');
+    const photoBox = document.getElementById('photoUsageBox');
+    const buyBtn = document.getElementById('buyCreditsSettingsBtn');
+    if (subBox){
+      subBox.textContent = isPro()
+        ? 'RÍO PRO activo — análisis e historial ilimitados.'
+        : `Plan gratis — ${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes.`;
+    }
+    if (photoBox){
+      const left = Math.max(0, photoUsage.limit - photoUsage.used);
+      photoBox.textContent = isPro()
+        ? `${left} de ${photoUsage.limit} fotos incluidas restantes este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} fotos extra compradas` : ''}`
+        : '';
+    }
+    if (buyBtn) buyBtn.style.display = isPro() ? 'inline-block' : 'none';
+  }
 
   function getProfile(){
     let p = storageGet('rio_profile', null);
@@ -749,6 +793,7 @@
       if (pro === null) return; // sin respuesta del servidor: no tocamos nada
       storageSet('rio_pro', pro);
       if (typeof updateUsageBadge === 'function') updateUsageBadge();
+      refreshPhotoUsage();
     });
   })();
 
@@ -1150,6 +1195,7 @@
       if (data.added > 0){
         msg.textContent = `¡Añadidas ${data.added} fotos! Saldo extra: ${data.balance}.`;
         msg.className = 'restore-msg ok';
+        refreshPhotoUsage();
         setTimeout(closeCreditsModal, 1400);
       } else {
         msg.textContent = 'Aún no vemos ninguna compra nueva. Espera unos segundos tras pagar e inténtalo de nuevo.';
@@ -1168,9 +1214,8 @@
   const sidebarOverlay = document.getElementById('sidebarOverlay');
   function openSidebar(){
     updateProfileUI();
-    document.getElementById('sidebarFoot').innerHTML = isPro()
-      ? '<span class="pro-pill">★ RÍO PRO</span><br>Análisis ilimitados'
-      : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes`;
+    renderPlanInfo();
+    refreshPhotoUsage();
     sidebar.classList.add('show'); sidebarOverlay.classList.add('show');
   }
   function closeSidebar(){ sidebar.classList.remove('show'); sidebarOverlay.classList.remove('show'); }
@@ -1194,9 +1239,8 @@
     document.getElementById('simQualitySelect').value = storageGet('rio_sim_quality', 'rapida');
     document.getElementById('saveHistoryToggle').checked = storageGet('rio_save_history', true);
     document.getElementById('rememberDefaultsToggle').checked = storageGet('rio_remember_defaults', true);
-    document.getElementById('subStatusBox').textContent = isPro()
-      ? 'RÍO PRO activo — análisis e historial ilimitados.'
-      : `Plan gratis — ${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes.`;
+    renderPlanInfo();
+    refreshPhotoUsage();
     document.getElementById('manageSubBtn').textContent = isPro() ? 'Gestionar / cancelar' : 'Ver planes';
     settingsPanel.classList.add('show');
   }
@@ -1205,6 +1249,7 @@
     closeSidebar(); openPaywall('login');
   });
   document.getElementById('navSettings').addEventListener('click', () => { closeSidebar(); openSettings(); });
+  document.getElementById('buyCreditsSettingsBtn').addEventListener('click', () => { closeSettings(); openCreditsModal(); });
   document.getElementById('closeSettings').addEventListener('click', closeSettings);
   settingsPanel.addEventListener('click', (e)=>{ if (e.target === settingsPanel) closeSettings(); });
 
@@ -1374,6 +1419,7 @@
     } else if (pro){
       storageSet('rio_pro', true);
       storageSet('rio_email', email);
+      refreshPhotoUsage();
       msg.textContent = '¡Suscripción activa! Desbloqueando RÍO PRO…';
       msg.className = 'restore-msg ok';
       updateUsageBadge(); renderHistory();
