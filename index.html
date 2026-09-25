@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RÍO — Decide en cada calle</title>
+<title>RÍO — Calculadora de póker para estudiar cada calle</title>
+<meta name="description" content="Calculadora de póker para repasar tus manos: probabilidad de ganar, outs, odds del bote, EV y consejo por posición en preflop, flop, turn y river.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -66,6 +67,7 @@
     background: linear-gradient(100deg, var(--gold) 0%, var(--cream) 55%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
+  .brand { flex: 1; min-width: 0; }
   .brand p { margin: 8px 0 0; color: var(--cream-dim); font-size: 1rem; }
   .tagline-actions {
     font-family: 'Bricolage Grotesque', sans-serif;
@@ -428,6 +430,7 @@
       <div class="brand">
         <h1>RÍO</h1>
         <p class="tagline-actions"><span class="call">CALL</span><span class="sep">,</span> <span class="raise">RAISE</span> <span class="sep">O</span> <span class="fold">FOLD</span></p>
+        <p>Calculadora de póker · Aprende a decidir en cada calle</p>
       </div>
       <button type="button" class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
     </div>
@@ -446,11 +449,11 @@
   </header>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num">0</div><h2>Lee la mesa por ti</h2><span class="pro-badge" id="uploadProBadge">★ PRO</span></div>
-    <div class="panel-hint">Sube una captura y rellenamos mano, board, bote y posiciones automáticamente (beta)</div>
+    <div class="panel-head"><div class="panel-num">0</div><h2>Analiza una captura</h2><span class="pro-badge" id="uploadProBadge">★ PRO</span></div>
+    <div class="panel-hint">Sube una captura de una mano que quieras repasar y rellenamos mano, board, bote y posiciones automáticamente (beta)</div>
     <label class="upload-box" for="screenshotInput" id="uploadBox">
       <div class="up-ic">📸</div>
-      <div class="up-text">Sube una captura de la mesa</div>
+      <div class="up-text">Sube una captura de la mano</div>
       <div class="up-sub" id="uploadSub">JPG o PNG, hasta ~4&nbsp;MB</div>
       <input type="file" id="screenshotInput" accept="image/*">
     </label>
@@ -571,7 +574,7 @@
     <div class="reraise-box" id="reraiseBox">
       <button type="button" class="reraise-toggle" id="reraiseToggleBtn">¿Te suben la apuesta después de esto? Calcula qué hacer →</button>
       <div class="reraise-panel" id="reraisePanel" style="display:none;">
-        <p class="reraise-hint">Tu rival vuelve a subir después de que pagues (o subas). Pon el bote y lo que te cuesta igualar esa nueva subida y te decimos qué hacer con la misma mano.</p>
+        <p class="reraise-hint">Tu rival vuelve a subir después de que pagues (o subas). Pon el bote y lo que te cuesta igualar esa nueva subida y te mostramos qué conviene hacer con la misma mano.</p>
         <div class="inputs-row reraise-inputs">
           <label>Bote tras la subida<br><input type="number" id="reraisePotInput" min="0" step="0.5" inputmode="decimal" placeholder="p. ej. 90"></label>
           <label>Te cuesta igualar<br><input type="number" id="reraiseCallInput" min="0" step="0.5" inputmode="decimal" placeholder="p. ej. 30"></label>
@@ -589,7 +592,7 @@
     <div id="historyList"></div>
   </section>
 
-  <footer>Herramienta de estudio. No sustituye tu propio criterio en la mesa.</footer>
+  <footer>Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.</footer>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -663,7 +666,7 @@
       <button class="btn-secondary" id="clearHistoryBtn" style="width:100%;">Borrar historial de manos</button>
     </div>
 
-    <p class="paywall-fine">RÍO v1.1 · Herramienta de estudio, no sustituye tu criterio en la mesa.</p>
+    <p class="paywall-fine">RÍO v1.1 · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
   </div>
 </div>
 
@@ -693,7 +696,7 @@
         <ul class="plan-card-features">
           <li>Análisis de mano ilimitados</li>
           <li>Historial completo</li>
-          <li>Hasta 150 fotos de mesa analizadas al mes</li>
+          <li>Hasta 150 capturas de manos analizadas al mes</li>
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 4,99€</button>
@@ -722,7 +725,7 @@
       <h3 id="paywallTitle">Has agotado tus análisis gratis</h3>
       <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
     </div>
-    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa.</p>
+    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.</p>
     <ul class="paywall-features">
       <li>♠ Análisis de manos ilimitados</li>
       <li>♥ Historial completo de tus últimas manos</li>
@@ -749,7 +752,7 @@
       <h3>Se acabaron tus fotos de este mes</h3>
       <button type="button" id="closeCreditsModal" aria-label="Cerrar">&times;</button>
     </div>
-    <p class="paywall-copy">RÍO PRO incluye <b>150 lecturas de mesa al mes</b>. Ya las has usado todas — puedes comprar un paquete extra para seguir.</p>
+    <p class="paywall-copy">RÍO PRO incluye <b>150 capturas de manos al mes</b>. Ya las has usado todas — puedes comprar un paquete extra para seguir.</p>
     <div class="paywall-price"><span>2,99&nbsp;€</span><small>/ 50 fotos</small></div>
     <button class="btn-primary" id="buyCreditsBtn" style="width:100%;">Comprar 50 fotos más</button>
     <div class="restore-box">
@@ -837,7 +840,7 @@
       const left = Math.max(0, photoUsage.limit - photoUsage.used);
       photoBox.textContent = pro
         ? `${left} de ${photoUsage.limit} fotos incluidas restantes este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} fotos extra compradas` : ''}`
-        : 'Incluye hasta 150 fotos de mesa analizadas automáticamente al mes.';
+        : 'Incluye hasta 150 capturas de manos analizadas automáticamente al mes.';
     }
     if (buyBtn) buyBtn.style.display = pro ? 'inline-block' : 'none';
   }
@@ -1261,10 +1264,10 @@
       document.getElementById('paywallCopy').innerHTML = 'Escribe el email con el que te suscribiste para desbloquear tu cuenta <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código a ese email.';
     } else if (mode === 'plans'){
       document.getElementById('paywallTitle').textContent = 'RÍO PRO';
-      document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
+      document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
     } else {
       document.getElementById('paywallTitle').textContent = 'Has agotado tus análisis gratis';
-      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa.';
+      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.';
     }
     paywall.classList.add('show');
     if (mode === 'login'){
