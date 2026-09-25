@@ -417,6 +417,93 @@
   }
   .switch input:checked + .slider { background: var(--gold-soft); border-color: var(--gold); }
   .switch input:checked + .slider::before { transform: translateX(18px); background: var(--gold); }
+
+  /* ---- Modo Fácil / Pro ---- */
+  body:not(.mode-pro) .pro-only { display: none !important; }
+  body.mode-pro .easy-only { display: none !important; }
+  body:not(.mode-pro) .stat-grid { grid-template-columns: 1fr 1fr; }
+  .mode-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+  .mode-switch { display: flex; flex-shrink: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
+  .mode-switch button {
+    border: none; background: none; color: var(--cream-dim); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 0.85rem; padding: 9px 14px; border-radius: 9px; cursor: pointer; transition: background .15s, color .15s;
+  }
+  .mode-switch button.active { background: var(--gold); color: #fff; }
+  .mode-note { font-size: 0.78rem; color: var(--cream-dim); line-height: 1.4; }
+  .mode-note b { color: var(--cream); }
+
+  /* ---- Botón de ayuda (?) ---- */
+  .help {
+    display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--cream-dim); font-size: 0.7rem; font-weight: 700;
+    cursor: pointer; margin-left: 6px; vertical-align: middle; padding: 0; font-family: 'Space Grotesk', sans-serif;
+    text-transform: none; letter-spacing: 0;
+  }
+  .help:hover { border-color: var(--gold); color: var(--gold); }
+  .stat { position: relative; }
+  .stat::after { content: '?'; position: absolute; top: 6px; right: 8px; font-size: 0.62rem; color: var(--cream-dim); opacity: 0.6; }
+  .help-body { color: var(--cream-dim); font-size: 0.95rem; line-height: 1.55; }
+  .help-body b { color: var(--cream); }
+  .help-body .example { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--panel-2); font-size: 0.88rem; }
+
+  /* ---- Fuerza de la mano inicial ---- */
+  .strength-tag { display: inline-block; margin-left: 8px; padding: 3px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; vertical-align: middle; }
+  .strength-tag.ok { background: var(--ok-soft); color: var(--ok); }
+  .strength-tag.warn { background: var(--lavender-soft); color: var(--lavender); }
+  .strength-tag.no { background: var(--crimson-soft); color: var(--crimson); }
+
+  /* ---- Rango del rival ---- */
+  .range-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 560px) { .range-chips { grid-template-columns: 1fr; } }
+  .range-top { display: flex; align-items: center; gap: 14px; }
+  .range-top input[type=range] { flex: 1; accent-color: var(--gold); height: 28px; }
+  .range-top b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.3rem; min-width: 64px; text-align: right; color: var(--gold); }
+  .range-presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; }
+  .range-presets button {
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--cream-dim); border-radius: 999px;
+    padding: 6px 11px; font-size: 0.76rem; font-weight: 700; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .range-presets button:hover, .range-presets button.active { border-color: var(--gold); color: var(--cream); background: var(--gold-soft); }
+  .range-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; max-width: 520px; }
+  .range-grid button {
+    aspect-ratio: 1; border: none; border-radius: 4px; background: var(--panel-2); color: var(--cream-dim);
+    font-size: clamp(0.5rem, 2.1vw, 0.68rem); font-weight: 700; cursor: pointer; padding: 0; font-family: 'Space Grotesk', sans-serif;
+  }
+  .range-grid button.in { background: var(--gold); color: #fff; }
+  .range-grid button.pair:not(.in) { background: #232327; }
+  .range-grid button.hero { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+  /* ---- Veredicto ---- */
+  .result-hand small { display: block; font-size: 0.8rem; color: var(--cream-dim); font-family: 'Space Grotesk', sans-serif; font-weight: 500; margin-top: 2px; }
+  .decision-badge { font-size: 1.15rem; padding: 10px 22px; }
+  .dots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin: 20px 0 6px; max-width: 460px; }
+  .dots i { aspect-ratio: 1; border-radius: 50%; background: var(--crimson); opacity: 0.85; animation: dotin .3s ease both; }
+  .dots i.w { background: var(--ok); }
+  .dots i.t { background: var(--lavender); }
+  @keyframes dotin { from { transform: scale(0); } to { transform: scale(1); } }
+  .dots-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.76rem; color: var(--cream-dim); }
+  .dots-legend span::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .dots-legend .w::before { background: var(--ok); }
+  .dots-legend .t::before { background: var(--lavender); }
+  .dots-legend .l::before { background: var(--crimson); }
+  .plain { margin-top: 14px; font-size: 1rem; line-height: 1.5; }
+  .plain b { color: var(--gold); }
+
+  /* ---- Qué puedes ligar / outs ---- */
+  .sub-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cream-dim); margin: 22px 0 10px; font-weight: 700; }
+  .finals { display: grid; gap: 6px; }
+  .final-row { display: grid; grid-template-columns: 118px 1fr 48px; align-items: center; gap: 10px; font-size: 0.82rem; }
+  .final-row .bar { height: 10px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+  .final-row .bar i { display: block; height: 100%; border-radius: 999px; background: var(--gold); transition: width .6s cubic-bezier(.22,1,.36,1); }
+  .final-row.current .bar i { background: var(--ok); }
+  .final-row b { text-align: right; font-weight: 700; }
+  .outs-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .mini-card {
+    width: 30px; height: 40px; border-radius: 5px; background: var(--cream); color: var(--ink); font-weight: 800;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.78rem; line-height: 1;
+  }
+  .mini-card.crimson { color: var(--crimson); }
+  .account-line { font-size: 0.78rem; color: var(--cream-dim); margin-top: 4px; word-break: break-all; }
 </style>
 </head>
 <body>
@@ -433,6 +520,13 @@
         <p>Calculadora de póker · Decide en cada calle</p>
       </div>
       <button type="button" class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
+    </div>
+    <div class="mode-row">
+      <div class="mode-switch" role="group" aria-label="Modo de la calculadora">
+        <button type="button" data-mode="facil">Fácil</button>
+        <button type="button" data-mode="pro">Pro</button>
+      </div>
+      <div class="mode-note" id="modeNote"></div>
     </div>
     <div class="steps-nav">
       <div class="dot" id="dotPreflop"></div>
@@ -484,7 +578,7 @@
     <div class="panel-head"><div class="panel-num">2</div><h2>La situación</h2></div>
     <div class="inputs-row">
       <div class="field">
-        <label>Rivales en la mano</label>
+        <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
         <div class="stepper">
           <button type="button" id="rivMinus">−</button>
           <span id="rivVal">1</span>
@@ -492,27 +586,27 @@
         </div>
       </div>
       <div class="field">
-        <label>Bote actual</label>
+        <label>Bote actual <button type="button" class="help" data-help="pot">?</button></label>
         <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
         <div class="hint">Fichas o €, la unidad da igual</div>
       </div>
       <div class="field">
-        <label>Cantidad a igualar</label>
+        <label>Cantidad a igualar <button type="button" class="help" data-help="call">?</button></label>
         <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
         <div class="hint">Lo que cuesta pagar ahora</div>
       </div>
-      <div class="field">
-        <label>Tu stack efectivo</label>
+      <div class="field pro-only">
+        <label>Tu stack efectivo <button type="button" class="help" data-help="stack">?</button></label>
         <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
         <div class="hint">Fichas que te quedan detrás</div>
       </div>
-      <div class="field">
+      <div class="field pro-only">
         <label>Stack del rival</label>
         <input type="number" id="villStackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
         <div class="hint">Para el SPR efectivo</div>
       </div>
       <div class="field">
-        <label>Tu posición</label>
+        <label>Tu posición <button type="button" class="help" data-help="position">?</button></label>
         <select id="heroPosInput">
           <option value="UTG">UTG — primera en hablar</option>
           <option value="HJ">HJ — media-temprana</option>
@@ -540,6 +634,23 @@
         </div>
         <div class="hint" id="orderHint">Afecta al margen de seguridad del consejo, no al cálculo de equity</div>
       </div>
+      <div class="field field-wide">
+        <label><span class="easy-only">¿Cómo juega tu rival?</span><span class="pro-only">Rango del rival</span> <button type="button" class="help" data-help="range">?</button></label>
+        <div class="range-chips easy-only" id="rangeChips">
+          <button type="button" class="toggle-btn" data-range="100">Cualquier mano<small>Juega casi todo, o no lo conoces</small></button>
+          <button type="button" class="toggle-btn" data-range="40">Normal<small>Juega manos decentes</small></button>
+          <button type="button" class="toggle-btn" data-range="15">Solo manos buenas<small>Juega poco y cuando entra, va fuerte</small></button>
+        </div>
+        <div class="pro-only">
+          <div class="range-top">
+            <input type="range" id="rangeSlider" min="2" max="100" step="1" aria-label="Porcentaje de manos del rival">
+            <b id="rangePctLabel">40%</b>
+          </div>
+          <div class="range-presets" id="rangePresets"></div>
+          <div class="range-grid" id="rangeGrid"></div>
+          <div class="hint">Toca una casilla para añadirla o quitarla. Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o). Recuadro verde = tu mano.</div>
+        </div>
+      </div>
     </div>
     <div class="actions">
       <button class="btn-primary" id="analyzeBtn">Analizar mano</button>
@@ -554,22 +665,37 @@
       <div class="result-hand" id="resultHandName">—</div>
       <div class="decision-badge" id="decisionBadge">—</div>
     </div>
+    <div class="easy-only">
+      <div class="dots" id="oddsDots" aria-hidden="true"></div>
+      <div class="dots-legend"><span class="w">Ganas</span><span class="t">Empatas</span><span class="l">Pierdes</span></div>
+      <div class="plain" id="plainLine"></div>
+    </div>
     <div class="gauge">
       <div class="gauge-fill" id="gaugeFill"></div>
       <div class="gauge-mark" id="gaugeMark"></div>
     </div>
     <div class="gauge-labels"><span>0%</span><span id="markLabel">Necesitas X%</span><span>100%</span></div>
     <div class="stat-grid">
-      <div class="stat" title="Probabilidad de tener la mejor mano al final, según la simulación"><b id="statEquity">—</b><span>Prob. de ganar</span></div>
-      <div class="stat" title="Probabilidad de empatar el bote con un rival"><b id="statTie">—</b><span>Prob. de empate</span></div>
-      <div class="stat" title="Probabilidad de que tu mano acabe perdiendo"><b id="statLose">—</b><span>Prob. de perder</span></div>
-      <div class="stat" title="Cartas que mejoran la categoría de tu mano en la próxima calle (flop/turn)"><b id="statOuts">—</b><span>Outs</span></div>
-      <div class="stat" title="Equity mínima que necesitas para que pagar sea rentable a largo plazo"><b id="statNeeded">—</b><span>Odds del bote</span></div>
-      <div class="stat" title="Por cada ficha que pagas, esto es lo que hay en juego"><b id="statRatio">—</b><span>Ratio del bote</span></div>
-      <div class="stat" title="Ganancia o pérdida media esperada de pagar, en fichas"><b id="statEV">—</b><span>EV de igualar</span></div>
-      <div class="stat" title="Stack efectivo dividido entre el bote — orienta cuánta presión soportas"><b id="statSPR">—</b><span>SPR</span></div>
+      <div class="stat" data-help="equity"><b id="statEquity">—</b><span>Prob. de ganar</span></div>
+      <div class="stat pro-only" data-help="tie"><b id="statTie">—</b><span>Prob. de empate</span></div>
+      <div class="stat" data-help="lose"><b id="statLose">—</b><span>Prob. de perder</span></div>
+      <div class="stat" data-help="needed"><b id="statNeeded">—</b><span class="easy-only">Necesitas ganar</span><span class="pro-only">Odds del bote</span></div>
+      <div class="stat" data-help="outs"><b id="statOuts">—</b><span class="easy-only">Cartas que te ayudan</span><span class="pro-only">Outs</span></div>
+      <div class="stat pro-only" data-help="ratio"><b id="statRatio">—</b><span>Ratio del bote</span></div>
+      <div class="stat pro-only" data-help="ev"><b id="statEV">—</b><span>EV de igualar</span></div>
+      <div class="stat pro-only" data-help="spr"><b id="statSPR">—</b><span>SPR</span></div>
+      <div class="stat pro-only" data-help="range"><b id="statRange">—</b><span>Rango rival</span></div>
     </div>
     <div class="advice" id="adviceBox"></div>
+
+    <div id="outsBox" style="display:none;">
+      <div class="sub-title"><span class="easy-only">Cartas que mejoran tu mano en la próxima calle</span><span class="pro-only">Outs (mejoran tu categoría en la próxima calle)</span></div>
+      <div class="outs-list" id="outsList"></div>
+    </div>
+    <div id="finalsWrap" style="display:none;">
+      <div class="sub-title"><span class="easy-only">¿Con qué jugada puedes acabar?</span><span class="pro-only">Distribución de tu mano final</span></div>
+      <div class="finals" id="finalsBox"></div>
+    </div>
 
     <div class="reraise-box" id="reraiseBox">
       <button type="button" class="reraise-toggle" id="reraiseToggleBtn">¿Te suben la apuesta después de esto? Calcula qué hacer →</button>
@@ -602,9 +728,13 @@
     <button type="button" class="sidebar-close" id="closeSidebar" aria-label="Cerrar menú">&times;</button>
   </div>
   <div class="hint" id="sidebarProfile" style="margin-bottom:14px;"></div>
+  <div class="account-line" id="sidebarAccount" style="margin:-8px 0 14px;"></div>
   <div class="sidebar-nav">
     <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span> Analizador</button>
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span> Iniciar sesión</button>
+    <button type="button" class="sidebar-link" id="navManage" style="display:none;"><span class="ic">💳</span> Gestionar suscripción</button>
+    <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span> Glosario de póker</button>
+    <button type="button" class="sidebar-link" id="navLogout" style="display:none;"><span class="ic">🚪</span> Cerrar sesión</button>
     <button type="button" class="sidebar-link" id="navPlan"><span class="ic">💎</span> Plan</button>
     <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span> Configuración</button>
   </div>
@@ -666,7 +796,7 @@
       <button class="btn-secondary" id="clearHistoryBtn" style="width:100%;">Borrar historial de manos</button>
     </div>
 
-    <p class="paywall-fine">RÍO v1.1 · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
+    <p class="paywall-fine">RÍO v1.2 · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
   </div>
 </div>
 
@@ -701,10 +831,23 @@
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 4,99€</button>
         <button class="btn-secondary" id="buyCreditsSettingsBtn" style="width:100%; margin-top:10px; display:none;">Comprar 50 fotos más</button>
+        <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:10px; display:none;">💳 Gestionar suscripción</button>
+        <div class="hint" id="manageSubHint" style="display:none; margin-top:6px;">Cancelar, cambiar la tarjeta o descargar tus facturas.</div>
+        <div id="manageSubMsg" class="restore-msg"></div>
       </div>
     </div>
 
     <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
+  </div>
+</div>
+
+<div class="overlay" id="helpModal">
+  <div class="picker">
+    <div class="picker-head">
+      <h3 id="helpTitle">Ayuda</h3>
+      <button type="button" id="closeHelp" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="help-body" id="helpBody"></div>
   </div>
 </div>
 
@@ -843,6 +986,38 @@
         : 'Incluye hasta 150 capturas de manos analizadas automáticamente al mes.';
     }
     if (buyBtn) buyBtn.style.display = pro ? 'inline-block' : 'none';
+    updateAccountUI();
+  }
+
+  // Menú de cuenta: iniciar/cerrar sesión y gestionar la suscripción.
+  function updateAccountUI(){
+    const logged = !!storageGet('rio_token', '');
+    const canManage = logged && isPro();
+    document.getElementById('navLogin').style.display = logged ? 'none' : '';
+    document.getElementById('navLogout').style.display = logged ? '' : 'none';
+    document.getElementById('navManage').style.display = canManage ? '' : 'none';
+    document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
+    document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
+    document.getElementById('sidebarAccount').textContent = logged ? '✉️ ' + storageGet('rio_email', '') : '';
+  }
+  async function openBillingPortal(){
+    const msg = document.getElementById('manageSubMsg');
+    msg.textContent = 'Abriendo Stripe…'; msg.className = 'restore-msg';
+    try {
+      const r = await fetch('/api/billing-portal', { method: 'POST', headers: authHeaders() });
+      const data = await r.json();
+      if (r.ok && data.url){ window.location.href = data.url; return; }
+      msg.textContent = data.error || 'No se pudo abrir el portal de Stripe.'; msg.className = 'restore-msg no';
+    } catch(e){
+      msg.textContent = 'No se pudo contactar con el servidor. Inténtalo de nuevo.'; msg.className = 'restore-msg no';
+    }
+  }
+  async function doLogout(){
+    try { await fetch('/api/logout', { method: 'POST', headers: authHeaders() }); } catch(e){}
+    logoutPro();
+    try { localStorage.removeItem('rio_email'); } catch(e){}
+    photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
+    updateUsageBadge(); renderHistory(); renderPlanInfo();
   }
 
   function getProfile(){
@@ -985,6 +1160,7 @@
     });
 
     updateCurrentHand();
+    renderRangeUI();
     resultPanel.classList.remove('show');
   }
 
@@ -993,12 +1169,13 @@
     if (!hole[0] || !hole[1]){ currentHandEl.textContent = 'Elige tus dos cartas para empezar.'; return; }
     if (known.length < 5){
       const [a,b] = hole;
+      const tag = strengthTag(handTopPercent(a, b));
       if (a.rank === b.rank){
-        currentHandEl.innerHTML = `Mano de partida: <b>Pareja de ${RANK_PLURAL[a.rank]}</b>`;
+        currentHandEl.innerHTML = `Mano de partida: <b>Pareja de ${RANK_PLURAL[a.rank]}</b>${tag}`;
       } else {
         const suited = a.suit === b.suit ? ' (mismo palo)' : '';
         const hi = a.rank>b.rank?a:b, lo=a.rank>b.rank?b:a;
-        currentHandEl.innerHTML = `Mano de partida: <b>${RANK_LABEL(hi.rank)}-${RANK_LABEL(lo.rank)}${suited}</b>`;
+        currentHandEl.innerHTML = `Mano de partida: <b>${RANK_LABEL(hi.rank)}-${RANK_LABEL(lo.rank)}${suited}</b>${tag}`;
       }
       return;
     }
@@ -1153,17 +1330,28 @@
 
   // Cuenta las cartas que, al caer, mejoran la categoría de tu mano actual
   // (p.ej. de proyecto de color a color hecho). Solo tiene sentido en flop/turn.
-  function countOuts(holeCards, filledBoard){
+  // Una carta solo es "out" si mejora TU jugada: que empareje la mesa (y le
+  // sirva igual a todos) no cuenta.
+  function findOuts(holeCards, filledBoard){
     if (filledBoard.length !== 3 && filledBoard.length !== 4) return null;
     const known = [...holeCards, ...filledBoard];
     const before = bestHand(known).category;
-    const deck = remainingDeck(known);
-    let outs = 0;
-    for (const c of deck){
+    return remainingDeck(known).filter(c => {
       const after = bestHand([...known, c]).category;
-      if (after > before) outs++;
-    }
-    return outs;
+      return after > before && after > boardCategory([...filledBoard, c]);
+    });
+  }
+  // Categoría de la jugada que forma la mesa sola (4 o 5 cartas).
+  function boardCategory(cards){
+    if (cards.length >= 5) return bestHand(cards).category;
+    const counts = {};
+    cards.forEach(c => { counts[c.rank] = (counts[c.rank] || 0) + 1; });
+    const v = Object.values(counts).sort((a, b) => b - a);
+    if (v[0] === 4) return 7;
+    if (v[0] === 3) return 3;
+    if (v[0] === 2 && v[1] === 2) return 2;
+    if (v[0] === 2) return 1;
+    return 0;
   }
 
   function fullDeck(){ const d=[]; for (const s of SUITS) for (const r of RANKS) d.push({rank:r,suit:s}); return d; }
@@ -1178,28 +1366,215 @@
     return res;
   }
 
-  function runEquity(holeCards, boardCards, rivals, iterations){
+  // Simula la mano muchas veces. Si hay rango del rival, sus cartas salen de
+  // ese rango (quitando las que ya están a la vista); si no, al azar.
+  function runEquity(holeCards, boardCards, rivals, iterations, rangeSet){
     const filledBoard = boardCards.filter(Boolean);
     const known = [...holeCards, ...filledBoard];
+    const knownKeys = new Set(known.map(cardKey));
     const deck = remainingDeck(known);
     const boardNeeded = 5 - filledBoard.length;
+    let pool = null;
+    if (rangeSet && rangeSet.size > 0 && rangeSet.size < 169){
+      pool = [];
+      rangeSet.forEach(n => classCombos(n).forEach(c => {
+        if (!knownKeys.has(cardKey(c[0])) && !knownKeys.has(cardKey(c[1]))) pool.push(c);
+      }));
+      if (!pool.length) pool = null;
+    }
+    const cats = new Array(9).fill(0);
     let equitySum = 0, tieSum = 0;
     for (let i=0;i<iterations;i++){
-      const drawn = drawN(deck, boardNeeded + rivals*2);
-      const fb = [...filledBoard, ...drawn.slice(0, boardNeeded)];
-      const myScore = bestHand([...holeCards, ...fb]).score;
-      const scores = [myScore];
-      let idx = boardNeeded;
-      for (let o=0;o<rivals;o++){
-        const oc = [drawn[idx], drawn[idx+1]]; idx += 2;
-        scores.push(bestHand([...oc, ...fb]).score);
+      let fb; const rivalHands = [];
+      if (!pool){
+        const drawn = drawN(deck, boardNeeded + rivals*2);
+        fb = [...filledBoard, ...drawn.slice(0, boardNeeded)];
+        for (let o=0;o<rivals;o++) rivalHands.push([drawn[boardNeeded+2*o], drawn[boardNeeded+2*o+1]]);
+      } else {
+        const used = new Set();
+        for (let o=0;o<rivals;o++){
+          let hand = null;
+          for (let t=0; t<40 && !hand; t++){
+            const c = pool[Math.floor(Math.random()*pool.length)];
+            if (!used.has(cardKey(c[0])) && !used.has(cardKey(c[1]))) hand = c;
+          }
+          if (!hand) hand = drawN(deck.filter(c => !used.has(cardKey(c))), 2);
+          used.add(cardKey(hand[0])); used.add(cardKey(hand[1]));
+          rivalHands.push(hand);
+        }
+        fb = [...filledBoard, ...drawN(deck.filter(c => !used.has(cardKey(c))), boardNeeded)];
       }
-      const max = Math.max(...scores);
-      const winners = scores.filter(s=>s===max).length;
-      if (myScore === max){ if (winners > 1) tieSum += 1/winners; else equitySum += 1; }
+      const mine = bestHand([...holeCards, ...fb]);
+      cats[mine.category]++;
+      let max = mine.score, winners = 1;
+      for (const h of rivalHands){
+        const sc = bestHand([...h, ...fb]).score;
+        if (sc > max){ max = sc; winners = 1; } else if (sc === max) winners++;
+      }
+      if (mine.score === max){ if (winners > 1) tieSum += 1/winners; else equitySum += 1; }
     }
-    return { win: (equitySum/iterations)*100, tie: (tieSum/iterations)*100 };
+    return {
+      win: (equitySum/iterations)*100, tie: (tieSum/iterations)*100,
+      cats: cats.map(c => c/iterations*100), usedRange: !!pool
+    };
   }
+
+  // ---- Modo Fácil / Pro ----
+  function setMode(m){
+    const pro = m === 'pro';
+    document.body.classList.toggle('mode-pro', pro);
+    storageSet('rio_mode', pro ? 'pro' : 'facil');
+    document.querySelectorAll('.mode-switch button').forEach(b => b.classList.toggle('active', b.dataset.mode === (pro ? 'pro' : 'facil')));
+    document.getElementById('modeNote').innerHTML = pro
+      ? '<b>Modo Pro:</b> rango del rival, stacks, EV, SPR y todas las estadísticas.'
+      : '<b>Modo Fácil:</b> te lo explicamos en palabras sencillas. Toca los <b>?</b> para aprender cada término.';
+  }
+  document.querySelectorAll('.mode-switch button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode(storageGet('rio_mode', 'facil'));
+
+  const DECISION_ES = { RAISE:'SUBE', CALL:'PAGA', FOLD:'TIRA', CHECK:'PASA', BET:'APUESTA' };
+  function decisionHTML(t){ return `<span class="easy-only">${DECISION_ES[t] || t}</span><span class="pro-only">${t}</span>`; }
+
+  // ---- Rangos de manos ----
+  // Las 169 manos iniciales ordenadas de mejor a peor (por su probabilidad de
+  // ganar contra una mano al azar). "Top 20%" = las primeras manos de la lista
+  // hasta sumar el 20% de las 1.326 combinaciones posibles.
+  const HAND_RANKING = 'AA KK QQ JJ TT 99 88 AKs 77 AQs AKo AJs AQo ATs AJo 66 KQs ATo A9s KJs A8s KTs 55 A9o KQo A7s KJo K9s A5s A6s A8o QJs QTs KTo A4s A7o K8s QJo A3s A2s Q9s K9o A5o A6o K7s QTo JTs 44 K6s K8o A3o A4o K5s Q8s J9s Q9o JTo K4s K7o A2o K6o Q7s J8s K3s 33 Q8o T9s Q6s K5o K2s J9o K4o Q5s J7s T8s T9o Q4s Q7o J8o K3o Q3s J6s T7s Q6o 98s K2o Q2s 22 Q5o T8o J5s 97s J7o T6s J4s Q4o Q3o 98o T7o J3s 87s 96s Q2o J5o J6o J2s T5s 97o 95s 86s T3s T4s T6o J4o 76s J3o 87o 85s T2s 96o T5o J2o 94s 75s T4o 93s 65s 92s 95o T3o 86o 84s 76o T2o 85o 74s 83s 64s 54s 94o 93o 75o 82s 65o 63s 73s 84o 53s 92o 74o 54o 43s 62s 64o 72s 83o 52s 42s 53o 73o 63o 82o 32s 43o 52o 72o 62o 42o 32o'.split(' ');
+  const RANK_CHARS = 'AKQJT98765432';
+  const CLASS_COMBOS = n => n.length === 2 ? 6 : (n[2] === 's' ? 4 : 12);
+  // Rangos de apertura típicos por posición (aprox., mesa de 6).
+  const RANGE_PRESETS = [ ['UTG',15], ['HJ',19], ['CO',27], ['BTN',45], ['SB',40], ['BB',60] ];
+  function topRange(pct){
+    if (pct >= 100) return new Set(HAND_RANKING);
+    const target = pct / 100 * 1326, set = new Set();
+    let sum = 0;
+    for (const n of HAND_RANKING){ if (sum >= target) break; set.add(n); sum += CLASS_COMBOS(n); }
+    return set;
+  }
+  function rangePct(set){ let sum = 0; set.forEach(n => { sum += CLASS_COMBOS(n); }); return sum / 1326 * 100; }
+  function handClass(a, b){
+    const L = r => RANK_CHARS[14 - r];
+    if (a.rank === b.rank) return L(a.rank) + L(a.rank);
+    const hi = a.rank > b.rank ? a : b, lo = hi === a ? b : a;
+    return L(hi.rank) + L(lo.rank) + (a.suit === b.suit ? 's' : 'o');
+  }
+  // Porcentaje de manos iniciales que son iguales o mejores que esta.
+  function handTopPercent(a, b){
+    const cls = handClass(a, b);
+    let sum = 0;
+    for (const n of HAND_RANKING){ sum += CLASS_COMBOS(n); if (n === cls) break; }
+    return sum / 1326 * 100;
+  }
+  function strengthTag(top){
+    if (top <= 15) return '<span class="strength-tag ok">Muy fuerte · top ' + Math.max(1, Math.round(top)) + '%</span>';
+    if (top <= 40) return '<span class="strength-tag warn">Jugable · top ' + Math.round(top) + '%</span>';
+    return '<span class="strength-tag no">Débil · top ' + Math.round(top) + '%</span>';
+  }
+  function classCombos(n){
+    const r1 = 14 - RANK_CHARS.indexOf(n[0]), r2 = 14 - RANK_CHARS.indexOf(n[1]);
+    const out = [];
+    for (const s1 of SUITS) for (const s2 of SUITS){
+      const ok = n.length === 2 ? s1 < s2 : (n[2] === 's' ? s1 === s2 : s1 !== s2);
+      if (ok) out.push([{rank:r1, suit:s1}, {rank:r2, suit:s2}]);
+    }
+    return out;
+  }
+
+  let villRange;
+  (function loadRange(){
+    const saved = storageGet('rio_range', null);
+    if (saved && Array.isArray(saved.custom)){
+      const set = new Set(saved.custom.filter(n => HAND_RANKING.includes(n)));
+      villRange = { set, pct: rangePct(set), custom: true };
+    } else {
+      const pct = saved && saved.pct ? Math.max(2, Math.min(100, saved.pct)) : 40;
+      villRange = { set: topRange(pct), pct, custom: false };
+    }
+  })();
+  function saveRange(){ storageSet('rio_range', { pct: villRange.pct, custom: villRange.custom ? [...villRange.set] : null }); }
+  function setRangePct(pct){ villRange = { set: topRange(pct), pct, custom: false }; saveRange(); renderRangeUI(); }
+  function toggleRangeClass(n){
+    const set = new Set(villRange.set);
+    if (set.has(n)) set.delete(n); else set.add(n);
+    villRange = { set, pct: rangePct(set), custom: true };
+    saveRange(); renderRangeUI();
+  }
+  function rangeLabel(){
+    if (villRange.set.size >= 169 || villRange.set.size === 0) return 'Cualquier mano';
+    return 'Top ' + Math.round(villRange.pct) + '%' + (villRange.custom ? ' (personalizado)' : '');
+  }
+
+  const rangeGrid = document.getElementById('rangeGrid');
+  for (let i = 0; i < 13; i++) for (let j = 0; j < 13; j++){
+    const n = i === j ? RANK_CHARS[i] + RANK_CHARS[j] : i < j ? RANK_CHARS[i] + RANK_CHARS[j] + 's' : RANK_CHARS[j] + RANK_CHARS[i] + 'o';
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = n; b.dataset.n = n;
+    if (i === j) b.classList.add('pair');
+    b.addEventListener('click', () => toggleRangeClass(n));
+    rangeGrid.appendChild(b);
+  }
+  const rangePresets = document.getElementById('rangePresets');
+  RANGE_PRESETS.concat([['Todas', 100]]).forEach(([pos, pct]) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.pct = pct;
+    b.textContent = pos === 'Todas' ? 'Todas (100%)' : `${pos} · ${pct}%`;
+    b.title = pos === 'Todas' ? 'Cualquier mano' : `Rango típico de apertura desde ${pos}`;
+    b.addEventListener('click', () => setRangePct(pct));
+    rangePresets.appendChild(b);
+  });
+  document.getElementById('rangeSlider').addEventListener('input', (e) => setRangePct(Number(e.target.value)));
+  document.querySelectorAll('#rangeChips [data-range]').forEach(b => b.addEventListener('click', () => setRangePct(Number(b.dataset.range))));
+
+  function renderRangeUI(){
+    const pct = Math.round(villRange.pct);
+    document.getElementById('rangeSlider').value = pct;
+    document.getElementById('rangePctLabel').textContent = pct + '%';
+    document.querySelectorAll('#rangeChips [data-range]').forEach(b => b.classList.toggle('active', !villRange.custom && Number(b.dataset.range) === villRange.pct));
+    rangePresets.querySelectorAll('button').forEach(b => b.classList.toggle('active', !villRange.custom && Number(b.dataset.pct) === villRange.pct));
+    const heroCls = hole[0] && hole[1] ? handClass(hole[0], hole[1]) : null;
+    rangeGrid.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('in', villRange.set.has(b.dataset.n));
+      b.classList.toggle('hero', b.dataset.n === heroCls);
+    });
+  }
+
+  // ---- Ayuda y glosario ----
+  const HELP = {
+    rivals: ['Rivales en la mano', 'Cuántos jugadores <b>siguen en la mano</b> contigo (no cuentes los que ya se han retirado). Cuantos más rivales, más difícil es ganar.'],
+    pot: ['Bote', 'Todas las fichas que hay en el centro de la mesa <b>antes</b> de que tú pagues, incluida la apuesta de tu rival.', 'Ejemplo: había 40 en el centro y tu rival apuesta 20 → el bote es 60.'],
+    call: ['Cantidad a igualar', 'Lo que te cuesta <b>pagar</b> para seguir en la mano. Si nadie ha apostado, pon 0.'],
+    stack: ['Stack efectivo', 'Las fichas que te quedan delante. El <b>efectivo</b> es el menor entre el tuyo y el de tu rival: es lo máximo que podéis jugaros entre los dos.'],
+    position: ['Posición', 'El orden en que habláis. Hablar <b>después</b> que tu rival es una ventaja, porque ves lo que hace antes de decidir.<br><br><b>BTN</b> (botón) es la mejor posición; <b>SB</b> y <b>BB</b> (ciegas) hablan primero después del flop.'],
+    range: ['Rango del rival', 'Las manos que tu rival <b>podría tener</b>. No sabes sus cartas, pero sí cómo juega: un jugador que solo entra con manos buenas tiene un rango estrecho (por ejemplo, top 15%), uno que juega casi todo tiene un rango amplio.<br><br>Calcular contra un rango realista da consejos mucho más fiables que contra una mano al azar.'],
+    equity: ['Probabilidad de ganar (equity)', 'El porcentaje de veces que tu mano acabaría ganando si la situación se repitiera muchas veces, contra las manos que puede tener tu rival.'],
+    tie: ['Empate', 'Las veces que tu mano y la de un rival acaban exactamente igual y os repartís el bote.'],
+    lose: ['Probabilidad de perder', 'El porcentaje de veces que un rival acabaría con mejor mano que tú.'],
+    needed: ['Lo que necesitas ganar (odds del bote)', 'El mínimo de veces que tienes que ganar para que <b>pagar compense a la larga</b>. Se calcula como lo que pagas dividido entre el bote final.', 'Ejemplo: pagas 20 para ganar un bote de 60 → 20 / (60 + 20) = 25%. Si ganas más del 25% de las veces, pagar es rentable.'],
+    outs: ['Outs', 'Las cartas que, si salen en la próxima calle, <b>mejoran tu jugada</b> (por ejemplo, de proyecto de color a color).', 'Truco rápido: en el flop, outs × 4 ≈ % de ligar hasta el river; en el turn, outs × 2.'],
+    ratio: ['Ratio del bote', 'Cuántas fichas hay en el bote por cada ficha que pagas. Un 3 : 1 significa que arriesgas 1 para ganar 3.'],
+    ev: ['EV (valor esperado)', 'Lo que ganas o pierdes <b>de media</b> cada vez que pagas en esta situación. Positivo (+) = pagar gana dinero a la larga; negativo (−) = lo pierde.'],
+    spr: ['SPR', 'Stack efectivo dividido entre el bote. Con SPR bajo (menos de 3) estás casi comprometido y una pareja buena suele bastar para ir all-in; con SPR alto (más de 10) necesitas manos más fuertes para jugarte todo.']
+  };
+  const helpModal = document.getElementById('helpModal');
+  function openHelp(key){
+    const h = HELP[key]; if (!h) return;
+    document.getElementById('helpTitle').textContent = h[0];
+    document.getElementById('helpBody').innerHTML = h[1] + (h[2] ? `<div class="example">${h[2]}</div>` : '');
+    helpModal.classList.add('show');
+  }
+  function openGlossary(){
+    document.getElementById('helpTitle').textContent = 'Glosario de póker';
+    document.getElementById('helpBody').innerHTML = Object.values(HELP).map(h => `<p><b>${h[0]}</b><br>${h[1]}</p>`).join('');
+    helpModal.classList.add('show');
+  }
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-help]');
+    if (!el) return;
+    e.preventDefault();
+    openHelp(el.dataset.help);
+  });
+  document.getElementById('closeHelp').addEventListener('click', () => helpModal.classList.remove('show'));
+  helpModal.addEventListener('click', (e) => { if (e.target === helpModal) helpModal.classList.remove('show'); });
 
   const rivVal = document.getElementById('rivVal');
   document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
@@ -1246,7 +1621,7 @@
     visible.forEach(h => {
       const row = document.createElement('div');
       row.className = 'history-item';
-      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${h.equity}% equity · ${h.rivals} rival(es) · ${h.when}</div></div><span class="history-tag ${h.cls}">${h.decision}</span>`;
+      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${h.equity}% de ganar · ${h.rivals} rival(es) · ${h.when}</div></div><span class="history-tag ${h.cls}">${decisionHTML(h.decision)}</span>`;
       historyList.appendChild(row);
     });
     if (!isPro() && hist.length > 1){
@@ -1360,6 +1735,10 @@
   document.getElementById('navLogin').addEventListener('click', () => {
     closeSidebar(); openPaywall('login');
   });
+  document.getElementById('navLogout').addEventListener('click', () => { closeSidebar(); doLogout(); });
+  document.getElementById('navManage').addEventListener('click', () => { closeSidebar(); openPlanPanel(); openBillingPortal(); });
+  document.getElementById('navGlossary').addEventListener('click', () => { closeSidebar(); openGlossary(); });
+  document.getElementById('manageSubBtn').addEventListener('click', openBillingPortal);
   document.getElementById('navSettings').addEventListener('click', () => { closeSidebar(); openSettings(); });
   document.getElementById('buyCreditsSettingsBtn').addEventListener('click', () => { closeSettings(); openCreditsModal(); });
   document.getElementById('closeSettings').addEventListener('click', closeSettings);
@@ -1583,7 +1962,8 @@
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
       const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
-      const { win, tie } = runEquity(hole, board, numRivals, simIterations());
+      const res = runEquity(hole, board, numRivals, simIterations(), villRange.set);
+      const { win, tie } = res;
       const needed = (pot+call) > 0 ? (call/(pot+call))*100 : 0;
 
       // Guardado para el simulador de "¿y si me suben otra vez?"
@@ -1594,15 +1974,21 @@
       document.getElementById('reraiseCallInput').value = '';
 
       const known = [...hole, ...board].filter(Boolean);
-      let handLabel;
+      const filledBoard = board.filter(Boolean);
+      let handLabel, handSub = '';
+      let currentCat = null;
       if (known.length < 5){
         const [a,b] = hole;
-        handLabel = a.rank===b.rank ? 'Pareja de '+RANK_PLURAL[a.rank] : RANK_LABEL(Math.max(a.rank,b.rank))+'-'+RANK_LABEL(Math.min(a.rank,b.rank));
+        handLabel = a.rank===b.rank ? 'Pareja de '+RANK_PLURAL[a.rank] : RANK_LABEL(Math.max(a.rank,b.rank))+'-'+RANK_LABEL(Math.min(a.rank,b.rank))+(a.suit===b.suit?' (mismo palo)':'');
+        handSub = `Top ${Math.max(1, Math.round(handTopPercent(a, b)))}% de manos iniciales`;
       } else {
         const best = bestHand(known);
+        currentCat = best.category;
         handLabel = categoryName(best.category, best.tiebreak);
       }
-      document.getElementById('resultHandName').textContent = handLabel;
+      const rangeText = res.usedRange ? rangeLabel().toLowerCase() : 'cualquier mano';
+      handSub = (handSub ? handSub + ' · ' : '') + `vs ${numRivals} rival${numRivals>1?'es':''} (${rangeText})`;
+      document.getElementById('resultHandName').innerHTML = `${handLabel}<small>${handSub}</small>`;
 
       const badge = document.getElementById('decisionBadge');
       const heroPos = document.getElementById('heroPosInput').value;
@@ -1612,29 +1998,57 @@
       // Fuera de posición exige más margen (juegas a ciegas del rival); en posición puedes apretar con menos margen.
       const raiseBuffer = oop ? 8 : 4;
       const callBuffer = oop ? -1 : -5;
+      // Sin apuesta que pagar: apostamos si vamos claramente por encima de nuestra parte "justa" del bote.
+      const fairShare = 100/(numRivals+1);
       let text, cls;
-      if (call === 0){ text = 'CHECK'; cls = 'ok'; }
+      if (call === 0){
+        if (win >= fairShare + (oop ? 18 : 12)){ text = 'BET'; cls = 'ok'; }
+        else { text = 'CHECK'; cls = 'warn'; }
+      }
       else if (win >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
       else if (win >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
       else { text = 'FOLD'; cls = 'no'; }
-      badge.textContent = text;
+      badge.innerHTML = decisionHTML(text);
       badge.className = 'decision-badge ' + cls;
 
+      // --- Explicación modo Pro ---
       const posPhrase = oop
         ? `Vas fuera de posición (${heroPos} vs ${villPos}): actúas antes que tu rival, así que juegas con menos información`
         : `Tienes posición (${heroPos} vs ${villPos}): tu rival actúa primero, así que ves lo que hace antes de decidir`;
+      const vsRange = res.usedRange ? ` contra un rango ${rangeText}` : '';
       const edge = (win - needed).toFixed(1);
-      let adviceText;
-      if (call === 0){
-        adviceText = `No hay nada que igualar, así que ver la siguiente carta no cuesta fichas. Aprovecha para observar cómo actúan tus rivales.`;
+      let proText;
+      if (text === 'BET'){
+        proText = `Nadie ha apostado y tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) está muy por encima de tu parte justa del bote (<b>${fairShare.toFixed(0)}%</b> con ${numRivals} rival${numRivals>1?'es':''}). Apuesta por valor: las manos peores pueden pagarte. ${posPhrase}.`;
+      } else if (text === 'CHECK'){
+        proText = `No hay nada que igualar y tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) no está lo bastante por encima de tu parte justa (<b>${fairShare.toFixed(0)}%</b>) como para apostar por valor. Pasa y ve la siguiente carta gratis. ${posPhrase}.`;
       } else if (text === 'RAISE'){
-        adviceText = `Tu equity (<b>${win.toFixed(1)}%</b>) supera con margen el <b>${needed.toFixed(1)}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera con margen el <b>${needed.toFixed(1)}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
       } else if (text === 'CALL'){
-        adviceText = `Estás cerca del punto de equilibrio (diferencia de ${edge}%). ${posPhrase}. ${oop ? 'Fuera de posición conviene ser algo más conservador: iguala pero no metas más fichas todavía.' : 'Con posición puedes igualar tranquilo y decidir la siguiente calle ya con más información.'}`;
+        proText = `Estás cerca del punto de equilibrio (diferencia de ${edge}%${vsRange}). ${posPhrase}. ${oop ? 'Fuera de posición conviene ser algo más conservador: iguala pero no metas más fichas todavía.' : 'Con posición puedes igualar tranquilo y decidir la siguiente calle ya con más información.'}`;
       } else {
-        adviceText = `Necesitas <b>${needed.toFixed(1)}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1)}%</b>. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
+        proText = `Necesitas <b>${needed.toFixed(1)}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1)}%</b>${vsRange}. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
       }
-      document.getElementById('adviceBox').innerHTML = adviceText;
+
+      // --- Explicación modo Fácil ---
+      const of20 = (p) => { const n = Math.round(p/5); return n === 0 && p > 0 ? 'menos de 1' : String(n); };
+      const posEasy = oop
+        ? 'Además hablas antes que tu rival, lo que es una pequeña desventaja.'
+        : 'Hablas después que tu rival: es una ventaja, porque ves lo que hace antes de decidir.';
+      let easyText;
+      if (text === 'BET') easyText = `Nadie ha apostado y tu mano es fuerte: ganas unas <b>${of20(win)} de cada 20</b> veces. Apuesta tú para que te paguen cuando vas por delante.`;
+      else if (text === 'CHECK') easyText = `Nadie ha apostado, así que puedes <b>pasar gratis</b> y ver la siguiente carta. Tu mano no es tan fuerte como para apostar.`;
+      else if (text === 'RAISE') easyText = `Vas claramente por delante: ganas unas <b>${of20(win)} de cada 20</b> veces y te bastaría con <b>${of20(needed)}</b>. Sube para ganar más fichas. ${posEasy}`;
+      else if (text === 'CALL') easyText = `Está justo: ganas unas <b>${of20(win)} de cada 20</b> veces y necesitas <b>${of20(needed)}</b>. Paga, pero sin meter más fichas por ahora. ${posEasy}`;
+      else easyText = `Pagar te haría perder fichas a la larga: ganas solo <b>${of20(win)} de cada 20</b> veces y necesitarías <b>${of20(needed)}</b>. Lo mejor es tirar la mano. ${posEasy}`;
+      document.getElementById('adviceBox').innerHTML = `<div class="easy-only">${easyText}</div><div class="pro-only">${proText}</div>`;
+
+      // Puntos: cada uno es una de cada 20 veces
+      const wDots = Math.round(win/5), tDots = Math.min(20 - wDots, Math.round(tie/5));
+      document.getElementById('oddsDots').innerHTML = Array.from({length: 20}, (_, i) =>
+        `<i class="${i < wDots ? 'w' : i < wDots + tDots ? 't' : ''}" style="animation-delay:${i*25}ms"></i>`).join('');
+      document.getElementById('plainLine').innerHTML = `De cada 20 veces así, ganas <b>${of20(win)}</b>` +
+        (call > 0 ? ` y para que pagar compense necesitas ganar <b>${of20(needed)}</b>.` : '.');
 
       requestAnimationFrame(() => {
         document.getElementById('gaugeFill').style.width = Math.max(2, Math.min(100, win)) + '%';
@@ -1643,13 +2057,38 @@
       document.getElementById('markLabel').textContent = call > 0 ? `Necesitas ${needed.toFixed(0)}%` : 'Sin coste';
 
       const lose = Math.max(0, 100 - win - tie);
-      const outs = countOuts(hole, board.filter(Boolean));
+      const outsCards = findOuts(hole, filledBoard);
+      const outs = outsCards ? outsCards.length : null;
 
       document.getElementById('statEquity').textContent = win.toFixed(1)+'%';
       document.getElementById('statTie').textContent = tie.toFixed(1)+'%';
       document.getElementById('statLose').textContent = lose.toFixed(1)+'%';
       document.getElementById('statOuts').textContent = outs===null ? '—' : outs+' cartas';
       document.getElementById('statNeeded').textContent = call>0 ? needed.toFixed(1)+'%' : '—';
+      document.getElementById('statRange').textContent = res.usedRange ? Math.round(villRange.pct)+'%' : '100%';
+
+      // Cartas que te ayudan
+      const outsBox = document.getElementById('outsBox');
+      outsBox.style.display = outsCards && outsCards.length ? 'block' : 'none';
+      if (outsCards){
+        document.getElementById('outsList').innerHTML = outsCards
+          .sort((x, y) => y.rank - x.rank || SUITS.indexOf(x.suit) - SUITS.indexOf(y.suit))
+          .map(c => `<span class="mini-card${SUIT_CRIMSON[c.suit] ? ' crimson' : ''}">${RANK_LABEL(c.rank)}<span>${SUIT_SYMBOL[c.suit]}</span></span>`).join('');
+      }
+
+      // Con qué jugada puedes acabar (solo si quedan cartas por salir)
+      const finalsWrap = document.getElementById('finalsWrap');
+      finalsWrap.style.display = filledBoard.length < 5 ? 'block' : 'none';
+      if (filledBoard.length < 5){
+        const CAT_NAMES = ['Carta alta','Pareja','Doble pareja','Trío','Escalera','Color','Full','Póker','Escalera de color'];
+        const rows = [];
+        for (let c = 8; c >= 0; c--){
+          const p = res.cats[c];
+          if (p < 0.05 && c !== currentCat) continue;
+          rows.push(`<div class="final-row${c === currentCat ? ' current' : ''}"><span>${CAT_NAMES[c]}</span><div class="bar"><i style="width:${Math.max(1, p)}%"></i></div><b>${p < 1 ? p.toFixed(1) : Math.round(p)}%</b></div>`);
+        }
+        document.getElementById('finalsBox').innerHTML = rows.join('');
+      }
 
       const stack = Math.max(0, Number(document.getElementById('stackInput').value) || 0);
       const villStack = Math.max(0, Number(document.getElementById('villStackInput').value) || 0);
@@ -1666,7 +2105,7 @@
 
       resultPanel.classList.add('show');
       analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
-      resultPanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+      resultPanel.scrollIntoView({behavior:'smooth', block:'start'});
 
       if (!isPro()) bumpUses();
       pushHistory({
@@ -1681,7 +2120,7 @@
         storageSet('rio_defaults', { heroPos, villPos, numRivals });
       }
 
-      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nPosiciones: tú ${heroPos} vs rival ${villPos}\nGanar ${win.toFixed(1)}% · Empatar ${tie.toFixed(1)}% · Perder ${lose.toFixed(1)}%\nOuts: ${outs===null?'—':outs}\nOdds necesarias: ${call>0?needed.toFixed(1)+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1)+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1):'—'}\nDecisión: ${text}`;
+      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nPosiciones: tú ${heroPos} vs rival ${villPos}\nRango del rival: ${res.usedRange ? rangeLabel() : 'cualquier mano'}\nGanar ${win.toFixed(1)}% · Empatar ${tie.toFixed(1)}% · Perder ${lose.toFixed(1)}%\nOuts: ${outs===null?'—':outs}\nOdds necesarias: ${call>0?needed.toFixed(1)+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1)+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1):'—'}\nDecisión: ${text} (${DECISION_ES[text]})`;
     }, 30);
   });
 
@@ -1726,7 +2165,12 @@
       text2 = `Necesitarías <b>${needed.toFixed(1)}%</b> de equity y solo tienes <b>${lastWin.toFixed(1)}%</b>, con el añadido de que la segunda subida suele significar una mano fuerte del rival. ${posPhrase} Lo más sólido aquí es retirarse.`;
     }
 
-    rrResult.innerHTML = `<span class="rr-badge ${cls}">${text}</span><br>${text2}`;
+    const easy2 = text === 'RAISE'
+      ? 'Sigues muy por delante incluso después de la segunda subida: vuelve a subir.'
+      : text === 'CALL'
+        ? 'Está justo, pero todavía compensa pagar. No metas más fichas sin mejorar tu mano.'
+        : 'Que te suban dos veces suele significar una mano muy fuerte. Aquí lo mejor es tirar.';
+    rrResult.innerHTML = `<span class="rr-badge ${cls}">${decisionHTML(text)}</span><br><span class="easy-only">${easy2}</span><span class="pro-only">${text2}</span>`;
   });
 
   let lastSummary = '';
@@ -1758,6 +2202,7 @@
     document.getElementById('reraisePotInput').value = '';
     document.getElementById('reraiseCallInput').value = '';
     reraiseToggleBtn.textContent = '¿Te suben la apuesta después de esto? Calcula qué hacer →';
+    document.getElementById('screenshotStatus').style.display = 'none';
     updateOrderHint();
     render();
   });

@@ -7,6 +7,8 @@ Este proyecto tiene estas partes:
 - `api/analyze-table.js` — lee una captura de la mesa con Claude (solo PRO, 150 fotos/mes + créditos extra)
 - `api/photo-usage.js` — cuántas fotos lleva gastadas el usuario este mes
 - `api/redeem-credits.js` — suma los créditos de fotos extra comprados en Stripe
+- `api/billing-portal.js` — abre el portal de Stripe para que el suscriptor cancele o cambie la tarjeta
+- `api/logout.js` — cierra la sesión
 - `lib/` — código compartido (Stripe, Redis, sesiones y envío de emails)
 - `package.json` — la librería `nodemailer` para enviar emails con Gmail (Vercel la instala sola)
 
@@ -51,6 +53,10 @@ Este proyecto tiene estas partes:
    - En Stripe → tu Payment Link → edítalo → en "Después del pago" pon que redirija a tu URL de Vercel (ej: `https://rio-poker.vercel.app`).
    - Copia la URL del Payment Link y pégala en `index.html`, en la constante `PAYMENT_LINK` (búscala con Ctrl+F), sustituyendo el texto de ejemplo.
    - Vuelve a subir el `index.html` actualizado a GitHub — Vercel lo redesplegará solo.
+
+6. **Activa el portal de clientes de Stripe** (para el botón "Gestionar suscripción")
+   - En Stripe → Configuración → Facturación → **Portal de clientes** → actívalo y guarda.
+   - Ahí eliges qué pueden hacer tus suscriptores: cancelar, cambiar la tarjeta, ver facturas…
 
 ## Cómo funciona la verificación
 
