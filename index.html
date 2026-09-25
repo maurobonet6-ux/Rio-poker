@@ -274,6 +274,23 @@
   }
   .advice b { color: var(--cream); }
 
+  .reraise-box { margin-top: 14px; }
+  .reraise-toggle {
+    width: 100%; text-align: left; background: var(--panel-2); border: 1px dashed var(--line); color: var(--lavender);
+    padding: 12px 14px; border-radius: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.85rem;
+    transition: border-color .15s, color .15s;
+  }
+  .reraise-toggle:hover { border-color: var(--lavender); }
+  .reraise-panel { margin-top: 10px; padding: 14px 16px; border-radius: 12px; background: var(--panel-2); border-left: 3px solid var(--lavender); }
+  .reraise-hint { font-size: 0.82rem; color: var(--cream-dim); margin: 0 0 12px; line-height: 1.4; }
+  .reraise-inputs { grid-template-columns: 1fr 1fr; }
+  .reraise-result { margin-top: 12px; font-size: 0.88rem; color: var(--cream-dim); line-height: 1.5; }
+  .reraise-result b { color: var(--cream); }
+  .reraise-result .rr-badge { display: inline-block; font-weight: 800; font-size: 0.85rem; padding: 6px 14px; border-radius: 999px; margin-bottom: 8px; letter-spacing: 0.03em; }
+  .reraise-result .rr-badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .reraise-result .rr-badge.warn { background: var(--lavender-soft); color: var(--lavender); }
+  .reraise-result .rr-badge.no { background: var(--crimson-soft); color: var(--crimson); }
+
   .usage-row { margin-top: 14px; text-align: center; font-size: 0.78rem; color: var(--cream-dim); }
   .usage-row .pro-tag { color: var(--gold); font-weight: 700; }
   .usage-row .low { color: var(--crimson); font-weight: 700; }
@@ -550,6 +567,20 @@
       <div class="stat" title="Stack efectivo dividido entre el bote — orienta cuánta presión soportas"><b id="statSPR">—</b><span>SPR</span></div>
     </div>
     <div class="advice" id="adviceBox"></div>
+
+    <div class="reraise-box" id="reraiseBox">
+      <button type="button" class="reraise-toggle" id="reraiseToggleBtn">¿Te suben la apuesta después de esto? Calcula qué hacer →</button>
+      <div class="reraise-panel" id="reraisePanel" style="display:none;">
+        <p class="reraise-hint">Tu rival vuelve a subir después de que pagues (o subas). Pon el bote y lo que te cuesta igualar esa nueva subida y te decimos qué hacer con la misma mano.</p>
+        <div class="inputs-row reraise-inputs">
+          <label>Bote tras la subida<br><input type="number" id="reraisePotInput" min="0" step="0.5" inputmode="decimal" placeholder="p. ej. 90"></label>
+          <label>Te cuesta igualar<br><input type="number" id="reraiseCallInput" min="0" step="0.5" inputmode="decimal" placeholder="p. ej. 30"></label>
+        </div>
+        <button type="button" class="btn-secondary" id="reraiseAnalyzeBtn" style="width:100%; margin-top:10px;">Analizar la subida</button>
+        <div class="reraise-result" id="reraiseResult"></div>
+      </div>
+    </div>
+
     <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:14px;">📋 Copiar resumen de la mano</button>
   </section>
 
@@ -856,6 +887,7 @@
   let hole = [null, null];
   let board = [null, null, null, null, null];
   let numRivals = 1;
+  let lastWin = null, lastTie = null, lastOop = false;
   let activeSlot = null;
   // Orden de acción postflop estándar: la ciega pequeña actúa primero en cada calle
   // y el botón el último. Con esto derivamos automáticamente quién va "en posición".
@@ -1500,6 +1532,13 @@
       const { win, tie } = runEquity(hole, board, numRivals, simIterations());
       const needed = (pot+call) > 0 ? (call/(pot+call))*100 : 0;
 
+      // Guardado para el simulador de "¿y si me suben otra vez?"
+      lastWin = win; lastTie = tie;
+      document.getElementById('reraisePanel').style.display = 'none';
+      document.getElementById('reraiseResult').innerHTML = '';
+      document.getElementById('reraisePotInput').value = '';
+      document.getElementById('reraiseCallInput').value = '';
+
       const known = [...hole, ...board].filter(Boolean);
       let handLabel;
       if (known.length < 5){
@@ -1515,6 +1554,7 @@
       const heroPos = document.getElementById('heroPosInput').value;
       const villPos = document.getElementById('villPosInput').value;
       const oop = heroIsOOP();
+      lastOop = oop;
       // Fuera de posición exige más margen (juegas a ciegas del rival); en posición puedes apretar con menos margen.
       const raiseBuffer = oop ? 8 : 4;
       const callBuffer = oop ? -1 : -5;
@@ -1591,6 +1631,50 @@
     }, 30);
   });
 
+  const reraiseToggleBtn = document.getElementById('reraiseToggleBtn');
+  const reraisePanel = document.getElementById('reraisePanel');
+  reraiseToggleBtn.addEventListener('click', () => {
+    const open = reraisePanel.style.display !== 'none';
+    reraisePanel.style.display = open ? 'none' : 'block';
+    reraiseToggleBtn.textContent = open
+      ? '¿Te suben la apuesta después de esto? Calcula qué hacer →'
+      : 'Ocultar el simulador de subida ↑';
+  });
+
+  document.getElementById('reraiseAnalyzeBtn').addEventListener('click', () => {
+    const rrResult = document.getElementById('reraiseResult');
+    if (lastWin === null){ rrResult.innerHTML = 'Analiza una mano primero.'; return; }
+    const pot = Math.max(0, Number(document.getElementById('reraisePotInput').value) || 0);
+    const call = Math.max(0, Number(document.getElementById('reraiseCallInput').value) || 0);
+    if (call <= 0){ rrResult.innerHTML = 'Pon cuánto te cuesta igualar la subida.'; return; }
+
+    const needed = (pot > 0) ? (call/(pot+call))*100 : 100;
+    // Una segunda subida suele venir con un rango más fuerte del rival, así que exigimos más margen
+    // que en la decisión inicial de la misma posición.
+    const raiseBuffer = lastOop ? 12 : 7;
+    const callBuffer = lastOop ? 4 : -1;
+
+    let text, cls;
+    if (lastWin >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
+    else if (lastWin >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
+    else { text = 'FOLD'; cls = 'no'; }
+
+    const posPhrase = lastOop
+      ? 'Sigues fuera de posición, y encima tu rival ha subido dos veces: su rango real suele ser más fuerte de lo normal.'
+      : 'Tienes posición, lo que ayuda, pero una segunda subida suele indicar una mano más fuerte de lo habitual.';
+    const edge = (lastWin - needed).toFixed(1);
+    let text2;
+    if (text === 'RAISE'){
+      text2 = `Con <b>${lastWin.toFixed(1)}%</b> de equity sigues muy por encima del <b>${needed.toFixed(1)}%</b> que necesitas, incluso exigiendo un margen extra por la segunda subida. ${posPhrase}`;
+    } else if (text === 'CALL'){
+      text2 = `Tu equity (<b>${lastWin.toFixed(1)}%</b>) sigue por encima del <b>${needed.toFixed(1)}%</b> necesario (diferencia de ${edge}%), aunque justo. ${posPhrase} Iguala, pero no metas más fichas sin mejorar la mano.`;
+    } else {
+      text2 = `Necesitarías <b>${needed.toFixed(1)}%</b> de equity y solo tienes <b>${lastWin.toFixed(1)}%</b>, con el añadido de que la segunda subida suele significar una mano fuerte del rival. ${posPhrase} Lo más sólido aquí es retirarse.`;
+    }
+
+    rrResult.innerHTML = `<span class="rr-badge ${cls}">${text}</span><br>${text2}`;
+  });
+
   let lastSummary = '';
   document.getElementById('copyBtn').addEventListener('click', async () => {
     const btn = document.getElementById('copyBtn');
@@ -1614,6 +1698,12 @@
     document.getElementById('villStackInput').value = '';
     document.getElementById('heroPosInput').value = 'BTN';
     document.getElementById('villPosInput').value = 'BB';
+    lastWin = null; lastTie = null; lastOop = false;
+    document.getElementById('reraisePanel').style.display = 'none';
+    document.getElementById('reraiseResult').innerHTML = '';
+    document.getElementById('reraisePotInput').value = '';
+    document.getElementById('reraiseCallInput').value = '';
+    reraiseToggleBtn.textContent = '¿Te suben la apuesta después de esto? Calcula qué hacer →';
     updateOrderHint();
     render();
   });
