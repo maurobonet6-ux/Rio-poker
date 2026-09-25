@@ -4,11 +4,12 @@
 //
 // Variables de entorno necesarias:
 //   STRIPE_SECRET_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN,
-//   RESEND_API_KEY (de resend.com), EMAIL_FROM (ej: "RÍO <login@tudominio.com>")
+//   y las del envío de emails (ver lib/mail.js): GMAIL_USER y GMAIL_APP_PASSWORD
 
 const crypto = require('crypto');
 const { redisCmd } = require('../lib/redis');
 const { isPro } = require('../lib/auth');
+const { mailConfigured, sendMail } = require('../lib/mail');
 
 const CODE_TTL_SECONDS = 10 * 60;
 const RESEND_WAIT_SECONDS = 60;
@@ -24,9 +25,7 @@ module.exports = async (req, res) => {
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) { res.status(500).json({ error: 'STRIPE_SECRET_KEY no configurada en Vercel' }); return; }
-  const resendKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!resendKey || !from) { res.status(500).json({ error: 'RESEND_API_KEY / EMAIL_FROM no configuradas en Vercel' }); return; }
+  if (!mailConfigured()) { res.status(500).json({ error: 'GMAIL_USER / GMAIL_APP_PASSWORD no configuradas en Vercel' }); return; }
 
   try {
     if (!(await isPro(email, stripeKey))) {
@@ -45,17 +44,13 @@ module.exports = async (req, res) => {
     await redisCmd(['SET', `rio:code:${email}`, code, 'EX', CODE_TTL_SECONDS]);
     await redisCmd(['DEL', `rio:codetries:${email}`]);
 
-    const mailRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from,
+    try {
+      await sendMail({
         to: email,
         subject: `Tu código de RÍO: ${code}`,
         text: `Tu código para iniciar sesión en RÍO PRO es: ${code}\n\nCaduca en 10 minutos. Si no lo has pedido tú, ignora este email.`
-      })
-    });
-    if (!mailRes.ok) {
+      });
+    } catch (e) {
       await redisCmd(['DEL', `rio:codewait:${email}`]);
       res.status(502).json({ error: 'No se pudo enviar el email. Inténtalo de nuevo.' });
       return;
