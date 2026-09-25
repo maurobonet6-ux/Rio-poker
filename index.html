@@ -46,7 +46,7 @@
     scroll-padding-top: env(safe-area-inset-top, 0px);
     overflow-x: hidden;
   }
-  .wrap { max-width: 940px; margin: 0 auto; padding: 26px 20px 70px; position: relative; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 26px 20px 70px; position: relative; overflow-x: clip; }
 
   .suitwatermark {
     position: absolute; font-size: 13rem; opacity: 0.05; pointer-events: none;
@@ -567,6 +567,19 @@
   .tl-head small { color: var(--cream-dim); font-weight: 600; margin-left: 6px; }
   .tl-body { font-size: 0.82rem; color: var(--cream-dim); line-height: 1.45; margin-top: 3px; }
   .tl-body b { color: var(--cream); }
+
+  /* ---- Selector de calle ---- */
+  .street-pick { margin-top: 22px; }
+  .street-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .street-btns button {
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--cream-dim); border-radius: 12px; padding: 12px 4px;
+    font-weight: 800; font-size: 0.9rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .street-btns button small { display: block; font-weight: 500; font-size: 0.66rem; margin-top: 3px; }
+  .street-btns button.active { border-color: var(--gold); background: var(--gold-soft); color: var(--cream); }
+  .street-btns button.missing small { color: var(--lavender); }
+  .board-groups > div { transition: opacity .2s; }
+  .board-groups > div.later { opacity: 0.3; }
 </style>
 </head>
 <body>
@@ -729,6 +742,10 @@
           <div class="hint">Toca una casilla para añadirla o quitarla. Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o). Recuadro verde = tu mano.</div>
         </div>
       </div>
+    </div>
+    <div class="street-pick">
+      <div class="zone-label">¿Qué decisión quieres analizar? <button type="button" class="help" data-help="street">?</button></div>
+      <div class="street-btns" id="streetBtns"></div>
     </div>
     <div class="actions">
       <button class="btn-primary" id="analyzeBtn">Analizar mano</button>
@@ -1231,11 +1248,8 @@
       if (sel){ sel.classList.add('pop'); }
     }
 
-    const boardCount = board.filter(Boolean).length;
-    let street = 'preflop';
-    if (boardCount>=5) street='river'; else if (boardCount>=4) street='turn'; else if (boardCount>=3) street='flop';
-    const order = ['preflop','flop','turn','river'];
-    const si = order.indexOf(street);
+    if (selStreet !== null && selStreet === cardStreets() - 1) selStreet = null;
+    const si = analysisStreet();
     ['Preflop','Flop','Turn','River'].forEach((name, i) => {
       const dot = document.getElementById('dot'+name);
       const lbl = document.getElementById('lbl'+name);
@@ -1246,7 +1260,7 @@
 
     updateCurrentHand();
     renderRangeUI();
-    renderSeq(); syncFromSeq();
+    renderSeq(); syncFromSeq(); renderStreetBtns();
     resultPanel.classList.remove('show');
   }
 
@@ -1626,6 +1640,7 @@
 
   // ---- Ayuda y glosario ----
   const HELP = {
+    street: ['¿Qué decisión analizar?', 'Elige la calle cuya decisión quieres ver. Puedes meter la mano entera (hasta el river) y luego tocar <b>Flop</b> para ver qué convenía hacer en el flop, <b>Turn</b> para el turn, etc.<br><br>Si has apuntado la <b>secuencia de apuestas</b>, en cada calle se tiene en cuenta todo lo que pasó antes: no es lo mismo que el rival apueste en el river después de subir preflop y apostar flop y turn, que después de pasar en todas las calles.'],
     blinds: ['Ciega grande', 'La apuesta obligatoria más grande de la mesa (por ejemplo, en una partida 1/2 la ciega grande es 2). La usamos para calcular el bote inicial del preflop: ciega pequeña + ciega grande.'],
     rivals: ['Rivales en la mano', 'Cuántos jugadores <b>siguen en la mano</b> contigo (no cuentes los que ya se han retirado). Cuantos más rivales, más difícil es ganar.'],
     pot: ['Bote', 'Todas las fichas que hay en el centro de la mesa <b>antes</b> de que tú pagues, incluida la apuesta de tu rival.', 'Ejemplo: había 40 en el centro y tu rival apuesta 20 → el bote es 60.'],
@@ -1674,12 +1689,27 @@
 
   const fmtN = (n) => (Math.round(n * 100) / 100).toLocaleString('es-ES');
   function bbSize(){ return Math.max(0.01, Number(document.getElementById('bbInput').value) || 2); }
-  function availableStreets(){
+  // Calles que tienen sus cartas puestas (1 = solo preflop … 4 = hasta el river).
+  function cardStreets(){
     const n = board.filter(Boolean).length;
     return n >= 5 ? 4 : n >= 4 ? 3 : n >= 3 ? 2 : 1;
   }
+  // Calle cuya decisión se analiza: la que elijas, o la última con cartas.
+  let selStreet = null;
+  function analysisStreet(){ return selStreet === null ? cardStreets() - 1 : selStreet; }
+  function availableStreets(){ return Math.min(cardStreets(), analysisStreet() + 1); }
+  // Momento de la decisión en esa calle: si tu última acción ya está apuntada
+  // (o la calle ya terminó), analizamos esa decisión tuya; si no, la de ahora.
+  function decisionPoint(){
+    const s = availableStreets() - 1, list = seq[s];
+    const past = s < cardStreets() - 1;
+    const last = list[list.length - 1];
+    if (!list.length || (!past && last.who !== 'hero')) return null;
+    for (let i = list.length - 1; i >= 0; i--) if (list[i].who === 'hero') return { s, i };
+    return null;
+  }
   function boardAt(s){ return s === 0 ? [] : board.slice(0, s === 1 ? 3 : s === 2 ? 4 : 5).filter(Boolean); }
-  function seqHasActions(){ const a = availableStreets(); return seq.slice(0, a).some(x => x.length); }
+  function seqHasActions(){ const a = cardStreets(); return seq.slice(0, a).some(x => x.length); }
 
   // Reproduce la secuencia hasta la calle "upto" (incluida) o hasta justo antes
   // de la acción stopAt = {s, i}. Devuelve bote y lo que lleva cada uno en la calle.
@@ -1728,7 +1758,7 @@
   }
 
   function renderSeq(){
-    const avail = availableStreets();
+    const avail = cardStreets();
     if (seqStreet >= avail) seqStreet = avail - 1;
     const tabs = document.getElementById('seqTabs');
     tabs.innerHTML = STREET_NAMES.map((n, s) => {
@@ -1816,10 +1846,32 @@
     const has = seqHasActions();
     potEl.classList.toggle('auto', has); callEl.classList.toggle('auto', has);
     if (!has) return;
-    const st = replay(availableStreets() - 1);
+    const dp = decisionPoint();
+    const st = replay(availableStreets() - 1, dp || undefined);
     potEl.value = Math.round(st.pot * 100) / 100;
     callEl.value = Math.round(Math.max(0, st.villIn - st.heroIn) * 100) / 100;
   }
+
+  // ---- Selector de calle a analizar ----
+  function renderStreetBtns(){
+    const cs = cardStreets(), a = analysisStreet();
+    const need = ['', 'faltan 3 cartas', 'falta 1 carta', 'falta 1 carta'];
+    document.getElementById('streetBtns').innerHTML = STREET_NAMES.map((n, i) =>
+      `<button type="button" data-s="${i}" class="${i === a ? 'active' : ''} ${i >= cs ? 'missing' : ''}">${n}<small>${i === a ? 'analizando' : i >= cs ? need[i] : 'ver'}</small></button>`).join('');
+    document.querySelectorAll('.board-groups > div').forEach((g, i) => g.classList.toggle('later', i + 1 > a));
+  }
+  function selectStreet(s){
+    selStreet = s === cardStreets() - 1 ? null : s;
+    seqStreet = Math.min(s, cardStreets() - 1); seqActor = null; seqPending = null;
+    render();
+    if (s >= cardStreets()){
+      const idx = board.findIndex(c => !c);
+      if (idx !== -1) openPicker('board', idx);
+    }
+  }
+  document.getElementById('streetBtns').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-s]'); if (b) selectStreet(Number(b.dataset.s));
+  });
 
   // ---- Rango del rival según cómo ha apostado ----
   const DRAW_SCORE = [7,0,0,0,0].reduce((x, t) => x * 15 + t, 1); // un proyecto cuenta como una pareja media
@@ -1918,7 +1970,7 @@
 
   // Repasa cada acción tuya de la secuencia.
   function reviewDecisions(){
-    const avail = availableStreets(), rows = [];
+    const avail = cardStreets(), rows = [];
     const oop = heroIsOOP();
     for (let s = 0; s < avail; s++){
       for (let i = 0; i < seq[s].length; i++){
@@ -2338,13 +2390,20 @@
   const analyzeBtn = document.getElementById('analyzeBtn');
   analyzeBtn.addEventListener('click', () => {
     if (!hole[0] || !hole[1]){ alert('Elige tus dos cartas antes de analizar.'); return; }
+    if (analysisStreet() >= cardStreets()){
+      alert(`Para analizar el ${STREET_NAMES[analysisStreet()].toLowerCase()} añade antes sus cartas.`);
+      const idx = board.findIndex(c => !c); if (idx !== -1) openPicker('board', idx);
+      return;
+    }
     if (!isPro() && usesCount() >= FREE_LIMIT){ openPaywall(); return; }
     analyzeBtn.disabled = true; analyzeBtn.textContent = 'Calculando…';
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
       const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
-      const vPool = villainPoolAt(null);
-      const res = runEquity(hole, board, numRivals, simIterations(), vPool);
+      const aStreet = analysisStreet();
+      const aBoard = boardAt(aStreet);
+      const vPool = villainPoolAt(decisionPoint());
+      const res = runEquity(hole, aBoard, numRivals, simIterations(), vPool);
       const { win, tie } = res;
       const needed = (pot+call) > 0 ? (call/(pot+call))*100 : 0;
 
@@ -2355,8 +2414,9 @@
       document.getElementById('reraisePotInput').value = '';
       document.getElementById('reraiseCallInput').value = '';
 
-      const known = [...hole, ...board].filter(Boolean);
-      const filledBoard = board.filter(Boolean);
+      const known = [...hole, ...aBoard].filter(Boolean);
+      const filledBoard = aBoard;
+      document.querySelector('#resultPanel .panel-head h2').textContent = 'Resultado · ' + STREET_NAMES[aStreet];
       let handLabel, handSub = '';
       let currentCat = null;
       if (known.length < 5){
@@ -2368,7 +2428,7 @@
         currentCat = best.category;
         handLabel = categoryName(best.category, best.tiebreak);
       }
-      const villActed = seq.slice(0, availableStreets()).some(x => x.some(a => a.who === 'vill' && a.type !== 'check'));
+      const villActed = vPool.length < poolFromSet(villRange.set).length;
       const rangeText = !res.usedRange ? 'cualquier mano'
         : villActed ? `rango ajustado a sus apuestas, ~${Math.max(1, Math.round(vPool.length / 1326 * 100))}%`
         : rangeLabel().toLowerCase();
@@ -2485,7 +2545,7 @@
       const villMatch = text === 'RAISE' ? heroPut - call : text === 'BET' ? heroPut : 0;
       const potAfter = pot + heroPut;
       const strongPool = raisingPool(vPool, curStreet, text === 'CHECK' ? 0.65 : 0.22);
-      const e2raw = runEquity(hole, board, numRivals, 1000, strongPool);
+      const e2raw = runEquity(hole, aBoard, numRivals, 1000, strongPool);
       const e2 = Math.max(0, (e2raw.win + e2raw.tie / 2) - (oop ? 3 : 0)) / 100;
       lastE2 = e2 * 100;
       const maxCall = e2 >= 0.5 ? Infinity : e2 * (potAfter + villMatch) / (1 - 2 * e2);
@@ -2588,13 +2648,10 @@
       const call = Number(document.getElementById('callInput').value) || 0;
       document.getElementById('potInput').value = Math.round((pot + call * 2) * 100) / 100;
       document.getElementById('callInput').value = 0;
-    } else {
-      seqStreet = Math.min(3, availableStreets());
     }
-    const idx = board.findIndex(c => !c);
-    if (idx === -1) return;
+    const next = Math.min(3, analysisStreet() + 1);
     document.querySelector('#holeRow').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => openPicker('board', idx), 350);
+    setTimeout(() => selectStreet(next), 350);
   });
 
   let lastSummary = '';
@@ -2621,7 +2678,7 @@
     document.getElementById('heroPosInput').value = 'BTN';
     document.getElementById('villPosInput').value = 'BB';
     lastWin = null; lastTie = null; lastOop = false; lastE2 = null;
-    seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null;
+    seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null; selStreet = null;
     document.getElementById('planBox').innerHTML = '';
     document.getElementById('reraisePanel').style.display = 'none';
     document.getElementById('reraiseResult').innerHTML = '';
