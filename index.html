@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RÍO — Decide en cada calle</title>
+<title>RÍO — Calculadora de póker · Decide en cada calle</title>
+<meta name="description" content="Calculadora de póker para repasar tus manos: probabilidad de ganar, outs, odds del bote, EV y consejo por posición en preflop, flop, turn y river.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -66,6 +67,7 @@
     background: linear-gradient(100deg, var(--gold) 0%, var(--cream) 55%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
+  .brand { flex: 1; min-width: 0; }
   .brand p { margin: 8px 0 0; color: var(--cream-dim); font-size: 1rem; }
   .tagline-actions {
     font-family: 'Bricolage Grotesque', sans-serif;
@@ -428,6 +430,7 @@
       <div class="brand">
         <h1>RÍO</h1>
         <p class="tagline-actions"><span class="call">CALL</span><span class="sep">,</span> <span class="raise">RAISE</span> <span class="sep">O</span> <span class="fold">FOLD</span></p>
+        <p>Calculadora de póker · Decide en cada calle</p>
       </div>
       <button type="button" class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
     </div>
@@ -446,11 +449,11 @@
   </header>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num">0</div><h2>Lee la mesa por ti</h2><span class="pro-badge" id="uploadProBadge">★ PRO</span></div>
-    <div class="panel-hint">Sube una captura y rellenamos mano, board, bote y posiciones automáticamente (beta)</div>
+    <div class="panel-head"><div class="panel-num">0</div><h2>Analiza una captura</h2><span class="pro-badge" id="uploadProBadge">★ PRO</span></div>
+    <div class="panel-hint">Sube una captura de una mano que quieras repasar y rellenamos mano, board, bote y posiciones automáticamente (beta)</div>
     <label class="upload-box" for="screenshotInput" id="uploadBox">
       <div class="up-ic">📸</div>
-      <div class="up-text">Sube una captura de la mesa</div>
+      <div class="up-text">Sube una captura de la mano</div>
       <div class="up-sub" id="uploadSub">JPG o PNG, hasta ~4&nbsp;MB</div>
       <input type="file" id="screenshotInput" accept="image/*">
     </label>
@@ -571,7 +574,7 @@
     <div class="reraise-box" id="reraiseBox">
       <button type="button" class="reraise-toggle" id="reraiseToggleBtn">¿Te suben la apuesta después de esto? Calcula qué hacer →</button>
       <div class="reraise-panel" id="reraisePanel" style="display:none;">
-        <p class="reraise-hint">Tu rival vuelve a subir después de que pagues (o subas). Pon el bote y lo que te cuesta igualar esa nueva subida y te decimos qué hacer con la misma mano.</p>
+        <p class="reraise-hint">Tu rival vuelve a subir después de que pagues (o subas). Pon el bote y lo que te cuesta igualar esa nueva subida y te mostramos qué conviene hacer con la misma mano.</p>
         <div class="inputs-row reraise-inputs">
           <label>Bote tras la subida<br><input type="number" id="reraisePotInput" min="0" step="0.5" inputmode="decimal" placeholder="p. ej. 90"></label>
           <label>Te cuesta igualar<br><input type="number" id="reraiseCallInput" min="0" step="0.5" inputmode="decimal" placeholder="p. ej. 30"></label>
@@ -589,7 +592,7 @@
     <div id="historyList"></div>
   </section>
 
-  <footer>Herramienta de estudio. No sustituye tu propio criterio en la mesa.</footer>
+  <footer>Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.</footer>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -663,7 +666,7 @@
       <button class="btn-secondary" id="clearHistoryBtn" style="width:100%;">Borrar historial de manos</button>
     </div>
 
-    <p class="paywall-fine">RÍO v1.1 · Herramienta de estudio, no sustituye tu criterio en la mesa.</p>
+    <p class="paywall-fine">RÍO v1.1 · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
   </div>
 </div>
 
@@ -693,7 +696,7 @@
         <ul class="plan-card-features">
           <li>Análisis de mano ilimitados</li>
           <li>Historial completo</li>
-          <li>Hasta 150 fotos de mesa analizadas al mes</li>
+          <li>Hasta 150 capturas de manos analizadas al mes</li>
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 4,99€</button>
@@ -722,7 +725,7 @@
       <h3 id="paywallTitle">Has agotado tus análisis gratis</h3>
       <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
     </div>
-    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa.</p>
+    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.</p>
     <ul class="paywall-features">
       <li>♠ Análisis de manos ilimitados</li>
       <li>♥ Historial completo de tus últimas manos</li>
@@ -733,9 +736,10 @@
     <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 4,99€</button>
     <div class="restore-box" id="restoreBox">
       <div class="settings-label" style="margin-top:16px;">🔑 Iniciar sesión</div>
-      <div class="hint" style="margin-top:2px;">¿Ya pagaste? Escribe el email con el que te suscribiste:</div>
-      <input type="email" id="proEmail" placeholder="tu@email.com" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
-      <button class="btn-secondary" id="restoreBtn" style="width:100%; margin-top:10px;">Iniciar sesión</button>
+      <div class="hint" style="margin-top:2px;" id="restoreHint">¿Ya pagaste? Escribe el email con el que te suscribiste y te enviaremos un código:</div>
+      <input type="email" id="proEmail" placeholder="tu@email.com" autocomplete="email" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
+      <input type="text" id="proCode" placeholder="Código de 6 dígitos" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="display:none; width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px; letter-spacing:0.3em; text-align:center;">
+      <button class="btn-secondary" id="restoreBtn" style="width:100%; margin-top:10px;">Enviarme un código</button>
       <div id="restoreMsg" class="restore-msg"></div>
     </div>
     <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
@@ -748,7 +752,7 @@
       <h3>Se acabaron tus fotos de este mes</h3>
       <button type="button" id="closeCreditsModal" aria-label="Cerrar">&times;</button>
     </div>
-    <p class="paywall-copy">RÍO PRO incluye <b>150 lecturas de mesa al mes</b>. Ya las has usado todas — puedes comprar un paquete extra para seguir.</p>
+    <p class="paywall-copy">RÍO PRO incluye <b>150 capturas de manos al mes</b>. Ya las has usado todas — puedes comprar un paquete extra para seguir.</p>
     <div class="paywall-price"><span>2,99&nbsp;€</span><small>/ 50 fotos</small></div>
     <button class="btn-primary" id="buyCreditsBtn" style="width:100%;">Comprar 50 fotos más</button>
     <div class="restore-box">
@@ -785,18 +789,26 @@
   function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
 
   function isPro(){ return storageGet('rio_pro', false) === true; }
+  // Token de sesión que nos da el servidor tras verificar el código del email.
+  function authHeaders(){
+    const token = storageGet('rio_token', '');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+  function logoutPro(){
+    storageSet('rio_pro', false);
+    try { localStorage.removeItem('rio_token'); } catch(e){}
+  }
   function usesCount(){ return storageGet('rio_uses', 0); }
 
   let photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
   async function refreshPhotoUsage(){
-    const email = storageGet('rio_email', '');
-    if (!email || !isPro()){
+    if (!storageGet('rio_token', '') || !isPro()){
       photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
       renderPlanInfo();
       return;
     }
     try {
-      const r = await fetch(`/api/photo-usage?email=${encodeURIComponent(email)}`);
+      const r = await fetch('/api/photo-usage', { headers: authHeaders() });
       const data = await r.json();
       if (data && data.pro) photoUsage = data;
     } catch(e){}
@@ -828,7 +840,7 @@
       const left = Math.max(0, photoUsage.limit - photoUsage.used);
       photoBox.textContent = pro
         ? `${left} de ${photoUsage.limit} fotos incluidas restantes este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} fotos extra compradas` : ''}`
-        : 'Incluye hasta 150 fotos de mesa analizadas automáticamente al mes.';
+        : 'Incluye hasta 150 capturas de manos analizadas automáticamente al mes.';
     }
     if (buyBtn) buyBtn.style.display = pro ? 'inline-block' : 'none';
   }
@@ -861,24 +873,31 @@
     storageSet('rio_history', h.slice(0, 10));
   }
 
-  // Pregunta a nuestro pequeño servidor (que a su vez pregunta a Stripe) si ese
-  // email tiene una suscripción activa. Devuelve true/false, nunca lanza error.
-  async function verifyProByEmail(email){
+  // Pregunta a nuestro pequeño servidor (que a su vez pregunta a Stripe) si la
+  // sesión guardada sigue teniendo una suscripción activa. Devuelve true/false,
+  // o 'logout' si la sesión ya no es válida. Nunca lanza error.
+  async function verifyProSession(){
     try {
-      const r = await fetch(`${API_ENDPOINT}?email=${encodeURIComponent(email)}`);
+      const r = await fetch(API_ENDPOINT, { headers: authHeaders() });
+      if (r.status === 401) return 'logout';
       const data = await r.json();
+      if (!r.ok) return null;
       return data.pro === true;
     } catch(e){ return null; } // null = no se pudo comprobar (servidor no desplegado aún, sin conexión…)
   }
 
-  // Si ya verificamos antes un email en este navegador, lo revalidamos en
-  // segundo plano al cargar la página (por si la suscripción caducó o se canceló).
+  // Si ya iniciamos sesión antes en este navegador, lo revalidamos en segundo
+  // plano al cargar la página (por si la suscripción caducó o se canceló).
   (function revalidateOnLoad(){
-    const savedEmail = storageGet('rio_email', null);
-    if (!savedEmail) return;
-    verifyProByEmail(savedEmail).then(pro => {
+    if (!storageGet('rio_token', '')){
+      // Sesiones antiguas (solo email, sin código): hay que volver a entrar.
+      if (isPro()) logoutPro();
+      return;
+    }
+    verifyProSession().then(pro => {
       if (pro === null) return; // sin respuesta del servidor: no tocamos nada
-      storageSet('rio_pro', pro);
+      if (pro === 'logout') logoutPro();
+      else storageSet('rio_pro', pro);
       if (typeof updateUsageBadge === 'function') updateUsageBadge();
       refreshPhotoUsage();
     });
@@ -1242,13 +1261,13 @@
   function openPaywall(mode){
     if (mode === 'login'){
       document.getElementById('paywallTitle').textContent = 'Inicia sesión con tu RÍO PRO';
-      document.getElementById('paywallCopy').innerHTML = 'Escribe el email con el que te suscribiste para desbloquear tu cuenta <b>en este dispositivo</b>. No hace falta contraseña: lo comprobamos directamente con Stripe.';
+      document.getElementById('paywallCopy').innerHTML = 'Escribe el email con el que te suscribiste para desbloquear tu cuenta <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código a ese email.';
     } else if (mode === 'plans'){
       document.getElementById('paywallTitle').textContent = 'RÍO PRO';
-      document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
+      document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
     } else {
       document.getElementById('paywallTitle').textContent = 'Has agotado tus análisis gratis';
-      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue decidiendo con datos en cada mesa.';
+      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.';
     }
     paywall.classList.add('show');
     if (mode === 'login'){
@@ -1269,14 +1288,13 @@
   creditsModal.addEventListener('click', (e)=>{ if (e.target === creditsModal) closeCreditsModal(); });
   document.getElementById('buyCreditsBtn').addEventListener('click', () => { window.open(CREDIT_PACK_LINK, '_blank'); });
   document.getElementById('redeemCreditsBtn').addEventListener('click', async () => {
-    const email = storageGet('rio_email', '');
     const msg = document.getElementById('redeemMsg');
     const btn = document.getElementById('redeemCreditsBtn');
-    if (!email){ msg.textContent = 'Primero inicia sesión con tu email de RÍO PRO.'; msg.className = 'restore-msg no'; return; }
+    if (!storageGet('rio_token', '')){ msg.textContent = 'Primero inicia sesión con tu email de RÍO PRO.'; msg.className = 'restore-msg no'; return; }
     btn.disabled = true; btn.textContent = 'Comprobando…';
     msg.textContent = ''; msg.className = 'restore-msg';
     try {
-      const r = await fetch(`/api/redeem-credits?email=${encodeURIComponent(email)}`);
+      const r = await fetch('/api/redeem-credits', { headers: authHeaders() });
       const data = await r.json();
       btn.disabled = false; btn.textContent = 'Ya las compré, actualizar créditos';
       if (!r.ok || data.error){ throw new Error(data.error || 'No se pudo comprobar la compra'); }
@@ -1409,14 +1427,14 @@
       statusEl.textContent = 'Analizando la mesa…';
       const resp = await fetch('/api/analyze-table', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
           image: dataUrl.split(',')[1],
-          mediaType: file.type || 'image/png',
-          email: storageGet('rio_email', '')
+          mediaType: file.type || 'image/png'
         })
       });
       const data = await resp.json();
+      if (resp.status === 401){ logoutPro(); updateUsageBadge(); statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Inicia sesión con tu email de RÍO PRO para usar esta función.'; openPaywall('login'); return; }
       if (resp.status === 402){ statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Esta función es solo para suscriptores de RÍO PRO.'; openPaywall(); return; }
       if (resp.status === 403 && data.error === 'LIMIT_REACHED'){
         statusEl.style.color = 'var(--crimson)';
@@ -1486,34 +1504,70 @@
     }, 1800);
   });
   updateUnitHints();
+  // Inicio de sesión en dos pasos: 1) pedimos un código para el email,
+  // 2) el usuario escribe el código y el servidor nos da un token de sesión.
+  let pendingLoginEmail = null;
+  async function postJson(url, body){
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    let data = {};
+    try { data = await r.json(); } catch(e){}
+    return { ok: r.ok, status: r.status, data };
+  }
+  function showLoginStep(){
+    const onCode = !!pendingLoginEmail;
+    const codeInput = document.getElementById('proCode');
+    codeInput.style.display = onCode ? 'block' : 'none';
+    document.getElementById('restoreBtn').textContent = onCode ? 'Verificar código' : 'Enviarme un código';
+    document.getElementById('restoreHint').textContent = onCode
+      ? `Te enviamos un código a ${pendingLoginEmail}. Escríbelo aquí (caduca en 10 minutos):`
+      : '¿Ya pagaste? Escribe el email con el que te suscribiste y te enviaremos un código:';
+    if (onCode) codeInput.focus();
+  }
+  // Si cambia el email, volvemos al primer paso.
+  document.getElementById('proEmail').addEventListener('input', () => {
+    if (pendingLoginEmail){ pendingLoginEmail = null; showLoginStep(); }
+  });
   document.getElementById('restoreBtn').addEventListener('click', async () => {
-    const emailInput = document.getElementById('proEmail');
     const msg = document.getElementById('restoreMsg');
-    const email = emailInput.value.trim();
-    if (!email || !email.includes('@')){
-      msg.textContent = 'Escribe un email válido.'; msg.className = 'restore-msg no'; return;
-    }
     const btn = document.getElementById('restoreBtn');
+    const fail = (text) => { msg.textContent = text; msg.className = 'restore-msg no'; };
     btn.disabled = true; btn.textContent = 'Comprobando…';
     msg.textContent = ''; msg.className = 'restore-msg';
-
-    const pro = await verifyProByEmail(email);
-    btn.disabled = false; btn.textContent = 'Comprobar suscripción';
-
-    if (pro === null){
-      msg.textContent = 'No se pudo contactar con el servidor de verificación. Inténtalo de nuevo en unos segundos.';
-      msg.className = 'restore-msg no';
-    } else if (pro){
-      storageSet('rio_pro', true);
-      storageSet('rio_email', email);
-      refreshPhotoUsage();
-      msg.textContent = '¡Suscripción activa! Desbloqueando RÍO PRO…';
-      msg.className = 'restore-msg ok';
-      updateUsageBadge(); renderHistory();
-      setTimeout(closePaywall, 900);
-    } else {
-      msg.textContent = 'No encontramos una suscripción activa con ese email.';
-      msg.className = 'restore-msg no';
+    try {
+      if (!pendingLoginEmail){
+        const email = document.getElementById('proEmail').value.trim().toLowerCase();
+        if (!email || !email.includes('@')){ fail('Escribe un email válido.'); return; }
+        const { ok, data } = await postJson('/api/send-code', { email });
+        if (!ok){ fail(data.error || 'No se pudo enviar el código. Inténtalo de nuevo.'); return; }
+        if (!data.pro){ fail('No encontramos una suscripción activa con ese email.'); return; }
+        pendingLoginEmail = email;
+        msg.textContent = 'Código enviado. Revisa tu correo (y la carpeta de spam).';
+        msg.className = 'restore-msg ok';
+      } else {
+        const code = document.getElementById('proCode').value.trim();
+        if (!/^\d{6}$/.test(code)){ fail('Escribe el código de 6 dígitos.'); return; }
+        const { ok, status, data } = await postJson('/api/verify-code', { email: pendingLoginEmail, code });
+        if (!ok){
+          if (status === 429) pendingLoginEmail = null; // demasiados intentos: hay que pedir otro código
+          fail(data.error || 'No se pudo comprobar el código.');
+          return;
+        }
+        storageSet('rio_token', data.token);
+        storageSet('rio_email', data.email);
+        storageSet('rio_pro', true);
+        pendingLoginEmail = null;
+        document.getElementById('proCode').value = '';
+        refreshPhotoUsage();
+        msg.textContent = '¡Suscripción activa! Desbloqueando RÍO PRO…';
+        msg.className = 'restore-msg ok';
+        updateUsageBadge(); renderHistory();
+        setTimeout(closePaywall, 900);
+      }
+    } catch(e){
+      fail('No se pudo contactar con el servidor. Inténtalo de nuevo en unos segundos.');
+    } finally {
+      btn.disabled = false;
+      showLoginStep();
     }
   });
 

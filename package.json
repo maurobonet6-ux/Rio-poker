@@ -1,0 +1,7 @@
+{
+  "name": "rio-poker",
+  "private": true,
+  "dependencies": {
+    "nodemailer": "^10.0.10"
+  }
+}
