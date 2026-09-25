@@ -9,6 +9,7 @@ Este proyecto tiene estas partes:
 - `api/redeem-credits.js` — suma los créditos de fotos extra comprados en Stripe
 - `api/billing-portal.js` — abre el portal de Stripe para que el suscriptor cancele o cambie la tarjeta
 - `api/logout.js` — cierra la sesión
+- `manifest.webmanifest`, `sw.js` e `icons/` — permiten instalar RÍO en el móvil como una app
 - `lib/` — código compartido (Stripe, Redis, sesiones y envío de emails)
 - `package.json` — la librería `nodemailer` para enviar emails con Gmail (Vercel la instala sola)
 

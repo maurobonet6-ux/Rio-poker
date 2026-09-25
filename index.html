@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RÍO">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>RÍO — Calculadora de póker · Decide en cada calle</title>
 <meta name="description" content="Calculadora de póker para repasar tus manos: probabilidad de ganar, outs, odds del bote, EV y consejo por posición en preflop, flop, turn y river.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -580,6 +587,45 @@
   .street-btns button.missing small { color: var(--lavender); }
   .board-groups > div { transition: opacity .2s; }
   .board-groups > div.later { opacity: 0.3; }
+
+  /* ---- Rellenar rápido ---- */
+  .quick-fill { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .quick-btn {
+    display: block; text-align: left; border: 1px dashed var(--line); background: var(--panel-2); color: var(--cream);
+    border-radius: 12px; padding: 11px 12px; font-weight: 700; font-size: 0.86rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .quick-btn:hover { border-color: var(--gold); }
+  .quick-btn small { display: block; font-weight: 500; font-size: 0.7rem; color: var(--cream-dim); margin-top: 2px; }
+  .quick-btn .pro-badge { margin-left: 4px; padding: 2px 7px; font-size: 0.6rem; }
+  .or-line { font-size: 0.8rem; color: var(--cream-dim); margin: 0 0 10px; }
+  body.tourney .tourney-show { display: block !important; }
+
+  /* ---- Entrenamiento, tablas y consejos ---- */
+  .pos-advice { margin-top: 6px; font-size: 0.82rem; }
+  .pos-advice.ok { color: var(--ok); }
+  .pos-advice.no { color: var(--crimson); }
+  .pos-advice a { color: var(--cream-dim); text-decoration: underline; cursor: pointer; }
+  .link-btn { display: block; margin: 14px auto 0; background: none; border: none; color: var(--gold); font-weight: 700; font-size: 0.86rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+  .mini-card.big { width: 46px; height: 62px; font-size: 1.05rem; border-radius: 7px; margin-right: 5px; display: inline-flex; }
+  .train-score { font-size: 0.78rem; color: var(--cream-dim); margin-bottom: 12px; }
+  .train-cards { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 8px; }
+  .train-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin: 12px 0; }
+  .train-opts button { padding: 14px 8px; }
+  .train-opts button.chosen { border-color: var(--gold); color: var(--cream); background: var(--gold-soft); }
+  .train-verdict { font-weight: 800; font-size: 1.1rem; margin-top: 6px; }
+  .train-verdict.ok { color: var(--ok); } .train-verdict.meh { color: var(--lavender); } .train-verdict.bad { color: var(--crimson); }
+  .chart-grid button { cursor: default; }
+  .stat.no-help { cursor: default; }
+  .stat.no-help::after { content: none; }
+  #helpModal .picker { max-width: 520px; }
+
+  /* ---- Móvil: las 5 comunitarias en una fila ---- */
+  @media (max-width: 480px) {
+    .cardslot { width: 52px; height: 74px; }
+    .board-groups { gap: 10px; }
+    .board-groups .card-row { gap: 6px; }
+  }
+  #gameType { grid-template-columns: 1fr 1fr; }
 </style>
 </head>
 <body>
@@ -619,20 +665,15 @@
   </header>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num">0</div><h2>Analiza una captura</h2><span class="pro-badge" id="uploadProBadge">★ PRO</span></div>
-    <div class="panel-hint">Sube una captura de una mano que quieras repasar y rellenamos mano, board, bote y posiciones automáticamente (beta)</div>
-    <label class="upload-box" for="screenshotInput" id="uploadBox">
-      <div class="up-ic">📸</div>
-      <div class="up-text">Sube una captura de la mano</div>
-      <div class="up-sub" id="uploadSub">JPG o PNG, hasta ~4&nbsp;MB</div>
-      <input type="file" id="screenshotInput" accept="image/*">
-    </label>
-    <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin-top:10px;"></div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-head"><div class="panel-num">1</div><h2>Tu mano y la mesa</h2></div>
+    <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
     <div class="panel-hint">Toca una carta para elegirla — puedes cambiarla cuando quieras</div>
+    <div class="quick-fill">
+      <button type="button" class="quick-btn" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small></button>
+      <label class="quick-btn" for="screenshotInput" id="uploadBox">📸 Desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub">JPG o PNG</small>
+        <input type="file" id="screenshotInput" accept="image/*" hidden>
+      </label>
+    </div>
+    <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
     <div class="table-grid">
       <div>
         <div class="zone-label">Tu mano</div>
@@ -651,51 +692,8 @@
   </section>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num">2</div><h2>La situación</h2></div>
-    <details class="seq-box" id="seqBox">
-      <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendado</span></summary>
-      <div class="hint seq-intro">Apunta qué hizo cada uno en cada calle. Calculamos el bote y lo que te toca pagar, ajustamos el rango del rival según cómo apuesta y repasamos <b>todas tus decisiones</b>, no solo la última.</div>
-      <div class="seq-blinds field">
-        <label>Ciega grande <button type="button" class="help" data-help="blinds">?</button></label>
-        <input type="number" id="bbInput" value="2" min="0" step="any" inputmode="decimal">
-      </div>
-      <div class="seq-tabs" id="seqTabs"></div>
-      <div class="seq-list" id="seqList"></div>
-      <div class="seq-controls" id="seqControls"></div>
-      <div class="seq-foot">
-        <button type="button" id="seqUndo">↶ Deshacer</button>
-        <button type="button" id="seqClear">Borrar secuencia</button>
-      </div>
-    </details>
+    <div class="panel-head"><div class="panel-num">2</div><h2>La mesa</h2></div>
     <div class="inputs-row">
-      <div class="field">
-        <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
-        <div class="stepper">
-          <button type="button" id="rivMinus">−</button>
-          <span id="rivVal">1</span>
-          <button type="button" id="rivPlus">+</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Bote actual <button type="button" class="help" data-help="pot">?</button></label>
-        <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
-        <div class="hint">Fichas o €, la unidad da igual</div>
-      </div>
-      <div class="field">
-        <label>Cantidad a igualar <button type="button" class="help" data-help="call">?</button></label>
-        <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
-        <div class="hint">Lo que cuesta pagar ahora</div>
-      </div>
-      <div class="field pro-only">
-        <label>Tu stack efectivo <button type="button" class="help" data-help="stack">?</button></label>
-        <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
-        <div class="hint">Fichas que te quedan detrás</div>
-      </div>
-      <div class="field pro-only">
-        <label>Stack del rival</label>
-        <input type="number" id="villStackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
-        <div class="hint">Para el SPR efectivo</div>
-      </div>
       <div class="field">
         <label>Tu posición <button type="button" class="help" data-help="position">?</button></label>
         <select id="heroPosInput">
@@ -717,6 +715,21 @@
           <option value="SB">SB — ciega pequeña</option>
           <option value="BB" selected>BB — ciega grande</option>
         </select>
+      </div>
+      <div class="field">
+        <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
+        <div class="stepper">
+          <button type="button" id="rivMinus">−</button>
+          <span id="rivVal">1</span>
+          <button type="button" id="rivPlus">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipo de partida <button type="button" class="help" data-help="game">?</button></label>
+        <div class="toggle-group" id="gameType">
+          <button type="button" class="toggle-btn" data-game="cash">Cash<small>Fichas = dinero</small></button>
+          <button type="button" class="toggle-btn" data-game="torneo">Torneo<small>Si lo pierdes todo, fuera</small></button>
+        </div>
       </div>
       <div class="field field-wide">
         <div class="hint" id="posInfoBox">
@@ -740,7 +753,57 @@
           <div class="range-presets" id="rangePresets"></div>
           <div class="range-grid" id="rangeGrid"></div>
           <div class="hint">Toca una casilla para añadirla o quitarla. Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o). Recuadro verde = tu mano.</div>
+          <div class="field" style="margin-top:14px; max-width:320px;">
+            <label>¿Cuánto farolea? <button type="button" class="help" data-help="bluffs">?</button></label>
+            <select id="bluffSelect">
+              <option value="0.03">Casi nunca</option>
+              <option value="0.1" selected>Lo normal</option>
+              <option value="0.2">Mucho</option>
+            </select>
+          </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div class="panel-num">3</div><h2>Las apuestas</h2></div>
+    <details class="seq-box" id="seqBox">
+      <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendado</span></summary>
+      <div class="hint seq-intro">Apunta qué hizo cada uno en cada calle. Calculamos el bote y lo que te toca pagar, ajustamos el rango del rival según cómo apuesta y repasamos <b>todas tus decisiones</b>, no solo la última.</div>
+      <div class="seq-blinds field">
+        <label>Ciega grande <button type="button" class="help" data-help="blinds">?</button></label>
+        <input type="number" id="bbInput" value="2" min="0" step="any" inputmode="decimal">
+      </div>
+      <div class="seq-tabs" id="seqTabs"></div>
+      <div class="seq-list" id="seqList"></div>
+      <div class="seq-controls" id="seqControls"></div>
+      <div class="seq-foot">
+        <button type="button" id="seqUndo">↶ Deshacer</button>
+        <button type="button" id="seqClear">Borrar secuencia</button>
+      </div>
+    </details>
+    <div class="or-line" id="orLine">…o escribe directamente el bote y lo que te toca pagar:</div>
+    <div class="inputs-row">
+      <div class="field">
+        <label>Bote actual <button type="button" class="help" data-help="pot">?</button></label>
+        <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
+        <div class="hint">Fichas o €, la unidad da igual</div>
+      </div>
+      <div class="field">
+        <label>Cantidad a igualar <button type="button" class="help" data-help="call">?</button></label>
+        <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
+        <div class="hint">Lo que cuesta pagar ahora</div>
+      </div>
+      <div class="field pro-only tourney-show">
+        <label>Tu stack efectivo <button type="button" class="help" data-help="stack">?</button></label>
+        <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
+        <div class="hint">Fichas que te quedan detrás</div>
+      </div>
+      <div class="field pro-only">
+        <label>Stack del rival</label>
+        <input type="number" id="villStackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
+        <div class="hint">Para el SPR efectivo</div>
       </div>
     </div>
     <div class="street-pick">
@@ -752,10 +815,11 @@
       <button class="btn-secondary" id="resetBtn">Reiniciar</button>
     </div>
     <div class="usage-row" id="usageRow"></div>
+    <button type="button" class="link-btn" id="trainLink">🎯 ¿Quieres practicar? Prueba el modo entrenamiento</button>
   </section>
 
   <section class="panel result" id="resultPanel">
-    <div class="panel-head"><div class="panel-num">3</div><h2>Resultado</h2></div>
+    <div class="panel-head"><div class="panel-num">4</div><h2>Resultado</h2></div>
     <div class="result-top">
       <div class="result-hand" id="resultHandName">—</div>
       <div class="decision-badge" id="decisionBadge">—</div>
@@ -833,6 +897,11 @@
   <div class="account-line" id="sidebarAccount" style="margin:-8px 0 14px;"></div>
   <div class="sidebar-nav">
     <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span> Analizador</button>
+    <button type="button" class="sidebar-link" id="navTrain"><span class="ic">🎯</span> Entrenamiento</button>
+    <button type="button" class="sidebar-link" id="navCharts"><span class="ic">📊</span> Tablas de manos</button>
+    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span> Tus estadísticas</button>
+    <button type="button" class="sidebar-link" id="navImport"><span class="ic">📋</span> Importar historial</button>
+    <button type="button" class="sidebar-link" id="navInstall"><span class="ic">📲</span> Instalar en el móvil</button>
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span> Iniciar sesión</button>
     <button type="button" class="sidebar-link" id="navManage" style="display:none;"><span class="ic">💳</span> Gestionar suscripción</button>
     <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span> Glosario de póker</button>
@@ -1271,11 +1340,11 @@
       const [a,b] = hole;
       const tag = strengthTag(handTopPercent(a, b));
       if (a.rank === b.rank){
-        currentHandEl.innerHTML = `Mano de partida: <b>Pareja de ${RANK_PLURAL[a.rank]}</b>${tag}`;
+        currentHandEl.innerHTML = `Mano de partida: <b>Pareja de ${RANK_PLURAL[a.rank]}</b>${tag}${openAdvice(a, b)}`;
       } else {
         const suited = a.suit === b.suit ? ' (mismo palo)' : '';
         const hi = a.rank>b.rank?a:b, lo=a.rank>b.rank?b:a;
-        currentHandEl.innerHTML = `Mano de partida: <b>${RANK_LABEL(hi.rank)}-${RANK_LABEL(lo.rank)}${suited}</b>${tag}`;
+        currentHandEl.innerHTML = `Mano de partida: <b>${RANK_LABEL(hi.rank)}-${RANK_LABEL(lo.rank)}${suited}</b>${tag}${openAdvice(a, b)}`;
       }
       return;
     }
@@ -1641,6 +1710,8 @@
   // ---- Ayuda y glosario ----
   const HELP = {
     street: ['¿Qué decisión analizar?', 'Elige la calle cuya decisión quieres ver. Puedes meter la mano entera (hasta el river) y luego tocar <b>Flop</b> para ver qué convenía hacer en el flop, <b>Turn</b> para el turn, etc.<br><br>Si has apuntado la <b>secuencia de apuestas</b>, en cada calle se tiene en cuenta todo lo que pasó antes: no es lo mismo que el rival apueste en el river después de subir preflop y apostar flop y turn, que después de pasar en todas las calles.'],
+    game: ['Cash o torneo', '<b>Cash:</b> las fichas son dinero; si pierdes, recompras. <b>Torneo:</b> si pierdes todas tus fichas, quedas eliminado, así que jugarte buena parte del stack exige algo más de ventaja. En torneo, escribe tu stack para que lo tengamos en cuenta.'],
+    bluffs: ['¿Cuánto farolea?', 'Cuando tu rival apuesta, a veces lo hace con manos flojas para que te retires: es un <b>farol</b>. Si farolea mucho, pagar con manos medias compensa más; si casi nunca farolea, respeta más sus apuestas.'],
     blinds: ['Ciega grande', 'La apuesta obligatoria más grande de la mesa (por ejemplo, en una partida 1/2 la ciega grande es 2). La usamos para calcular el bote inicial del preflop: ciega pequeña + ciega grande.'],
     rivals: ['Rivales en la mano', 'Cuántos jugadores <b>siguen en la mano</b> contigo (no cuentes los que ya se han retirado). Cuantos más rivales, más difícil es ganar.'],
     pot: ['Bote', 'Todas las fichas que hay en el centro de la mesa <b>antes</b> de que tú pagues, incluida la apuesta de tu rival.', 'Ejemplo: había 40 en el centro y tu rival apuesta 20 → el bote es 60.'],
@@ -1720,21 +1791,31 @@
     let pot = sb + bb;
     let heroIn = heroPos === 'BB' ? bb : heroPos === 'SB' ? sb : 0;
     let villIn = villPos === 'BB' ? bb : villPos === 'SB' ? sb : 0;
+    let raises = 0;
+    // Preflop, aunque ni tú ni el rival seáis la ciega grande, para entrar hay que
+    // poner al menos la ciega grande: "floor" es lo mínimo que hay que igualar.
+    const out = (s) => {
+      const floor = s === 0 ? bb : 0;
+      return { pot, heroIn, villIn, raises,
+        owed: Math.max(0, Math.max(villIn, floor) - heroIn), villOwed: Math.max(0, Math.max(heroIn, floor) - villIn) };
+    };
     for (let s = 0; s <= upto; s++){
       if (s > 0){ heroIn = 0; villIn = 0; }
       for (let i = 0; i < seq[s].length; i++){
-        if (stopAt && stopAt.s === s && stopAt.i === i) return { pot, heroIn, villIn };
+        if (stopAt && stopAt.s === s && stopAt.i === i) return out(s);
         const a = seq[s][i];
-        const mine = a.who === 'hero' ? heroIn : villIn, other = a.who === 'hero' ? villIn : heroIn;
+        const mine = a.who === 'hero' ? heroIn : villIn;
+        const other = Math.max(a.who === 'hero' ? villIn : heroIn, s === 0 ? bb : 0);
+        if (s === 0 && (a.type === 'bet' || a.type === 'raise')) raises++;
         let add = 0;
         if (a.type === 'call') add = Math.max(0, other - mine);
         else if (a.type === 'bet' || a.type === 'raise') add = Math.max(0, a.to - mine);
         pot += add;
         if (a.who === 'hero') heroIn += add; else villIn += add;
       }
-      if (stopAt && stopAt.s === s) return { pot, heroIn, villIn };
+      if (stopAt && stopAt.s === s) return out(s);
     }
-    return { pot, heroIn, villIn };
+    return out(upto);
   }
 
   function defaultActor(s){
@@ -1773,7 +1854,7 @@
     for (let i = 0; i < seq[seqStreet].length; i++){
       const st = replay(seqStreet, { s: seqStreet, i });
       const a = seq[seqStreet][i];
-      const amount = a.type === 'call' ? Math.max(0, (a.who === 'hero' ? st.villIn - st.heroIn : st.heroIn - st.villIn)) : 0;
+      const amount = a.type === 'call' ? (a.who === 'hero' ? st.owed : st.villOwed) : 0;
       chips.push(`<span class="seq-chip ${a.who}">${actionText(a, amount)}</span>`);
     }
     document.getElementById('seqList').innerHTML = `<span>Bote: <b>${fmtN(start.pot)}</b></span>` + (chips.length ? chips.join('') : '<span>Aún no hay acciones en esta calle.</span>');
@@ -1781,8 +1862,9 @@
     // Controles para añadir la siguiente acción
     const actor = seqActor || defaultActor(seqStreet);
     const now = replay(seqStreet);
-    const mine = actor === 'hero' ? now.heroIn : now.villIn, other = actor === 'hero' ? now.villIn : now.heroIn;
-    const toCall = Math.max(0, other - mine);
+    const mine = actor === 'hero' ? now.heroIn : now.villIn;
+    const toCall = actor === 'hero' ? now.owed : now.villOwed;
+    const other = mine + toCall;
     const facingBet = toCall > 0;
     const pendingType = facingBet ? 'raise' : 'bet';
     const potNow = now.pot;
@@ -1849,7 +1931,7 @@
     const dp = decisionPoint();
     const st = replay(availableStreets() - 1, dp || undefined);
     potEl.value = Math.round(st.pot * 100) / 100;
-    callEl.value = Math.round(Math.max(0, st.villIn - st.heroIn) * 100) / 100;
+    callEl.value = Math.round(st.owed * 100) / 100;
   }
 
   // ---- Selector de calle a analizar ----
@@ -1933,8 +2015,8 @@
         if (stopAt && stopAt.s === s && stopAt.i === i) break;
         const a = seq[s][i];
         if (a.who !== 'vill') continue;
-        if (a.type === 'bet') pool = strongest(pool, b, 0.65);
-        else if (a.type === 'raise') pool = strongest(pool, b, 0.3);
+        if (a.type === 'bet') pool = withBluffs(pool, b, 0.55, bluffFrac());
+        else if (a.type === 'raise') pool = withBluffs(pool, b, 0.25, bluffFrac() * 0.7);
         else if (a.type === 'call') pool = strongest(pool, b, 0.7);
       }
     }
@@ -1947,7 +2029,7 @@
       const tight = intersectTop(classes, 9);
       return poolFromSet(tight.size ? tight : classes);
     }
-    return strongest(pool, boardAt(s), frac);
+    return withBluffs(pool, boardAt(s), frac, bluffFrac() * 0.4);
   }
 
   // ---- Decisión recomendada ----
@@ -1977,11 +2059,11 @@
         const a = seq[s][i];
         if (a.who !== 'hero') continue;
         const st = replay(s, { s, i });
-        const toCall = Math.max(0, st.villIn - st.heroIn);
+        const toCall = st.owed;
         const pool = villainPoolAt({ s, i });
-        const { win } = runEquity(hole, boardAt(s), numRivals, 700, pool);
-        const needed = toCall > 0 ? toCall / (st.pot + toCall) * 100 : 0;
-        const rec = decide(win, needed, toCall, oop, numRivals).text;
+        const reco = recommend({ heroCards: hole, boardCards: boardAt(s), pot: st.pot, toCall, rivals: numRivals, pool, oop, street: s,
+          heroPos: document.getElementById('heroPosInput').value, unraised: s === 0 && st.raises === 0, iters: 700 });
+        const win = reco.eq, needed = reco.needed, rec = reco.text;
         const act = a.type === 'check' ? 'CHECK' : a.type === 'call' ? 'CALL' : a.type === 'fold' ? 'FOLD' : (toCall > 0 ? 'RAISE' : 'BET');
         rows.push({ s, win, needed, toCall, pot: st.pot, rec, act, g: grade(rec, act) });
       }
@@ -2008,12 +2090,416 @@
     }).join('');
   }
 
+  // ---- Recomendación (la usan el análisis, el repaso y el entrenamiento) ----
+  // c = { heroCards, boardCards, pot, toCall, rivals, pool, oop, street, heroPos, unraised, premium, eq?, iters? }
+  function recommend(c){
+    let eq = c.eq;
+    if (eq === undefined){ const r = runEquity(c.heroCards, c.boardCards, c.rivals, c.iters || 1000, c.pool); eq = r.win + r.tie / 2; }
+    const needed = c.toCall > 0 ? c.toCall / (c.pot + c.toCall) * 100 : 0;
+    // Preflop sin subidas: abrir o tirar según la tabla de tu posición.
+    if (c.street === 0 && c.unraised && c.heroPos !== 'BB'){
+      const top = handTopPercent(c.heroCards[0], c.heroCards[1]);
+      return { text: top <= OPEN_PCT[c.heroPos] ? 'RAISE' : 'FOLD', eq, needed, kind: 'open', top };
+    }
+    // Nadie ha apostado (después del flop): apostar solo si rinde más que pasar.
+    if (c.street > 0 && c.toCall === 0){
+      const bc = bluffCheck(c.heroCards, c.boardCards, c.pot, c.rivals, c.pool || poolFromSet(topRange(100)), eq);
+      if (bc && bc.better) return { text: 'BET', eq, needed, bc, kind: bc.eqCall < 0.5 ? 'bluff' : 'value' };
+      return { text: 'CHECK', eq, needed, bc };
+    }
+    let text = decide(eq, needed + (c.premium || 0), c.toCall, c.oop, c.rivals).text;
+    // Para subir hay que ganar a las manos que pagarían la subida, no a todo su rango.
+    if (text === 'RAISE' && c.street > 0){
+      const strong = withBluffs(c.pool || poolFromSet(topRange(100)), c.boardCards, 0.4, 0, c.heroCards);
+      const r2 = runEquity(c.heroCards, c.boardCards, c.rivals, 700, strong);
+      const vs = r2.win + r2.tie / 2;
+      if (vs < 60) return { text: 'CALL', eq, needed, downgraded: true, valueCheck: vs };
+      return { text, eq, needed, valueCheck: vs };
+    }
+    return { text, eq, needed };
+  }
+
+  // ---- Faroles ----
+  function bluffFrac(){ return Number(document.getElementById('bluffSelect').value) || 0.1; }
+  document.getElementById('bluffSelect').value = String(storageGet('rio_bluff', 0.1));
+  document.getElementById('bluffSelect').addEventListener('change', (e) => storageSet('rio_bluff', Number(e.target.value)));
+
+  // Cuando el rival apuesta o sube se queda con la parte fuerte de su rango
+  // más algunos faroles (sus manos más flojas: proyectos fallados, aire).
+  function withBluffs(pool, boardCards, frac, bluff, heroCards){
+    const blocked = new Set([...(heroCards || hole).filter(Boolean), ...boardCards].map(cardKey));
+    const live = pool.filter(c => !blocked.has(cardKey(c[0])) && !blocked.has(cardKey(c[1])));
+    if (live.length < 6) return live;
+    const scored = live.map(c => [comboStrength(c, boardCards), c]).sort((a, b) => b[0] - a[0]);
+    const top = Math.max(3, Math.ceil(scored.length * frac));
+    const keep = scored.slice(0, top);
+    const bot = Math.ceil(scored.length * bluff);
+    if (bot > 0) keep.push(...scored.slice(Math.max(top, scored.length - bot)));
+    return keep.map(x => x[1]);
+  }
+
+  // ¿Compensa apostar 2/3 del bote de farol o semifarol en vez de pasar?
+  // El rival paga con pareja media o mejor, o con proyecto; el resto se retira.
+  function bluffCheck(heroCards, boardCards, pot, rivals, pool, eqNow){
+    if (boardCards.length < 3 || pot <= 0 || !pool || !pool.length) return null;
+    const blocked = new Set([...heroCards, ...boardCards].map(cardKey));
+    const live = pool.filter(c => !blocked.has(cardKey(c[0])) && !blocked.has(cardKey(c[1])));
+    if (live.length < 5) return null;
+    const callers = live.filter(c => comboStrength(c, boardCards) >= DRAW_SCORE);
+    const f = Math.pow(1 - callers.length / live.length, rivals); // tienen que retirarse todos
+    const bet = pot * 2 / 3;
+    let eqCall = 0;
+    if (callers.length){ const r = runEquity(heroCards, boardCards, rivals, 700, callers); eqCall = (r.win + r.tie / 2) / 100; }
+    const evBet = f * pot + (1 - f) * (eqCall * (pot + 2 * bet) - bet);
+    const evCheck = (eqNow / 100) * pot;
+    return { f, bet, eqCall, evBet, evCheck, better: evBet > evCheck + pot * 0.03 };
+  }
+
+  // ---- Cash o torneo ----
+  function setGame(g){
+    storageSet('rio_game', g);
+    document.body.classList.toggle('tourney', g === 'torneo');
+    document.querySelectorAll('#gameType [data-game]').forEach(b => b.classList.toggle('active', b.dataset.game === g));
+  }
+  document.querySelectorAll('#gameType [data-game]').forEach(b => b.addEventListener('click', () => setGame(b.dataset.game)));
+  setGame(storageGet('rio_game', 'cash'));
+
+  // Las etiquetas Preflop/Flop/Turn/Río de la cabecera también eligen la calle.
+  ['Preflop','Flop','Turn','River'].forEach((n, i) => ['dot' + n, 'lbl' + n].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => selectStreet(i));
+  }));
+
+  const of20 = (p) => { const n = Math.round(p / 5); return n === 0 && p > 0 ? 'menos de 1' : String(n); };
+  const cardHTML = (c, big) => `<span class="mini-card${big ? ' big' : ''}${SUIT_CRIMSON[c.suit] ? ' crimson' : ''}">${RANK_LABEL(c.rank)}<span>${SUIT_SYMBOL[c.suit]}</span></span>`;
+
+  // Ventana genérica (reutiliza la de ayuda)
+  function openModal(title, html){
+    document.getElementById('helpTitle').textContent = title;
+    document.getElementById('helpBody').innerHTML = html;
+    helpModal.classList.add('show');
+    return document.getElementById('helpBody');
+  }
+  function closeModal(){ helpModal.classList.remove('show'); }
+
+  // ---- ¿Se juega esta mano desde tu posición? ----
+  function openAdvice(a, b){
+    const pos = document.getElementById('heroPosInput').value;
+    const top = handTopPercent(a, b), lim = pos === 'BB' ? 60 : OPEN_PCT[pos];
+    const ok = top <= lim;
+    const txt = pos === 'BB'
+      ? (ok ? 'Se suele defender desde BB si te suben' : 'Desde BB normalmente se tira si te suben')
+      : (ok ? `Se suele abrir (subir) desde ${pos} si nadie ha entrado` : `Desde ${pos} normalmente se tira si nadie ha entrado`);
+    return `<div class="pos-advice ${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'} ${txt} · <a data-open-charts>ver tabla</a></div>`;
+  }
+  document.getElementById('currentHand').addEventListener('click', (e) => { if (e.target.closest('[data-open-charts]')) openCharts(); });
+
+  // ---- Tablas de manos iniciales ----
+  function openCharts(pos){
+    pos = pos || document.getElementById('heroPosInput').value;
+    const pct = pos === 'BB' ? 60 : OPEN_PCT[pos];
+    const set = topRange(pct);
+    const heroCls = hole[0] && hole[1] ? handClass(hole[0], hole[1]) : null;
+    let grid = '';
+    for (let i = 0; i < 13; i++) for (let j = 0; j < 13; j++){
+      const n = i === j ? RANK_CHARS[i] + RANK_CHARS[j] : i < j ? RANK_CHARS[i] + RANK_CHARS[j] + 's' : RANK_CHARS[j] + RANK_CHARS[i] + 'o';
+      grid += `<button type="button" tabindex="-1" class="${set.has(n) ? 'in' : ''} ${i === j ? 'pair' : ''} ${n === heroCls ? 'hero' : ''}">${n}</button>`;
+    }
+    const body = openModal('Tablas de manos iniciales', `
+      <div class="range-presets">${RANGE_PRESETS.map(([p]) => `<button type="button" data-chart="${p}" class="${p === pos ? 'active' : ''}">${p}</button>`).join('')}</div>
+      <p style="margin:0 0 10px;">${pos === 'BB'
+        ? 'Desde la <b>ciega grande</b>, si alguien sube, puedes <b>defender</b> (pagar o volver a subir) con las manos en rojo: unas ' + pct + '% del total.'
+        : `Desde <b>${pos}</b>, si nadie ha entrado antes, <b>sube</b> con las manos en rojo (~${pct}% de las manos) y <b>tira</b> el resto.`}</p>
+      <div class="range-grid chart-grid">${grid}</div>
+      <p class="hint" style="margin-top:10px;">Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o).${heroCls ? ' Recuadro verde = tu mano.' : ''} Son rangos orientativos para mesas de 6 jugadores.</p>`);
+    body.querySelectorAll('[data-chart]').forEach(b => b.addEventListener('click', () => openCharts(b.dataset.chart)));
+  }
+
+  // ---- Estadísticas ----
+  function handSignature(){ return JSON.stringify([hole, board, seq]); }
+  function saveReviews(rows){
+    if (!rows.length) return;
+    const all = storageGet('rio_reviews', {});
+    all[handSignature()] = { t: Date.now(), rows: rows.map(r => ({ s: r.s, rec: r.rec, act: r.act, g: r.g })) };
+    const keys = Object.keys(all).sort((a, b) => all[b].t - all[a].t).slice(0, 100);
+    storageSet('rio_reviews', Object.fromEntries(keys.map(k => [k, all[k]])));
+  }
+  const LEAKS = {
+    'CALL>FOLD': 'Pagas cuando convenía retirarse', 'FOLD>CALL': 'Te retiras cuando convenía pagar',
+    'FOLD>RAISE': 'Te retiras con manos para subir', 'CHECK>BET': 'Pasas cuando convenía apostar',
+    'CALL>RAISE': 'Pagas cuando convenía subir', 'RAISE>CALL': 'Subes cuando bastaba con pagar',
+    'BET>CHECK': 'Apuestas cuando convenía pasar', 'RAISE>FOLD': 'Subes con manos para tirar'
+  };
+  function openStats(){
+    const hand = Object.values(storageGet('rio_reviews', {})).flatMap(x => x.rows);
+    const train = storageGet('rio_train_log', []);
+    const all = [...hand, ...train];
+    if (!all.length){
+      openModal('Tus estadísticas', `<p>Aún no hay datos. Se llenan de dos formas:</p><ul><li>Analizando tus manos con la <b>secuencia de apuestas</b> apuntada.</li><li>Jugando al <b>modo entrenamiento</b>.</li></ul><button type="button" class="btn-primary" id="statsTrain" style="width:100%;">🎯 Empezar a entrenar</button>`)
+        .querySelector('#statsTrain').addEventListener('click', openTrainer);
+      return;
+    }
+    const pct = (arr, g) => arr.length ? Math.round(arr.filter(r => r.g === g).length / arr.length * 100) : 0;
+    const leaks = {};
+    all.filter(r => r.g !== 'ok').forEach(r => { const k = r.act + '>' + r.rec; leaks[k] = (leaks[k] || 0) + (r.g === 'bad' ? 2 : 1); });
+    const topLeaks = Object.entries(leaks).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const byStreet = STREET_NAMES.map((n, s) => { const rs = all.filter(r => r.s === s); return [n, rs.length, pct(rs, 'ok')]; });
+    openModal('Tus estadísticas', `
+      <div class="stat-grid" style="margin-top:0; grid-template-columns:repeat(3,1fr);">
+        <div class="stat no-help"><b>${all.length}</b><span>Decisiones</span></div>
+        <div class="stat no-help"><b style="color:var(--ok)">${pct(all, 'ok')}%</b><span>Bien</span></div>
+        <div class="stat no-help"><b style="color:var(--crimson)">${pct(all, 'bad')}%</b><span>Mejorables</span></div>
+      </div>
+      <div class="sub-title">Por calle (% bien jugadas)</div>
+      <div class="finals">${byStreet.map(([n, c, p]) => `<div class="final-row"><span>${n} <small style="color:var(--cream-dim)">(${c})</small></span><div class="bar"><i style="width:${c ? Math.max(2, p) : 0}%"></i></div><b>${c ? p + '%' : '—'}</b></div>`).join('')}</div>
+      <div class="sub-title">Tus fugas más repetidas</div>
+      ${topLeaks.length ? `<ol style="margin:0; padding-left:20px;">${topLeaks.map(([k]) => `<li>${LEAKS[k] || k.replace('>', ' en vez de ')}</li>`).join('')}</ol>` : '<p>¡Ninguna por ahora! 👏</p>'}
+      ${train.length ? `<div class="sub-title">Entrenamiento</div><p style="margin:0;">${train.length} manos · ${pct(train, 'ok')}% acertadas</p>` : ''}
+      <p class="hint" style="margin-top:14px;">Se guardan en este navegador.</p>`);
+  }
+
+  // ---- Modo entrenamiento ----
+  const TRAIN_SPOTS = [['BTN','BB'],['CO','BB'],['BB','BTN'],['SB','BB'],['UTG','BB'],['BTN','SB'],['HJ','BTN'],['BB','CO'],['CO','BTN']];
+  let trainQ = null;
+  const pickRand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  function newTrainQ(){
+    const deck = drawN(fullDeck(), 7);
+    const hero = [deck[0], deck[1]];
+    const r = Math.random();
+    const s = r < 0.2 ? 0 : r < 0.5 ? 1 : r < 0.75 ? 2 : 3;
+    if (s === 0) return { s, hero, board: [], hp: pickRand(['UTG','HJ','CO','BTN','SB']), vp: null, pot: 3, call: 0, kind: 'open' };
+    const [hp, vp] = pickRand(TRAIN_SPOTS);
+    const potBefore = Math.round(6 + Math.random() * 54);
+    const facing = Math.random() < 0.6;
+    const bet = facing ? Math.max(1, Math.round(potBefore * pickRand([0.33, 0.5, 0.66, 1]))) : 0;
+    return { s, hero, board: deck.slice(2, 2 + [0, 3, 4, 5][s]), hp, vp, pot: potBefore + bet, call: bet, kind: facing ? 'facing' : 'checked' };
+  }
+  function solveTrainQ(q){
+    if (q.kind === 'open'){
+      const top = handTopPercent(q.hero[0], q.hero[1]), lim = OPEN_PCT[q.hp];
+      return { rec: top <= lim ? 'RAISE' : 'FOLD', top, lim, close: Math.abs(top - lim) <= 3 };
+    }
+    let pool = poolFromSet(topRange(q.vp === 'BB' ? 55 : (OPEN_PCT[q.vp] || 30)));
+    if (q.kind === 'facing') pool = withBluffs(pool, q.board, 0.55, 0.1, q.hero);
+    const r = runEquity(q.hero, q.board, 1, 1500, pool);
+    const eq = r.win + r.tie / 2;
+    const needed = q.call > 0 ? q.call / (q.pot + q.call) * 100 : 0;
+    const oop = POSITION_ORDER.indexOf(q.hp) <= POSITION_ORDER.indexOf(q.vp);
+    const reco = recommend({ heroCards: q.hero, boardCards: q.board, pot: q.pot, toCall: q.call, rivals: 1, pool, oop, street: q.s, heroPos: q.hp, eq });
+    const bluff = reco.kind === 'bluff' ? reco.bc : null;
+    return { rec: reco.text, eq, needed, oop, bluff, downgraded: reco.downgraded, close: q.call > 0 && Math.abs(eq - needed) <= 3 };
+  }
+  function openTrainer(){
+    closeSidebar();
+    trainQ = newTrainQ();
+    const q = trainQ, stats = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
+    const opts = q.kind === 'open' ? [['FOLD', 'Tirar'], ['RAISE', 'Subir']]
+      : q.kind === 'facing' ? [['FOLD', 'Tirar'], ['CALL', 'Pagar'], ['RAISE', 'Subir']]
+      : [['CHECK', 'Pasar'], ['BET', 'Apostar']];
+    const question = q.kind === 'open'
+      ? `Estás en <b>${q.hp}</b> y nadie ha entrado antes que tú. ¿Abres (subes) o tiras?`
+      : `Estás en <b>${q.hp}</b> contra <b>${q.vp}</b>, en el <b>${STREET_NAMES[q.s].toLowerCase()}</b>. ${q.kind === 'facing'
+          ? `El bote es de <b>${q.pot}</b> y tu rival apuesta <b>${q.call}</b> (ya incluido). ¿Qué haces?`
+          : `El bote es de <b>${q.pot}</b> y nadie ha apostado. ¿Qué haces?`}`;
+    const body = openModal('🎯 Entrenamiento', `
+      <div class="train-score">Mano ${stats.n + 1} · ${stats.ok}/${stats.n} acertadas${stats.streak > 1 ? ` · 🔥 racha de ${stats.streak}` : ''}</div>
+      <div class="train-cards"><div><div class="zone-label">Tu mano</div>${q.hero.map(c => cardHTML(c, true)).join('')}</div>
+      ${q.board.length ? `<div><div class="zone-label">Mesa</div>${q.board.map(c => cardHTML(c, true)).join('')}</div>` : ''}</div>
+      <p>${question}</p>
+      <div class="train-opts">${opts.map(([v, l]) => `<button type="button" class="btn-secondary" data-ans="${v}">${l}</button>`).join('')}</div>
+      <div id="trainResult"></div>`);
+    body.querySelectorAll('[data-ans]').forEach(b => b.addEventListener('click', () => answerTrainer(b.dataset.ans)));
+  }
+  function answerTrainer(act){
+    const body = document.getElementById('helpBody');
+    body.querySelectorAll('[data-ans]').forEach(b => { b.disabled = true; if (b.dataset.ans === act) b.classList.add('chosen'); });
+    document.getElementById('trainResult').innerHTML = '<p class="hint">Calculando…</p>';
+    setTimeout(() => {
+      const q = trainQ, sol = solveTrainQ(q);
+      let g = grade(sol.rec, act);
+      if (g === 'bad' && sol.close) g = 'meh';
+      if (q.kind === 'open' && g === 'meh' && !sol.close) g = 'bad';
+      const stats = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
+      stats.n++; if (g === 'ok'){ stats.ok++; stats.streak++; } else stats.streak = 0;
+      storageSet('rio_train', stats);
+      const log = storageGet('rio_train_log', []); log.push({ s: q.s, rec: sol.rec, act, g }); storageSet('rio_train_log', log.slice(-300));
+      let why;
+      if (q.kind === 'open') why = `Tu mano está en el <b>top ${Math.max(1, Math.round(sol.top))}%</b> y desde ${q.hp} se suele abrir aproximadamente el <b>${sol.lim}%</b> de las manos.`;
+      else if (sol.bluff && sol.bluff.better) why = `Tu mano no es la mejor (ganas unas ${of20(sol.eq)} de cada 20), pero si apuestas el rival se retira unas <b>${of20(sol.bluff.f * 100)} de cada 20</b> veces: el farol compensa.`;
+      else if (q.kind === 'facing' && sol.downgraded) why = `Vas por delante de buena parte de su rango (ganas unas ${of20(sol.eq)} de cada 20), pero si subes solo te pagarían las manos que te ganan: <b>paga</b>.`;
+      else if (q.kind === 'facing') why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces y para que pagar compense necesitas <b>${of20(sol.needed)}</b>.<span class="pro-only"> (Equity ${sol.eq.toFixed(1)}% · necesitas ${sol.needed.toFixed(1)}%)</span>`;
+      else why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces contra su rango.${sol.rec === 'BET' ? ' Apostar rinde más que pasar: las manos peores te pagan.' : ' Apostar no rinde más que pasar: las peores se retirarían y solo te pagarían las mejores. Pasa.'}`;
+      const head = { ok: '✓ ¡Correcto!', meh: '≈ Aceptable', bad: '✗ No era la mejor' }[g];
+      document.getElementById('trainResult').innerHTML = `
+        <div class="train-verdict ${g}">${head}</div>
+        <p>Lo recomendado: <b>${decisionHTML(sol.rec)}</b>. ${why}</p>
+        <button type="button" class="btn-primary" id="trainNext" style="width:100%;">Siguiente mano →</button>`;
+      document.getElementById('trainNext').addEventListener('click', openTrainer);
+    }, 30);
+  }
+
+  // ---- Importar historial de mano (PokerStars / GGPoker) ----
+  function parseHandHistory(txt){
+    const num = (x) => parseFloat(String(x).replace(/,/g, ''));
+    const dealt = txt.match(/Dealt to (.+?) \[(\S\S) (\S\S)\]/);
+    if (!dealt) throw new Error('No encuentro tus cartas ("Dealt to …"). ¿Has copiado la mano completa?');
+    const heroName = dealt[1].trim();
+    const heroCards = [parseCardToken(dealt[2]), parseCardToken(dealt[3])];
+    if (!heroCards[0] || !heroCards[1]) throw new Error('No entiendo tus cartas en el historial.');
+    const blinds = txt.match(/\(\s*[^\d(\/]*([\d.,]+)\s*\/\s*[^\d(\/]*([\d.,]+)/);
+    const bb = blinds ? num(blinds[2]) : null;
+    const buttonSeat = Number((txt.match(/Seat #(\d+) is the button/) || [])[1]);
+    const lines = txt.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean);
+    const seats = [];
+    for (const l of lines){
+      if (l.startsWith('***')) break;
+      const m = l.match(/^Seat (\d+): (.+?) \(\s*[^\d(]*([\d.,]+)/);
+      if (m && !/sitting out/i.test(l)) seats.push({ seat: Number(m[1]), name: m[2].trim(), stack: num(m[3]) });
+    }
+    if (seats.length < 2) throw new Error('No encuentro los jugadores de la mesa ("Seat 1: …").');
+    seats.sort((a, b) => a.seat - b.seat);
+    let bi = seats.findIndex(p => p.seat === buttonSeat);
+    if (bi === -1) bi = seats.length - 1;
+    const order = [...seats.slice(bi + 1), ...seats.slice(0, bi + 1)]; // SB, BB, … , BTN
+    const n = order.length, posOf = {};
+    order.forEach((p, i) => {
+      let pos;
+      if (n === 2) pos = i === 1 ? 'BTN' : 'BB';
+      else if (i === 0) pos = 'SB'; else if (i === 1) pos = 'BB'; else if (i === n - 1) pos = 'BTN';
+      else if (i === n - 2) pos = 'CO'; else if (i === n - 3) pos = 'HJ'; else pos = 'UTG';
+      posOf[p.name] = pos;
+    });
+    const boardCards = [], acts = [];
+    let street = -1;
+    for (const l of lines){
+      if (/^\*\*\* HOLE CARDS/.test(l)){ street = 0; continue; }
+      const st = l.match(/^\*\*\* (FLOP|TURN|RIVER) \*\*\*/);
+      if (st){
+        street = { FLOP: 1, TURN: 2, RIVER: 3 }[st[1]];
+        const groups = [...l.matchAll(/\[([^\]]+)\]/g)].map(g => g[1]);
+        const fresh = street === 1 ? groups[0].split(/\s+/) : [groups[groups.length - 1].trim()];
+        fresh.forEach(t => { const c = parseCardToken(t); if (c) boardCards.push(c); });
+        continue;
+      }
+      if (/^\*\*\* (SHOW ?DOWN|SUMMARY)/.test(l)) break;
+      if (street < 0) continue;
+      const m = l.match(/^(.+?): (folds|checks|calls|bets|raises)(?:\s+[^\d\s]*([\d.,]+))?(?:\s+to\s+[^\d\s]*([\d.,]+))?/);
+      if (!m) continue;
+      acts.push({ street, name: m[1].trim(), type: m[2], amount: m[3] ? num(m[3]) : 0, to: m[4] ? num(m[4]) : 0 });
+    }
+    // El rival es el que más aguanta en la mano contigo (y, si empatan, el que más mete).
+    const opps = [...new Set(acts.map(a => a.name))].filter(nm => nm !== heroName);
+    if (!opps.length) throw new Error('No encuentro rivales que actuaran en la mano.');
+    const lastIdx = (nm) => { const i = acts.findIndex(a => a.name === nm && a.type === 'folds'); return i === -1 ? Infinity : i; };
+    const money = (nm) => acts.filter(a => a.name === nm).reduce((t, a) => t + (a.to || a.amount), 0);
+    opps.sort((a, b) => (lastIdx(b) - lastIdx(a)) || (money(b) - money(a)));
+    const villName = opps[0];
+    const newSeq = [[], [], [], []];
+    for (const a of acts){
+      if (a.name !== heroName && a.name !== villName) continue;
+      const who = a.name === heroName ? 'hero' : 'vill';
+      const type = { folds: 'fold', checks: 'check', calls: 'call', bets: 'bet', raises: 'raise' }[a.type];
+      const act = { who, type };
+      if (type === 'bet') act.to = a.amount;
+      if (type === 'raise') act.to = a.to || a.amount;
+      newSeq[a.street].push(act);
+    }
+    const stayed = opps.filter(nm => lastIdx(nm) === Infinity).length;
+    return {
+      heroCards, boardCards: boardCards.slice(0, 5), bb, seq: newSeq, villName,
+      heroPos: posOf[heroName] || 'BTN', villPos: posOf[villName] || 'BB',
+      heroStack: (seats.find(p => p.name === heroName) || {}).stack, villStack: (seats.find(p => p.name === villName) || {}).stack,
+      rivals: Math.max(1, stayed || 1), tourney: /Tournament/i.test(txt)
+    };
+  }
+  function openImport(){
+    closeSidebar();
+    const body = openModal('📋 Importar historial de mano', `
+      <p style="margin-top:0;">En PokerStars o GGPoker, abre el historial de la mano, <b>cópialo entero</b> y pégalo aquí.</p>
+      <textarea id="hhText" rows="9" placeholder="PokerStars Hand #…&#10;Table '…' 6-max Seat #1 is the button&#10;…" style="width:100%; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); padding:10px; font-family:monospace; font-size:0.78rem;"></textarea>
+      <button type="button" class="btn-primary" id="hhGo" style="width:100%; margin-top:10px;">Importar mano</button>
+      <div id="hhMsg" class="restore-msg"></div>`);
+    body.querySelector('#hhGo').addEventListener('click', () => {
+      const msg = document.getElementById('hhMsg');
+      try {
+        const h = parseHandHistory(document.getElementById('hhText').value);
+        hole = h.heroCards; board = [0, 1, 2, 3, 4].map(i => h.boardCards[i] || null);
+        document.getElementById('heroPosInput').value = h.heroPos;
+        document.getElementById('villPosInput').value = h.villPos;
+        numRivals = h.rivals; rivVal.textContent = numRivals;
+        if (h.bb) document.getElementById('bbInput').value = h.bb;
+        document.getElementById('stackInput').value = h.heroStack || '';
+        document.getElementById('villStackInput').value = h.villStack || '';
+        if (h.tourney) setGame('torneo');
+        seq = h.seq; seqStreet = Math.max(0, h.boardCards.length >= 5 ? 3 : h.boardCards.length >= 4 ? 2 : h.boardCards.length >= 3 ? 1 : 0);
+        seqActor = null; seqPending = null; selStreet = null;
+        document.getElementById('seqBox').open = true;
+        updateOrderHint(); render();
+        closeModal();
+        const status = document.getElementById('screenshotStatus');
+        status.style.display = 'block'; status.style.color = 'var(--ok)';
+        status.textContent = `✅ Mano importada: tú (${h.heroPos}) contra ${h.villName} (${h.villPos}). Elige la calle y pulsa Analizar.`;
+        document.getElementById('streetBtns').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (e){
+        msg.textContent = e.message || 'No se pudo leer el historial.'; msg.className = 'restore-msg no';
+      }
+    });
+  }
+
+  // ---- Instalar como app ----
+  let deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstall = e; });
+  function installApp(){
+    closeSidebar();
+    if (deferredInstall){ deferredInstall.prompt(); deferredInstall = null; return; }
+    openModal('📲 Instalar RÍO en el móvil', `
+      <p><b>iPhone (Safari):</b> pulsa el botón <b>Compartir</b> (el cuadrado con la flecha) → <b>Añadir a pantalla de inicio</b>.</p>
+      <p><b>Android (Chrome):</b> pulsa los <b>tres puntos</b> arriba a la derecha → <b>Instalar aplicación</b> o <b>Añadir a pantalla de inicio</b>.</p>
+      <p class="hint">Tendrás RÍO con su icono, a pantalla completa, como una app más.</p>`);
+  }
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+  // ---- Bienvenida (primera visita) ----
+  function openWelcome(){
+    const body = openModal('¡Bienvenido a RÍO! 👋', `
+      <p style="margin-top:0;">Te ayudamos a decidir en cada calle: <b>pagar, subir o tirar</b>, y te explicamos por qué.</p>
+      <ol style="padding-left:20px; margin:0 0 16px;">
+        <li><b>Elige tus cartas</b> y las de la mesa.</li>
+        <li>Indica <b>tu posición</b> y cómo juega tu rival.</li>
+        <li>Apunta <b>las apuestas</b> y pulsa <b>Analizar</b>.</li>
+      </ol>
+      <div style="display:grid; gap:8px;">
+        <button type="button" class="btn-primary" data-welcome="facil">🙂 Soy nuevo en el póker</button>
+        <button type="button" class="btn-secondary" data-welcome="pro">😎 Ya juego: quiero el modo Pro</button>
+        <button type="button" class="btn-secondary" data-welcome="train">🎯 Quiero practicar primero</button>
+      </div>`);
+    body.querySelectorAll('[data-welcome]').forEach(b => b.addEventListener('click', () => {
+      const w = b.dataset.welcome;
+      if (w === 'train'){ openTrainer(); return; }
+      setMode(w); closeModal();
+    }));
+  }
+  if (!storageGet('rio_onboarded', false)){
+    storageSet('rio_onboarded', true);
+    setTimeout(openWelcome, 400);
+  }
+
+  // Menú
+  document.getElementById('navTrain').addEventListener('click', openTrainer);
+  document.getElementById('navCharts').addEventListener('click', () => { closeSidebar(); openCharts(); });
+  document.getElementById('navStats').addEventListener('click', () => { closeSidebar(); openStats(); });
+  document.getElementById('navImport').addEventListener('click', openImport);
+  document.getElementById('navInstall').addEventListener('click', installApp);
+  document.getElementById('importBtn').addEventListener('click', openImport);
+  document.getElementById('trainLink').addEventListener('click', openTrainer);
+
   const rivVal = document.getElementById('rivVal');
   document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
   document.getElementById('rivPlus').addEventListener('click', ()=>{ numRivals = Math.min(9, numRivals+1); rivVal.textContent = numRivals; });
 
   ['heroPosInput', 'villPosInput'].forEach(id => document.getElementById(id).addEventListener('change', () => {
-    updateOrderHint(); seqActor = null; renderSeq(); syncFromSeq();
+    updateOrderHint(); updateCurrentHand(); seqActor = null; renderSeq(); syncFromSeq();
   }));
   updateOrderHint();
 
@@ -2039,7 +2525,7 @@
     const pro = isPro();
     uploadBox.classList.toggle('locked', !pro);
     uploadProBadge.style.display = pro ? 'none' : 'inline-block';
-    document.getElementById('uploadSub').textContent = pro ? 'JPG o PNG, hasta ~4 MB' : 'Función exclusiva de suscriptores';
+    document.getElementById('uploadSub').textContent = pro ? 'JPG o PNG, hasta ~4 MB' : 'Solo suscriptores';
   }
   uploadBox.addEventListener('click', (e) => {
     if (!isPro()){ e.preventDefault(); openPaywall(); }
@@ -2443,7 +2929,19 @@
       // Fuera de posición exige más margen; sin apuesta que pagar, apostamos si vamos
       // claramente por encima de nuestra parte "justa" del bote (ver decide()).
       const fairShare = 100/(numRivals+1);
-      const { text, cls } = decide(win, needed, call, oop, numRivals);
+      // Torneo: jugarte buena parte del stack cuesta más (te pueden eliminar).
+      const tourney = storageGet('rio_game', 'cash') === 'torneo';
+      const stackNow = Math.max(0, Number(document.getElementById('stackInput').value) || 0);
+      const riskPremium = tourney && stackNow > 0 && call >= stackNow * 0.3 ? 5 : 0;
+      const dp = decisionPoint();
+      const unraised = aStreet === 0 && (seq[0].length ? replay(0, dp && dp.s === 0 ? dp : undefined).raises === 0 : call <= bbSize());
+      const reco = recommend({ heroCards: hole, boardCards: aBoard, pot, toCall: call, rivals: numRivals, pool: vPool, oop, street: aStreet,
+        heroPos, unraised, premium: riskPremium, eq: win + tie / 2 });
+      const text = reco.text;
+      const cls = { RAISE: 'ok', BET: 'ok', CALL: 'warn', CHECK: 'warn', FOLD: 'no' }[text];
+      const bluff = reco.bc || null;
+      const isBluff = reco.kind === 'bluff', isOpen = reco.kind === 'open';
+      const heroDraw = aStreet > 0 && aStreet < 3 && hasDraw(hole, aBoard);
       badge.innerHTML = decisionHTML(text);
       badge.className = 'decision-badge ' + cls;
 
@@ -2454,17 +2952,32 @@
       const vsRange = res.usedRange ? ` contra un rango ${rangeText}` : '';
       const edge = (win - needed).toFixed(1);
       let proText;
+      const evLine = bluff ? ` Apostar 2/3 del bote: el rival se retira ~<b>${Math.round(bluff.f * 100)}%</b>, cuando paga ganas ~<b>${Math.round(bluff.eqCall * 100)}%</b> · EV apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1)}</b> vs pasar <b>${bluff.evCheck.toFixed(1)}</b>.` : '';
       if (text === 'BET'){
-        proText = `Nadie ha apostado y tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) está muy por encima de tu parte justa del bote (<b>${fairShare.toFixed(0)}%</b> con ${numRivals} rival${numRivals>1?'es':''}). Apuesta por valor: las manos peores pueden pagarte. ${posPhrase}.`;
+        proText = `Nadie ha apostado y tu equity${vsRange} es <b>${win.toFixed(1)}%</b> (parte justa del bote: ${fairShare.toFixed(0)}%). Apuesta por valor: las manos peores te pagan.${evLine} ${posPhrase}.`;
       } else if (text === 'CHECK'){
-        proText = `No hay nada que igualar y tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) no está lo bastante por encima de tu parte justa (<b>${fairShare.toFixed(0)}%</b>) como para apostar por valor. Pasa y ve la siguiente carta gratis. ${posPhrase}.`;
+        proText = `No hay nada que igualar y tu equity${vsRange} es <b>${win.toFixed(1)}%</b>. Apostar no rinde más que pasar: las manos peores se retiran y las mejores te pagan.${evLine} Pasa y ve la siguiente carta gratis. ${posPhrase}.`;
+      } else if (text === 'RAISE' && reco.valueCheck){
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera el <b>${needed.toFixed(1)}%</b> necesario y además ganas ~<b>${Math.round(reco.valueCheck)}%</b> contra la parte fuerte de su rango, la que te pagaría una subida. ${posPhrase}.`;
       } else if (text === 'RAISE'){
         proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera con margen el <b>${needed.toFixed(1)}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
+      } else if (text === 'CALL' && reco.downgraded){
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera de sobra el <b>${needed.toFixed(1)}%</b> necesario, pero contra la parte fuerte de su rango (la que pagaría una subida) solo ganas ~<b>${Math.round(reco.valueCheck)}%</b>: subir solo te lo pagarían las manos que te ganan. <b>Paga</b> y no hinches el bote. ${posPhrase}.`;
       } else if (text === 'CALL'){
         proText = `Estás cerca del punto de equilibrio (diferencia de ${edge}%${vsRange}). ${posPhrase}. ${oop ? 'Fuera de posición conviene ser algo más conservador: iguala pero no metas más fichas todavía.' : 'Con posición puedes igualar tranquilo y decidir la siguiente calle ya con más información.'}`;
       } else {
         proText = `Necesitas <b>${needed.toFixed(1)}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1)}%</b>${vsRange}. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
       }
+
+      if (isBluff){
+        proText = `Nadie ha apostado y cuando te pagan vas por detrás, pero una apuesta de 2/3 del bote hace retirarse al rival ~<b>${Math.round(bluff.f * 100)}%</b> de las veces${heroDraw ? ' y, si paga, aún tienes proyecto' : ''}. EV de apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1)}</b> frente a <b>${bluff.evCheck.toFixed(1)}</b> pasando: ${heroDraw ? 'semifarol' : 'farol'} rentable. ${posPhrase}.`;
+      }
+      if (isOpen){
+        proText = text === 'RAISE'
+          ? `Preflop sin subidas: ${handLabel} está en el <b>top ${Math.max(1, Math.round(reco.top))}%</b> y desde ${heroPos} se abre ~<b>${OPEN_PCT[heroPos]}%</b>. Abre subiendo a unas 2,5–3 ciegas grandes (no te limites a pagar la ciega).`
+          : `Preflop sin subidas: ${handLabel} está en el <b>top ${Math.round(reco.top)}%</b> y desde ${heroPos} solo se abre ~<b>${OPEN_PCT[heroPos]}%</b> de las manos. Tírala.`;
+      }
+      if (riskPremium) proText += ` <b>Torneo:</b> pagar supone más del 30% de tu stack, así que exigimos ~5% más de equity por el riesgo de quedar eliminado.`;
 
       // --- Explicación modo Fácil ---
       const of20 = (p) => { const n = Math.round(p/5); return n === 0 && p > 0 ? 'menos de 1' : String(n); };
@@ -2477,6 +2990,12 @@
       else if (text === 'RAISE') easyText = `Vas claramente por delante: ganas unas <b>${of20(win)} de cada 20</b> veces y te bastaría con <b>${of20(needed)}</b>. Sube para ganar más fichas. ${posEasy}`;
       else if (text === 'CALL') easyText = `Está justo: ganas unas <b>${of20(win)} de cada 20</b> veces y necesitas <b>${of20(needed)}</b>. Paga, pero sin meter más fichas por ahora. ${posEasy}`;
       else easyText = `Pagar te haría perder fichas a la larga: ganas solo <b>${of20(win)} de cada 20</b> veces y necesitarías <b>${of20(needed)}</b>. Lo mejor es tirar la mano. ${posEasy}`;
+      if (isOpen) easyText = text === 'RAISE'
+        ? `Nadie ha subido todavía y tu mano es de las que se juegan desde <b>${heroPos}</b> (top ${Math.max(1, Math.round(reco.top))}%). <b>Sube</b> a unas 3 ciegas grandes: no te limites a pagar.`
+        : `Nadie ha subido todavía, pero desde <b>${heroPos}</b> esta mano no se suele jugar (top ${Math.round(reco.top)}%; se juega el ${OPEN_PCT[heroPos]}% mejor). <b>Tírala</b> sin miedo.`;
+      if (text === 'CALL' && reco.downgraded) easyText = `Vas por delante de muchas de sus manos, pero si subes solo te pagarían las que te ganan. <b>Paga</b> y no metas más fichas: ganas unas <b>${of20(win)} de cada 20</b> veces y necesitas <b>${of20(needed)}</b>. ${posEasy}`;
+      if (isBluff) easyText = `Tu mano no es la mejor ahora, pero si apuestas tu rival se retirará unas <b>${of20(bluff.f * 100)} de cada 20</b> veces${heroDraw ? ', y si paga aún puedes ligar tu proyecto' : ''}. Es un <b>${heroDraw ? 'semifarol' : 'farol'}</b> que compensa.`;
+      if (riskPremium) easyText += ' Como es un <b>torneo</b> y te juegas buena parte de tus fichas, pedimos un poco más de ventaja: si pierdes, quedas fuera.';
       document.getElementById('adviceBox').innerHTML = `<div class="easy-only">${easyText}</div><div class="pro-only">${proText}</div>`;
 
       // Puntos: cada uno es una de cada 20 veces
@@ -2548,23 +3067,31 @@
       const e2raw = runEquity(hole, aBoard, numRivals, 1000, strongPool);
       const e2 = Math.max(0, (e2raw.win + e2raw.tie / 2) - (oop ? 3 : 0)) / 100;
       lastE2 = e2 * 100;
-      const maxCall = e2 >= 0.5 ? Infinity : e2 * (potAfter + villMatch) / (1 - 2 * e2);
+      const eCap = Math.min(e2, 0.49);
+      const maxCall = e2 >= 0.55 ? Infinity : eCap * (potAfter + villMatch) / (1 - 2 * eCap);
       const behind = effStack > 0 ? Math.max(0, effStack - heroPut) : 0;
       const u = unitLabel === 'fichas' ? '' : ' ' + unitLabel;
-      const limit = maxCall === Infinity || (behind > 0 && maxCall >= behind)
+      const limit = e2 >= 0.45 && e2 < 0.55 && !(behind > 0 && maxCall >= behind)
+        ? `puedes <b>pagar casi cualquier resubida</b>: contra su rango fuerte ganas ~${Math.round(e2*100)}%, casi la mitad de las veces`
+        : maxCall === Infinity || (behind > 0 && maxCall >= behind)
         ? `<b>paga aunque vaya all-in</b>: sigues por delante incluso contra su rango fuerte (ganas ~${Math.round(e2*100)}%)`
         : maxCall < Math.max(1, pot * 0.1)
           ? `<b>retírate</b> salvo que la subida sea mínima: contra su rango fuerte solo ganas ~${Math.round(e2*100)}%`
           : `paga si te toca poner <b>hasta ${fmtN(Math.round(maxCall))}${u}</b> más; si es más, <b>retírate</b> (contra su rango fuerte ganas ~${Math.round(e2*100)}%)`;
       let planItems = [];
-      if (text === 'BET') planItems.push(`Apuesta unas <b>${fmtN(Math.round(heroPut))}${u}</b> (2/3 del bote).`, `Si te suben: ${limit}.`);
+      if (text === 'BET' && isBluff) planItems.push(`Apuesta unas <b>${fmtN(Math.round(heroPut))}${u}</b> (2/3 del bote) de ${heroDraw ? 'semifarol' : 'farol'}.`, heroDraw ? 'Si te suben, paga solo si te sale barato: tu proyecto aún puede ligar.' : 'Si te suben, <b>retírate</b>: el farol no ha funcionado.');
+      else if (text === 'BET') planItems.push(`Apuesta unas <b>${fmtN(Math.round(heroPut))}${u}</b> (2/3 del bote).`, `Si te suben: ${limit}.`);
+      else if (text === 'RAISE' && isOpen) planItems.push(`Abre subiendo a unas <b>${fmtN(Math.round(bbSize() * 3 * 100) / 100)}${u}</b> (3 ciegas grandes).`, `Si te resuben: ${limit}.`);
       else if (text === 'RAISE') planItems.push(`Sube a unas <b>${fmtN(Math.round(heroPut))}${u}</b> (3 veces su apuesta).`, `Si te resuben: ${limit}.`);
       else if (text === 'CALL') planItems.push(`Paga <b>${fmtN(call)}${u}</b>.`, `Si alguien vuelve a subir después: ${limit}.`, curStreet < 3 ? 'En la siguiente calle, vuelve a analizar con la carta nueva: pulsa <b>Siguiente calle</b>.' : '');
       else if (text === 'CHECK') planItems.push('Pasa.', `Si después tu rival apuesta: ${limit}.`);
       else planItems.push('Tira la mano: no hay plan que la salve a este precio.');
+      if (tourney && !stackNow) planItems.push('Torneo: escribe <b>tu stack</b> para ajustar el consejo al riesgo de quedar eliminado.');
       document.getElementById('planBox').innerHTML = `<div class="plan-title">📋 Tu plan</div><ul>${planItems.filter(Boolean).map(x => `<li>${x}</li>`).join('')}</ul>`;
 
-      renderTimeline(seqHasActions() ? reviewDecisions() : []);
+      const reviewRows = seqHasActions() ? reviewDecisions() : [];
+      renderTimeline(reviewRows);
+      saveReviews(reviewRows);
       const nsBtn = document.getElementById('nextStreetBtn');
       nsBtn.style.display = curStreet < 3 && text !== 'FOLD' ? 'block' : 'none';
       nsBtn.textContent = `➡️ Siguiente calle: ${['añadir el flop', 'añadir el turn', 'añadir el river'][Math.min(2, curStreet)]}`;
