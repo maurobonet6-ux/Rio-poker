@@ -504,6 +504,69 @@
   }
   .mini-card.crimson { color: var(--crimson); }
   .account-line { font-size: 0.78rem; color: var(--cream-dim); margin-top: 4px; word-break: break-all; }
+
+  /* ---- Secuencia de apuestas ---- */
+  .seq-box { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 4px 14px; margin-bottom: 18px; }
+  .seq-box[open] { padding-bottom: 14px; }
+  .seq-box summary { cursor: pointer; font-weight: 700; padding: 12px 0; list-style: none; }
+  .seq-box summary::-webkit-details-marker { display: none; }
+  .seq-box summary::after { content: '▾'; float: right; color: var(--cream-dim); }
+  .seq-box[open] summary::after { content: '▴'; }
+  .seq-tag { font-size: 0.68rem; font-weight: 700; color: var(--gold); background: var(--gold-soft); padding: 3px 8px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .seq-intro { margin: 0 0 12px; line-height: 1.45; }
+  .seq-blinds { max-width: 180px; margin-bottom: 14px; }
+  .seq-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+  .seq-tabs button {
+    border: 1px solid var(--line); background: var(--panel); color: var(--cream-dim); border-radius: 10px; padding: 9px 4px;
+    font-weight: 700; font-size: 0.8rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .seq-tabs button.active { border-color: var(--gold); color: var(--cream); background: var(--gold-soft); }
+  .seq-tabs button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .seq-tabs button small { display: block; font-weight: 500; font-size: 0.66rem; margin-top: 2px; }
+  .seq-list { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 30px; margin-bottom: 10px; font-size: 0.8rem; color: var(--cream-dim); }
+  .seq-chip { padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 0.8rem; background: var(--panel); border: 1px solid var(--line); color: var(--cream); }
+  .seq-chip.hero { border-color: rgba(61,220,122,0.45); }
+  .seq-chip.vill { border-color: rgba(255,71,87,0.45); }
+  .seq-chip .who { color: var(--cream-dim); font-weight: 600; margin-right: 4px; }
+  .seq-controls { display: grid; gap: 8px; }
+  .seq-who { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .seq-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seq-controls button {
+    border: 1px solid var(--line); background: var(--panel); color: var(--cream); border-radius: 10px; padding: 11px 6px;
+    font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .seq-controls button:hover { border-color: var(--gold); }
+  .seq-controls button.active { border-color: var(--gold); background: var(--gold-soft); }
+  .seq-controls button.fold { color: var(--crimson); }
+  .seq-controls button.aggr { color: var(--ok); }
+  .seq-amount { display: none; gap: 6px; }
+  .seq-amount.show { display: flex; }
+  .seq-amount input { flex: 1; min-width: 0; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--cream); font-size: 1rem; font-weight: 600; font-family: 'Space Grotesk', sans-serif; }
+  .seq-sizes { display: flex; gap: 6px; flex-wrap: wrap; }
+  .seq-sizes button { padding: 7px 10px; font-size: 0.76rem; }
+  .seq-state { font-size: 0.78rem; color: var(--cream-dim); }
+  .seq-state b { color: var(--cream); }
+  .seq-foot { display: flex; gap: 8px; margin-top: 10px; }
+  .seq-foot button { background: none; border: none; color: var(--cream-dim); font-size: 0.8rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif; padding: 4px 0; text-decoration: underline; }
+  .field input.auto { border-color: rgba(216,166,59,0.55); }
+
+  /* ---- Plan y repaso ---- */
+  .plan { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: var(--panel-2); border-left: 3px solid var(--lavender); font-size: 0.9rem; line-height: 1.55; color: var(--cream-dim); }
+  .plan:empty { display: none; }
+  .plan b { color: var(--cream); }
+  .plan .plan-title { font-weight: 800; color: var(--lavender); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .plan ul { margin: 0; padding-left: 18px; }
+  .plan li { margin: 3px 0; }
+  .tl-row { display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .tl-row:last-child { border-bottom: none; }
+  .tl-mark { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; }
+  .tl-mark.ok { background: var(--ok-soft); color: var(--ok); }
+  .tl-mark.meh { background: var(--lavender-soft); color: var(--lavender); }
+  .tl-mark.bad { background: var(--crimson-soft); color: var(--crimson); }
+  .tl-head { font-weight: 700; font-size: 0.9rem; }
+  .tl-head small { color: var(--cream-dim); font-weight: 600; margin-left: 6px; }
+  .tl-body { font-size: 0.82rem; color: var(--cream-dim); line-height: 1.45; margin-top: 3px; }
+  .tl-body b { color: var(--cream); }
 </style>
 </head>
 <body>
@@ -576,6 +639,21 @@
 
   <section class="panel">
     <div class="panel-head"><div class="panel-num">2</div><h2>La situación</h2></div>
+    <details class="seq-box" id="seqBox">
+      <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendado</span></summary>
+      <div class="hint seq-intro">Apunta qué hizo cada uno en cada calle. Calculamos el bote y lo que te toca pagar, ajustamos el rango del rival según cómo apuesta y repasamos <b>todas tus decisiones</b>, no solo la última.</div>
+      <div class="seq-blinds field">
+        <label>Ciega grande <button type="button" class="help" data-help="blinds">?</button></label>
+        <input type="number" id="bbInput" value="2" min="0" step="any" inputmode="decimal">
+      </div>
+      <div class="seq-tabs" id="seqTabs"></div>
+      <div class="seq-list" id="seqList"></div>
+      <div class="seq-controls" id="seqControls"></div>
+      <div class="seq-foot">
+        <button type="button" id="seqUndo">↶ Deshacer</button>
+        <button type="button" id="seqClear">Borrar secuencia</button>
+      </div>
+    </details>
     <div class="inputs-row">
       <div class="field">
         <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
@@ -687,6 +765,12 @@
       <div class="stat pro-only" data-help="range"><b id="statRange">—</b><span>Rango rival</span></div>
     </div>
     <div class="advice" id="adviceBox"></div>
+    <div class="plan" id="planBox"></div>
+
+    <div id="timelineWrap" style="display:none;">
+      <div class="sub-title">Tus decisiones calle a calle</div>
+      <div id="timeline"></div>
+    </div>
 
     <div id="outsBox" style="display:none;">
       <div class="sub-title"><span class="easy-only">Cartas que mejoran tu mano en la próxima calle</span><span class="pro-only">Outs (mejoran tu categoría en la próxima calle)</span></div>
@@ -710,6 +794,7 @@
       </div>
     </div>
 
+    <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
     <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:14px;">📋 Copiar resumen de la mano</button>
   </section>
 
@@ -1081,7 +1166,7 @@
   let hole = [null, null];
   let board = [null, null, null, null, null];
   let numRivals = 1;
-  let lastWin = null, lastTie = null, lastOop = false;
+  let lastWin = null, lastTie = null, lastOop = false, lastE2 = null;
   let activeSlot = null;
   // Orden de acción postflop estándar: la ciega pequeña actúa primero en cada calle
   // y el botón el último. Con esto derivamos automáticamente quién va "en posición".
@@ -1161,6 +1246,7 @@
 
     updateCurrentHand();
     renderRangeUI();
+    renderSeq(); syncFromSeq();
     resultPanel.classList.remove('show');
   }
 
@@ -1330,15 +1416,15 @@
 
   // Cuenta las cartas que, al caer, mejoran la categoría de tu mano actual
   // (p.ej. de proyecto de color a color hecho). Solo tiene sentido en flop/turn.
-  // Una carta solo es "out" si mejora TU jugada: que empareje la mesa (y le
-  // sirva igual a todos) no cuenta.
+  // Una carta solo es "out" si mejora TU jugada por encima de lo que mejora la
+  // mesa: si solo empareja la mesa (y le sirve igual a todos) no cuenta.
   function findOuts(holeCards, filledBoard){
     if (filledBoard.length !== 3 && filledBoard.length !== 4) return null;
     const known = [...holeCards, ...filledBoard];
-    const before = bestHand(known).category;
+    const before = bestHand(known).category - boardCategory(filledBoard);
     return remainingDeck(known).filter(c => {
-      const after = bestHand([...known, c]).category;
-      return after > before && after > boardCategory([...filledBoard, c]);
+      const next = [...filledBoard, c];
+      return bestHand([...known, c]).category - boardCategory(next) > before;
     });
   }
   // Categoría de la jugada que forma la mesa sola (4 o 5 cartas).
@@ -1368,18 +1454,18 @@
 
   // Simula la mano muchas veces. Si hay rango del rival, sus cartas salen de
   // ese rango (quitando las que ya están a la vista); si no, al azar.
-  function runEquity(holeCards, boardCards, rivals, iterations, rangeSet){
+  function runEquity(holeCards, boardCards, rivals, iterations, range){
     const filledBoard = boardCards.filter(Boolean);
     const known = [...holeCards, ...filledBoard];
     const knownKeys = new Set(known.map(cardKey));
     const deck = remainingDeck(known);
     const boardNeeded = 5 - filledBoard.length;
     let pool = null;
-    if (rangeSet && rangeSet.size > 0 && rangeSet.size < 169){
-      pool = [];
-      rangeSet.forEach(n => classCombos(n).forEach(c => {
-        if (!knownKeys.has(cardKey(c[0])) && !knownKeys.has(cardKey(c[1]))) pool.push(c);
-      }));
+    const combos = range instanceof Set
+      ? (range.size > 0 && range.size < 169 ? poolFromSet(range) : null)
+      : (Array.isArray(range) && range.length > 0 && range.length < 1326 ? range : null);
+    if (combos){
+      pool = combos.filter(c => !knownKeys.has(cardKey(c[0])) && !knownKeys.has(cardKey(c[1])));
       if (!pool.length) pool = null;
     }
     const cats = new Array(9).fill(0);
@@ -1540,6 +1626,7 @@
 
   // ---- Ayuda y glosario ----
   const HELP = {
+    blinds: ['Ciega grande', 'La apuesta obligatoria más grande de la mesa (por ejemplo, en una partida 1/2 la ciega grande es 2). La usamos para calcular el bote inicial del preflop: ciega pequeña + ciega grande.'],
     rivals: ['Rivales en la mano', 'Cuántos jugadores <b>siguen en la mano</b> contigo (no cuentes los que ya se han retirado). Cuantos más rivales, más difícil es ganar.'],
     pot: ['Bote', 'Todas las fichas que hay en el centro de la mesa <b>antes</b> de que tú pagues, incluida la apuesta de tu rival.', 'Ejemplo: había 40 en el centro y tu rival apuesta 20 → el bote es 60.'],
     call: ['Cantidad a igualar', 'Lo que te cuesta <b>pagar</b> para seguir en la mano. Si nadie ha apostado, pon 0.'],
@@ -1576,12 +1663,306 @@
   document.getElementById('closeHelp').addEventListener('click', () => helpModal.classList.remove('show'));
   helpModal.addEventListener('click', (e) => { if (e.target === helpModal) helpModal.classList.remove('show'); });
 
+  // ---- Secuencia de apuestas ----
+  // Mano a dos: "hero" (tú) contra "vill" (el rival que apuesta). Cada calle
+  // guarda sus acciones; "to" es lo que ese jugador lleva puesto en la calle
+  // después de apostar o subir.
+  const STREET_NAMES = ['Preflop', 'Flop', 'Turn', 'River'];
+  const PREFLOP_ORDER = ['UTG','HJ','CO','BTN','SB','BB'];
+  let seq = [[], [], [], []];
+  let seqStreet = 0, seqActor = null, seqPending = null; // seqPending: 'bet' | 'raise' mientras se escribe la cantidad
+
+  const fmtN = (n) => (Math.round(n * 100) / 100).toLocaleString('es-ES');
+  function bbSize(){ return Math.max(0.01, Number(document.getElementById('bbInput').value) || 2); }
+  function availableStreets(){
+    const n = board.filter(Boolean).length;
+    return n >= 5 ? 4 : n >= 4 ? 3 : n >= 3 ? 2 : 1;
+  }
+  function boardAt(s){ return s === 0 ? [] : board.slice(0, s === 1 ? 3 : s === 2 ? 4 : 5).filter(Boolean); }
+  function seqHasActions(){ const a = availableStreets(); return seq.slice(0, a).some(x => x.length); }
+
+  // Reproduce la secuencia hasta la calle "upto" (incluida) o hasta justo antes
+  // de la acción stopAt = {s, i}. Devuelve bote y lo que lleva cada uno en la calle.
+  function replay(upto, stopAt){
+    const bb = bbSize(), sb = bb / 2;
+    const heroPos = document.getElementById('heroPosInput').value;
+    const villPos = document.getElementById('villPosInput').value;
+    let pot = sb + bb;
+    let heroIn = heroPos === 'BB' ? bb : heroPos === 'SB' ? sb : 0;
+    let villIn = villPos === 'BB' ? bb : villPos === 'SB' ? sb : 0;
+    for (let s = 0; s <= upto; s++){
+      if (s > 0){ heroIn = 0; villIn = 0; }
+      for (let i = 0; i < seq[s].length; i++){
+        if (stopAt && stopAt.s === s && stopAt.i === i) return { pot, heroIn, villIn };
+        const a = seq[s][i];
+        const mine = a.who === 'hero' ? heroIn : villIn, other = a.who === 'hero' ? villIn : heroIn;
+        let add = 0;
+        if (a.type === 'call') add = Math.max(0, other - mine);
+        else if (a.type === 'bet' || a.type === 'raise') add = Math.max(0, a.to - mine);
+        pot += add;
+        if (a.who === 'hero') heroIn += add; else villIn += add;
+      }
+      if (stopAt && stopAt.s === s) return { pot, heroIn, villIn };
+    }
+    return { pot, heroIn, villIn };
+  }
+
+  function defaultActor(s){
+    const list = seq[s];
+    if (list.length) return list[list.length - 1].who === 'hero' ? 'vill' : 'hero';
+    if (s === 0){
+      const h = PREFLOP_ORDER.indexOf(document.getElementById('heroPosInput').value);
+      const v = PREFLOP_ORDER.indexOf(document.getElementById('villPosInput').value);
+      return h < v ? 'hero' : 'vill';
+    }
+    return heroIsOOP() ? 'hero' : 'vill';
+  }
+
+  function actionText(a, amount){
+    const who = a.who === 'hero' ? 'Tú' : 'Rival';
+    const verb = {
+      check: 'pasa', fold: a.who === 'hero' ? 'te retiras' : 'se retira',
+      call: 'paga ' + fmtN(amount), bet: 'apuesta ' + fmtN(a.to), raise: 'sube a ' + fmtN(a.to)
+    }[a.type];
+    return `<span class="who">${who}</span>${verb}`;
+  }
+
+  function renderSeq(){
+    const avail = availableStreets();
+    if (seqStreet >= avail) seqStreet = avail - 1;
+    const tabs = document.getElementById('seqTabs');
+    tabs.innerHTML = STREET_NAMES.map((n, s) => {
+      const count = seq[s].length;
+      return `<button type="button" data-s="${s}" class="${s === seqStreet ? 'active' : ''}" ${s >= avail ? 'disabled title="Añade primero las cartas de esta calle"' : ''}>${n}<small>${s >= avail ? 'sin cartas' : count ? count + ' acción' + (count > 1 ? 'es' : '') : '—'}</small></button>`;
+    }).join('');
+    tabs.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { seqStreet = Number(b.dataset.s); seqActor = null; seqPending = null; renderSeq(); }));
+
+    // Lista de acciones de la calle elegida
+    const start = replay(seqStreet, { s: seqStreet, i: 0 });
+    const chips = [];
+    for (let i = 0; i < seq[seqStreet].length; i++){
+      const st = replay(seqStreet, { s: seqStreet, i });
+      const a = seq[seqStreet][i];
+      const amount = a.type === 'call' ? Math.max(0, (a.who === 'hero' ? st.villIn - st.heroIn : st.heroIn - st.villIn)) : 0;
+      chips.push(`<span class="seq-chip ${a.who}">${actionText(a, amount)}</span>`);
+    }
+    document.getElementById('seqList').innerHTML = `<span>Bote: <b>${fmtN(start.pot)}</b></span>` + (chips.length ? chips.join('') : '<span>Aún no hay acciones en esta calle.</span>');
+
+    // Controles para añadir la siguiente acción
+    const actor = seqActor || defaultActor(seqStreet);
+    const now = replay(seqStreet);
+    const mine = actor === 'hero' ? now.heroIn : now.villIn, other = actor === 'hero' ? now.villIn : now.heroIn;
+    const toCall = Math.max(0, other - mine);
+    const facingBet = toCall > 0;
+    const pendingType = facingBet ? 'raise' : 'bet';
+    const potNow = now.pot;
+    const sizes = facingBet
+      ? [['x2,5', other * 2.5], ['x3', other * 3], ['x4', other * 4]]
+      : [['1/3 bote', potNow / 3], ['1/2 bote', potNow / 2], ['2/3 bote', potNow * 2 / 3], ['Bote', potNow]];
+    const ctl = document.getElementById('seqControls');
+    ctl.innerHTML = `
+      <div class="seq-who">
+        <button type="button" data-who="hero" class="${actor === 'hero' ? 'active' : ''}">🙋 Tú</button>
+        <button type="button" data-who="vill" class="${actor === 'vill' ? 'active' : ''}">🎯 Rival</button>
+      </div>
+      <div class="seq-state">${actor === 'hero'
+        ? (facingBet ? `Tienes que pagar <b>${fmtN(toCall)}</b>. ¿Qué hiciste?` : 'Puedes pasar o apostar. ¿Qué hiciste?')
+        : (facingBet ? `El rival tiene que pagar <b>${fmtN(toCall)}</b>. ¿Qué hizo?` : 'El rival puede pasar o apostar. ¿Qué hizo?')}</div>
+      <div class="seq-acts">
+        ${facingBet
+          ? `<button type="button" class="fold" data-act="fold">Retirarse</button><button type="button" data-act="call">Pagar ${fmtN(toCall)}</button><button type="button" class="aggr" data-act="raise">Subir…</button>`
+          : `<button type="button" data-act="check">Pasar</button><button type="button" class="aggr" data-act="bet">Apostar…</button><button type="button" class="fold" data-act="fold">Retirarse</button>`}
+      </div>
+      <div class="seq-amount ${seqPending ? 'show' : ''}">
+        <input type="number" id="seqAmount" min="0" step="any" inputmode="decimal" placeholder="${facingBet ? 'Sube a… (total)' : 'Cantidad'}">
+        <button type="button" id="seqAmountOk">Añadir</button>
+      </div>
+      ${seqPending ? `<div class="seq-sizes">${sizes.map(([l, v]) => `<button type="button" data-size="${Math.round(v * 100) / 100}">${l} · ${fmtN(Math.round(v * 100) / 100)}</button>`).join('')}</div>` : ''}`;
+    ctl.querySelectorAll('[data-who]').forEach(b => b.addEventListener('click', () => { seqActor = b.dataset.who; seqPending = null; renderSeq(); }));
+    ctl.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
+      const act = b.dataset.act;
+      if (act === 'bet' || act === 'raise'){ seqPending = pendingType; renderSeq(); document.getElementById('seqAmount').focus(); return; }
+      addSeqAction({ who: actor, type: act });
+    }));
+    const addAmount = (v) => {
+      const to = Number(v);
+      if (!(to > other)){ const inp = document.getElementById('seqAmount'); inp.value = ''; inp.placeholder = `Tiene que ser más de ${fmtN(other)}`; inp.focus(); return; }
+      addSeqAction({ who: actor, type: facingBet ? 'raise' : 'bet', to });
+    };
+    ctl.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => addAmount(b.dataset.size)));
+    const ok = document.getElementById('seqAmountOk');
+    if (ok) ok.addEventListener('click', () => addAmount(document.getElementById('seqAmount').value));
+    const amt = document.getElementById('seqAmount');
+    if (amt) amt.addEventListener('keydown', (e) => { if (e.key === 'Enter') addAmount(amt.value); });
+  }
+
+  function addSeqAction(a){
+    seq[seqStreet].push(a);
+    seqActor = null; seqPending = null;
+    renderSeq(); syncFromSeq();
+  }
+  document.getElementById('seqUndo').addEventListener('click', () => {
+    for (let s = seqStreet; s >= 0; s--){ if (seq[s].length){ seq[s].pop(); seqStreet = s; break; } }
+    seqActor = null; seqPending = null; renderSeq(); syncFromSeq();
+  });
+  document.getElementById('seqClear').addEventListener('click', () => {
+    seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null; renderSeq(); syncFromSeq();
+  });
+  document.getElementById('bbInput').addEventListener('input', () => { renderSeq(); syncFromSeq(); });
+
+  // Con secuencia, el bote y lo que te toca pagar se calculan solos.
+  function syncFromSeq(){
+    const potEl = document.getElementById('potInput'), callEl = document.getElementById('callInput');
+    const has = seqHasActions();
+    potEl.classList.toggle('auto', has); callEl.classList.toggle('auto', has);
+    if (!has) return;
+    const st = replay(availableStreets() - 1);
+    potEl.value = Math.round(st.pot * 100) / 100;
+    callEl.value = Math.round(Math.max(0, st.villIn - st.heroIn) * 100) / 100;
+  }
+
+  // ---- Rango del rival según cómo ha apostado ----
+  const DRAW_SCORE = [7,0,0,0,0].reduce((x, t) => x * 15 + t, 1); // un proyecto cuenta como una pareja media
+  function hasDraw(combo, boardCards){
+    if (boardCards.length >= 5) return false;
+    const cards = [...combo, ...boardCards];
+    for (const su of SUITS){
+      if (cards.filter(c => c.suit === su).length >= 4 && combo.some(c => c.suit === su)) return true;
+    }
+    const ranks = new Set(cards.map(c => c.rank)); if (ranks.has(14)) ranks.add(1);
+    const mine = new Set(combo.map(c => c.rank)); if (mine.has(14)) mine.add(1);
+    for (let lo = 1; lo <= 10; lo++){
+      let n = 0, usesMine = false;
+      for (let r = lo; r < lo + 5; r++){ if (ranks.has(r)){ n++; if (mine.has(r)) usesMine = true; } }
+      if (n >= 4 && usesMine) return true;
+    }
+    return false;
+  }
+  function comboStrength(combo, boardCards){
+    if (boardCards.length < 3) return -HAND_RANKING.indexOf(handClass(combo[0], combo[1]));
+    const sc = bestHand([...combo, ...boardCards]).score;
+    return hasDraw(combo, boardCards) ? Math.max(sc, DRAW_SCORE) : sc;
+  }
+  // Se queda con la fracción "frac" más fuerte del rango en esa mesa.
+  function strongest(pool, boardCards, frac){
+    const blocked = new Set([...hole.filter(Boolean), ...boardCards].map(cardKey));
+    const live = pool.filter(c => !blocked.has(cardKey(c[0])) && !blocked.has(cardKey(c[1])));
+    if (live.length < 4) return live;
+    const scored = live.map(c => [comboStrength(c, boardCards), c]).sort((a, b) => b[0] - a[0]);
+    return scored.slice(0, Math.max(3, Math.ceil(scored.length * frac))).map(x => x[1]);
+  }
+  function poolFromSet(set){ const out = []; set.forEach(n => classCombos(n).forEach(c => out.push(c))); return out; }
+  function intersectTop(set, pct){ const top = topRange(pct); return new Set([...set].filter(n => top.has(n))); }
+  const OPEN_PCT = Object.fromEntries(RANGE_PRESETS);
+
+  // Rango del rival justo antes de la acción stopAt (o al final de la secuencia).
+  function villainPoolAt(stopAt){
+    const villPos = document.getElementById('villPosInput').value;
+    let set = new Set(villRange.set);
+    let raises = 0;
+    const avail = availableStreets();
+    const pre = seq[0];
+    for (let i = 0; i < pre.length; i++){
+      if (stopAt && stopAt.s === 0 && stopAt.i === i) break;
+      const a = pre[i];
+      if (a.type === 'bet' || a.type === 'raise'){
+        raises++;
+        if (a.who === 'vill') set = intersectTop(set, raises === 1 ? (OPEN_PCT[villPos] || 30) : raises === 2 ? 9 : 4);
+      } else if (a.type === 'call' && a.who === 'vill'){
+        set = intersectTop(set, raises >= 2 ? 15 : villPos === 'BB' ? 60 : 30);
+      }
+    }
+    if (set.size === 0) set = new Set(villRange.set);
+    let pool = poolFromSet(set);
+    for (let s = 1; s < avail; s++){
+      if (stopAt && stopAt.s < s) break;
+      const b = boardAt(s);
+      for (let i = 0; i < seq[s].length; i++){
+        if (stopAt && stopAt.s === s && stopAt.i === i) break;
+        const a = seq[s][i];
+        if (a.who !== 'vill') continue;
+        if (a.type === 'bet') pool = strongest(pool, b, 0.65);
+        else if (a.type === 'raise') pool = strongest(pool, b, 0.3);
+        else if (a.type === 'call') pool = strongest(pool, b, 0.7);
+      }
+    }
+    return pool;
+  }
+  // Rango con el que suele subir o resubir (para el plan "si te suben").
+  function raisingPool(pool, s, frac){
+    if (s === 0){
+      const classes = new Set(pool.map(c => handClass(c[0], c[1])));
+      const tight = intersectTop(classes, 9);
+      return poolFromSet(tight.size ? tight : classes);
+    }
+    return strongest(pool, boardAt(s), frac);
+  }
+
+  // ---- Decisión recomendada ----
+  function decide(win, needed, call, oop, rivals){
+    const raiseBuffer = oop ? 8 : 4, callBuffer = oop ? -1 : -5;
+    const fairShare = 100 / (rivals + 1);
+    if (call === 0) return win >= fairShare + (oop ? 18 : 12) ? { text: 'BET', cls: 'ok' } : { text: 'CHECK', cls: 'warn' };
+    if (win >= needed + raiseBuffer) return { text: 'RAISE', cls: 'ok' };
+    if (win >= needed + callBuffer) return { text: 'CALL', cls: 'warn' };
+    return { text: 'FOLD', cls: 'no' };
+  }
+  function grade(rec, act){
+    if (rec === act) return 'ok';
+    const aggr = x => x === 'RAISE' || x === 'BET';
+    if (aggr(rec) && (act === 'CALL' || act === 'CHECK')) return 'meh';
+    if (rec === 'CALL' && aggr(act)) return 'meh';
+    if (rec === 'CHECK' && act === 'BET') return 'meh';
+    return 'bad';
+  }
+
+  // Repasa cada acción tuya de la secuencia.
+  function reviewDecisions(){
+    const avail = availableStreets(), rows = [];
+    const oop = heroIsOOP();
+    for (let s = 0; s < avail; s++){
+      for (let i = 0; i < seq[s].length; i++){
+        const a = seq[s][i];
+        if (a.who !== 'hero') continue;
+        const st = replay(s, { s, i });
+        const toCall = Math.max(0, st.villIn - st.heroIn);
+        const pool = villainPoolAt({ s, i });
+        const { win } = runEquity(hole, boardAt(s), numRivals, 700, pool);
+        const needed = toCall > 0 ? toCall / (st.pot + toCall) * 100 : 0;
+        const rec = decide(win, needed, toCall, oop, numRivals).text;
+        const act = a.type === 'check' ? 'CHECK' : a.type === 'call' ? 'CALL' : a.type === 'fold' ? 'FOLD' : (toCall > 0 ? 'RAISE' : 'BET');
+        rows.push({ s, win, needed, toCall, pot: st.pot, rec, act, g: grade(rec, act) });
+      }
+    }
+    return rows;
+  }
+  function renderTimeline(rows){
+    const wrap = document.getElementById('timelineWrap');
+    wrap.style.display = rows.length ? 'block' : 'none';
+    if (!rows.length) return;
+    const of20 = (p) => { const n = Math.round(p / 5); return n === 0 && p > 0 ? 'menos de 1' : String(n); };
+    const MARK = { ok: '✓', meh: '≈', bad: '✗' };
+    const VERDICT = { ok: 'Bien jugado', meh: 'Aceptable', bad: 'Mejorable' };
+    document.getElementById('timeline').innerHTML = rows.map(r => {
+      const situation = r.toCall > 0
+        ? `Te tocaba pagar <b>${fmtN(r.toCall)}</b> en un bote de <b>${fmtN(r.pot)}</b>.`
+        : `Nadie había apostado (bote de <b>${fmtN(r.pot)}</b>).`;
+      const easy = `${situation} Ganabas unas <b>${of20(r.win)} de cada 20</b>${r.toCall > 0 ? ` y necesitabas <b>${of20(r.needed)}</b>` : ''}.`;
+      const pro = `${situation} Equity <b>${r.win.toFixed(1)}%</b>${r.toCall > 0 ? ` · necesitabas <b>${r.needed.toFixed(1)}%</b>` : ''}.`;
+      return `<div class="tl-row"><div class="tl-mark ${r.g}">${MARK[r.g]}</div><div>
+        <div class="tl-head">${STREET_NAMES[r.s]} <small>${VERDICT[r.g]}</small></div>
+        <div class="tl-body"><span class="easy-only">${easy}</span><span class="pro-only">${pro}</span><br>
+        Hiciste <b>${decisionHTML(r.act)}</b> · lo recomendado era <b>${decisionHTML(r.rec)}</b>.</div></div></div>`;
+    }).join('');
+  }
+
   const rivVal = document.getElementById('rivVal');
   document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
   document.getElementById('rivPlus').addEventListener('click', ()=>{ numRivals = Math.min(9, numRivals+1); rivVal.textContent = numRivals; });
 
-  document.getElementById('heroPosInput').addEventListener('change', updateOrderHint);
-  document.getElementById('villPosInput').addEventListener('change', updateOrderHint);
+  ['heroPosInput', 'villPosInput'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+    updateOrderHint(); seqActor = null; renderSeq(); syncFromSeq();
+  }));
   updateOrderHint();
 
   const usageRow = document.getElementById('usageRow');
@@ -1962,7 +2343,8 @@
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
       const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
-      const res = runEquity(hole, board, numRivals, simIterations(), villRange.set);
+      const vPool = villainPoolAt(null);
+      const res = runEquity(hole, board, numRivals, simIterations(), vPool);
       const { win, tie } = res;
       const needed = (pot+call) > 0 ? (call/(pot+call))*100 : 0;
 
@@ -1986,7 +2368,10 @@
         currentCat = best.category;
         handLabel = categoryName(best.category, best.tiebreak);
       }
-      const rangeText = res.usedRange ? rangeLabel().toLowerCase() : 'cualquier mano';
+      const villActed = seq.slice(0, availableStreets()).some(x => x.some(a => a.who === 'vill' && a.type !== 'check'));
+      const rangeText = !res.usedRange ? 'cualquier mano'
+        : villActed ? `rango ajustado a sus apuestas, ~${Math.max(1, Math.round(vPool.length / 1326 * 100))}%`
+        : rangeLabel().toLowerCase();
       handSub = (handSub ? handSub + ' · ' : '') + `vs ${numRivals} rival${numRivals>1?'es':''} (${rangeText})`;
       document.getElementById('resultHandName').innerHTML = `${handLabel}<small>${handSub}</small>`;
 
@@ -1995,19 +2380,10 @@
       const villPos = document.getElementById('villPosInput').value;
       const oop = heroIsOOP();
       lastOop = oop;
-      // Fuera de posición exige más margen (juegas a ciegas del rival); en posición puedes apretar con menos margen.
-      const raiseBuffer = oop ? 8 : 4;
-      const callBuffer = oop ? -1 : -5;
-      // Sin apuesta que pagar: apostamos si vamos claramente por encima de nuestra parte "justa" del bote.
+      // Fuera de posición exige más margen; sin apuesta que pagar, apostamos si vamos
+      // claramente por encima de nuestra parte "justa" del bote (ver decide()).
       const fairShare = 100/(numRivals+1);
-      let text, cls;
-      if (call === 0){
-        if (win >= fairShare + (oop ? 18 : 12)){ text = 'BET'; cls = 'ok'; }
-        else { text = 'CHECK'; cls = 'warn'; }
-      }
-      else if (win >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
-      else if (win >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
-      else { text = 'FOLD'; cls = 'no'; }
+      const { text, cls } = decide(win, needed, call, oop, numRivals);
       badge.innerHTML = decisionHTML(text);
       badge.className = 'decision-badge ' + cls;
 
@@ -2065,7 +2441,7 @@
       document.getElementById('statLose').textContent = lose.toFixed(1)+'%';
       document.getElementById('statOuts').textContent = outs===null ? '—' : outs+' cartas';
       document.getElementById('statNeeded').textContent = call>0 ? needed.toFixed(1)+'%' : '—';
-      document.getElementById('statRange').textContent = res.usedRange ? Math.round(villRange.pct)+'%' : '100%';
+      document.getElementById('statRange').textContent = res.usedRange ? Math.max(1, Math.round(vPool.length / 1326 * 100))+'%' : '100%';
 
       // Cartas que te ayudan
       const outsBox = document.getElementById('outsBox');
@@ -2102,6 +2478,36 @@
       evEl.textContent = call>0 ? (ev>=0 ? '+' : '') + ev.toFixed(1) + evUnitSuffix : '—';
       evEl.style.color = call>0 ? (ev>=0 ? 'var(--ok)' : 'var(--crimson)') : 'var(--cream)';
       document.getElementById('statSPR').textContent = (effStack>0 && pot>0) ? (effStack/pot).toFixed(1) : '—';
+
+      // --- Plan: cuánto apostar y qué hacer si te suben ---
+      const curStreet = availableStreets() - 1;
+      const heroPut = text === 'RAISE' ? call * 3 : text === 'BET' ? pot * 2 / 3 : text === 'CALL' ? call : 0;
+      const villMatch = text === 'RAISE' ? heroPut - call : text === 'BET' ? heroPut : 0;
+      const potAfter = pot + heroPut;
+      const strongPool = raisingPool(vPool, curStreet, text === 'CHECK' ? 0.65 : 0.22);
+      const e2raw = runEquity(hole, board, numRivals, 1000, strongPool);
+      const e2 = Math.max(0, (e2raw.win + e2raw.tie / 2) - (oop ? 3 : 0)) / 100;
+      lastE2 = e2 * 100;
+      const maxCall = e2 >= 0.5 ? Infinity : e2 * (potAfter + villMatch) / (1 - 2 * e2);
+      const behind = effStack > 0 ? Math.max(0, effStack - heroPut) : 0;
+      const u = unitLabel === 'fichas' ? '' : ' ' + unitLabel;
+      const limit = maxCall === Infinity || (behind > 0 && maxCall >= behind)
+        ? `<b>paga aunque vaya all-in</b>: sigues por delante incluso contra su rango fuerte (ganas ~${Math.round(e2*100)}%)`
+        : maxCall < Math.max(1, pot * 0.1)
+          ? `<b>retírate</b> salvo que la subida sea mínima: contra su rango fuerte solo ganas ~${Math.round(e2*100)}%`
+          : `paga si te toca poner <b>hasta ${fmtN(Math.round(maxCall))}${u}</b> más; si es más, <b>retírate</b> (contra su rango fuerte ganas ~${Math.round(e2*100)}%)`;
+      let planItems = [];
+      if (text === 'BET') planItems.push(`Apuesta unas <b>${fmtN(Math.round(heroPut))}${u}</b> (2/3 del bote).`, `Si te suben: ${limit}.`);
+      else if (text === 'RAISE') planItems.push(`Sube a unas <b>${fmtN(Math.round(heroPut))}${u}</b> (3 veces su apuesta).`, `Si te resuben: ${limit}.`);
+      else if (text === 'CALL') planItems.push(`Paga <b>${fmtN(call)}${u}</b>.`, `Si alguien vuelve a subir después: ${limit}.`, curStreet < 3 ? 'En la siguiente calle, vuelve a analizar con la carta nueva: pulsa <b>Siguiente calle</b>.' : '');
+      else if (text === 'CHECK') planItems.push('Pasa.', `Si después tu rival apuesta: ${limit}.`);
+      else planItems.push('Tira la mano: no hay plan que la salve a este precio.');
+      document.getElementById('planBox').innerHTML = `<div class="plan-title">📋 Tu plan</div><ul>${planItems.filter(Boolean).map(x => `<li>${x}</li>`).join('')}</ul>`;
+
+      renderTimeline(seqHasActions() ? reviewDecisions() : []);
+      const nsBtn = document.getElementById('nextStreetBtn');
+      nsBtn.style.display = curStreet < 3 && text !== 'FOLD' ? 'block' : 'none';
+      nsBtn.textContent = `➡️ Siguiente calle: ${['añadir el flop', 'añadir el turn', 'añadir el river'][Math.min(2, curStreet)]}`;
 
       resultPanel.classList.add('show');
       analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
@@ -2144,25 +2550,27 @@
     const needed = (pot > 0) ? (call/(pot+call))*100 : 100;
     // Una segunda subida suele venir con un rango más fuerte del rival, así que exigimos más margen
     // que en la decisión inicial de la misma posición.
-    const raiseBuffer = lastOop ? 12 : 7;
-    const callBuffer = lastOop ? 4 : -1;
+    // Usamos tu equity contra el rango con el que suele resubir (más fuerte).
+    const eq = lastE2 !== null ? lastE2 : lastWin;
+    const raiseBuffer = lastOop ? 10 : 6;
+    const callBuffer = lastOop ? 2 : 0;
 
     let text, cls;
-    if (lastWin >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
-    else if (lastWin >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
+    if (eq >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
+    else if (eq >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
     else { text = 'FOLD'; cls = 'no'; }
 
     const posPhrase = lastOop
       ? 'Sigues fuera de posición, y encima tu rival ha subido dos veces: su rango real suele ser más fuerte de lo normal.'
       : 'Tienes posición, lo que ayuda, pero una segunda subida suele indicar una mano más fuerte de lo habitual.';
-    const edge = (lastWin - needed).toFixed(1);
+    const edge = (eq - needed).toFixed(1);
     let text2;
     if (text === 'RAISE'){
-      text2 = `Con <b>${lastWin.toFixed(1)}%</b> de equity sigues muy por encima del <b>${needed.toFixed(1)}%</b> que necesitas, incluso exigiendo un margen extra por la segunda subida. ${posPhrase}`;
+      text2 = `Con <b>${eq.toFixed(1)}%</b> de equity contra su rango de resubida sigues muy por encima del <b>${needed.toFixed(1)}%</b> que necesitas, incluso exigiendo un margen extra por la segunda subida. ${posPhrase}`;
     } else if (text === 'CALL'){
-      text2 = `Tu equity (<b>${lastWin.toFixed(1)}%</b>) sigue por encima del <b>${needed.toFixed(1)}%</b> necesario (diferencia de ${edge}%), aunque justo. ${posPhrase} Iguala, pero no metas más fichas sin mejorar la mano.`;
+      text2 = `Tu equity contra su rango de resubida (<b>${eq.toFixed(1)}%</b>) sigue por encima del <b>${needed.toFixed(1)}%</b> necesario (diferencia de ${edge}%), aunque justo. ${posPhrase} Iguala, pero no metas más fichas sin mejorar la mano.`;
     } else {
-      text2 = `Necesitarías <b>${needed.toFixed(1)}%</b> de equity y solo tienes <b>${lastWin.toFixed(1)}%</b>, con el añadido de que la segunda subida suele significar una mano fuerte del rival. ${posPhrase} Lo más sólido aquí es retirarse.`;
+      text2 = `Necesitarías <b>${needed.toFixed(1)}%</b> de equity y contra su rango de resubida solo tienes <b>${eq.toFixed(1)}%</b>, con el añadido de que la segunda subida suele significar una mano fuerte del rival. ${posPhrase} Lo más sólido aquí es retirarse.`;
     }
 
     const easy2 = text === 'RAISE'
@@ -2171,6 +2579,22 @@
         ? 'Está justo, pero todavía compensa pagar. No metas más fichas sin mejorar tu mano.'
         : 'Que te suban dos veces suele significar una mano muy fuerte. Aquí lo mejor es tirar.';
     rrResult.innerHTML = `<span class="rr-badge ${cls}">${decisionHTML(text)}</span><br><span class="easy-only">${easy2}</span><span class="pro-only">${text2}</span>`;
+  });
+
+  document.getElementById('nextStreetBtn').addEventListener('click', () => {
+    // Sin secuencia: si has pagado, lo pagado pasa al bote y la nueva calle empieza sin apuesta.
+    if (!seqHasActions()){
+      const pot = Number(document.getElementById('potInput').value) || 0;
+      const call = Number(document.getElementById('callInput').value) || 0;
+      document.getElementById('potInput').value = Math.round((pot + call * 2) * 100) / 100;
+      document.getElementById('callInput').value = 0;
+    } else {
+      seqStreet = Math.min(3, availableStreets());
+    }
+    const idx = board.findIndex(c => !c);
+    if (idx === -1) return;
+    document.querySelector('#holeRow').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => openPicker('board', idx), 350);
   });
 
   let lastSummary = '';
@@ -2196,7 +2620,9 @@
     document.getElementById('villStackInput').value = '';
     document.getElementById('heroPosInput').value = 'BTN';
     document.getElementById('villPosInput').value = 'BB';
-    lastWin = null; lastTie = null; lastOop = false;
+    lastWin = null; lastTie = null; lastOop = false; lastE2 = null;
+    seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null;
+    document.getElementById('planBox').innerHTML = '';
     document.getElementById('reraisePanel').style.display = 'none';
     document.getElementById('reraiseResult').innerHTML = '';
     document.getElementById('reraisePotInput').value = '';
