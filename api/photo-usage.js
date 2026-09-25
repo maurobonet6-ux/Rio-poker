@@ -1,8 +1,8 @@
-// Función serverless de Vercel. Dado un email, dice cuántas fotos ha
+// Función serverless de Vercel. Dado el token de sesión, dice cuántas fotos ha
 // consumido ese mes de las 150 incluidas, y cuántos créditos extra le quedan.
 // Solo informa, no descuenta nada.
 
-const { hasActiveSubscription } = require('../lib/stripe');
+const { emailFromRequest, isPro } = require('../lib/auth');
 const { redisCmd } = require('../lib/redis');
 
 const FREE_MONTHLY_PHOTOS = 150;
@@ -10,16 +10,16 @@ const FREE_MONTHLY_PHOTOS = 150;
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
-
-  const email = (req.query.email || '').trim().toLowerCase();
-  if (!email) { res.status(400).json({ error: 'Falta el email' }); return; }
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) { res.status(500).json({ error: 'STRIPE_SECRET_KEY no configurada' }); return; }
 
   try {
-    const pro = await hasActiveSubscription(email, stripeKey);
+    const email = await emailFromRequest(req);
+    if (!email) { res.status(401).json({ error: 'Sesión no válida' }); return; }
+    const pro = await isPro(email, stripeKey);
     if (!pro) { res.status(200).json({ pro: false }); return; }
 
     const period = new Date().toISOString().slice(0, 7);

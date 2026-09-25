@@ -9,7 +9,7 @@
 // Variables de entorno necesarias en Vercel:
 //   ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
 
-const { hasActiveSubscription } = require('../lib/stripe');
+const { emailFromRequest, isPro } = require('../lib/auth');
 const { redisCmd } = require('../lib/redis');
 
 const FREE_MONTHLY_PHOTOS = 150;
@@ -18,6 +18,7 @@ const USED_TTL_SECONDS = 60 * 60 * 24 * 40; // 40 días, se autolimpia pasado el
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
   if (req.method !== 'POST') { res.status(405).json({ error: 'Método no permitido' }); return; }
 
@@ -26,12 +27,17 @@ module.exports = async (req, res) => {
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) { res.status(500).json({ error: 'STRIPE_SECRET_KEY no configurada en Vercel' }); return; }
 
-  const { image, mediaType, email } = req.body || {};
+  const { image, mediaType } = req.body || {};
   if (!image) { res.status(400).json({ error: 'Falta la imagen' }); return; }
-  const cleanEmail = (email || '').trim().toLowerCase();
 
+  let email;
   try {
-    const pro = await hasActiveSubscription(cleanEmail, stripeKey);
+    email = await emailFromRequest(req);
+    if (!email) {
+      res.status(401).json({ error: 'Inicia sesión con tu email de RÍO PRO para usar esta función.' });
+      return;
+    }
+    const pro = await isPro(email, stripeKey);
     if (!pro) {
       res.status(402).json({ error: 'Esta función es solo para suscriptores de RÍO PRO.' });
       return;
@@ -41,21 +47,30 @@ module.exports = async (req, res) => {
   }
 
   // --- Límite de 150 fotos/mes + créditos extra ---
+  // Primero se descuenta y después se comprueba (INCR/DECR son atómicos en
+  // Redis), así varias fotos enviadas a la vez no pueden pasarse del límite.
+  // Si al final el análisis falla, se devuelve la foto con refundPhoto().
+  const period = new Date().toISOString().slice(0, 7); // "2026-09"
+  const usedKey = `rio:used:${email}:${period}`;
+  const extraKey = `rio:extra:${email}`;
+  let chargedKey = null;
+  const refundPhoto = async () => {
+    if (!chargedKey) return;
+    try { await redisCmd([chargedKey === usedKey ? 'DECR' : 'INCR', chargedKey]); } catch (e) {}
+  };
+
   try {
-    const period = new Date().toISOString().slice(0, 7); // "2026-09"
-    const usedKey = `rio:used:${cleanEmail}:${period}`;
-    const extraKey = `rio:extra:${cleanEmail}`;
-
-    const used = parseInt((await redisCmd(['GET', usedKey])) || '0', 10);
-
-    if (used < FREE_MONTHLY_PHOTOS) {
-      await redisCmd(['INCR', usedKey]);
-      await redisCmd(['EXPIRE', usedKey, USED_TTL_SECONDS]);
+    const used = await redisCmd(['INCR', usedKey]);
+    await redisCmd(['EXPIRE', usedKey, USED_TTL_SECONDS]);
+    if (used <= FREE_MONTHLY_PHOTOS) {
+      chargedKey = usedKey;
     } else {
-      const extra = parseInt((await redisCmd(['GET', extraKey])) || '0', 10);
-      if (extra > 0) {
-        await redisCmd(['DECR', extraKey]);
+      await redisCmd(['DECR', usedKey]);
+      const extraLeft = await redisCmd(['DECR', extraKey]);
+      if (extraLeft >= 0) {
+        chargedKey = extraKey;
       } else {
+        await redisCmd(['INCR', extraKey]);
         res.status(403).json({
           error: 'LIMIT_REACHED',
           message: 'Has usado tus 150 fotos incluidas este mes. Compra más créditos para seguir.'
@@ -111,6 +126,7 @@ Reglas:
 
     const data = await aiRes.json();
     if (!aiRes.ok) {
+      await refundPhoto();
       res.status(502).json({ error: (data && data.error && data.error.message) || 'Error al consultar el modelo' });
       return;
     }
@@ -120,10 +136,11 @@ Reglas:
 
     let parsed;
     try { parsed = JSON.parse(clean); }
-    catch (e) { res.status(502).json({ error: 'No se pudo interpretar la respuesta del modelo' }); return; }
+    catch (e) { await refundPhoto(); res.status(502).json({ error: 'No se pudo interpretar la respuesta del modelo' }); return; }
 
     res.status(200).json(parsed);
   } catch (e) {
+    await refundPhoto();
     res.status(500).json({ error: 'No se pudo analizar la imagen' });
   }
 };
