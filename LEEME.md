@@ -103,3 +103,11 @@ Si el usuario cancela la suscripción en Stripe, PRO se desactiva automáticamen
 
 Los usuarios que iniciaron sesión con la versión anterior (solo email, sin código) tendrán
 que volver a iniciar sesión una vez.
+
+## Páginas para Google (glosario y tablas)
+
+Las carpetas `glosario/` y `tablas/`, `seo.css`, `sitemap.xml` y `robots.txt` se generan con:
+
+    node scripts/build-seo.js
+
+Vuelve a ejecutarlo si cambias los textos del glosario o los rangos (están en ese mismo archivo) y sube los cambios. Cuando la web esté publicada, puedes dar de alta `https://rio-poker.vercel.app/sitemap.xml` en Google Search Console para que Google las encuentre antes.

@@ -703,6 +703,9 @@
   .train-verdict { font-weight: 800; font-size: 1.1rem; margin-top: 6px; }
   .train-verdict.ok { color: var(--ok); } .train-verdict.meh { color: var(--lavender); } .train-verdict.bad { color: var(--crimson); }
   .chart-grid button { cursor: default; }
+  .train-funnel { margin: 14px 0 12px; padding: 14px; border-radius: 12px; border: 1px solid var(--gold); background: var(--gold-soft); font-size: 0.9rem; }
+  .chart-opts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chart-opts .range-presets { margin: 0; }
   .stat.no-help { cursor: default; }
   .stat.no-help::after { content: none; }
   #helpModal .picker { max-width: 520px; }
@@ -1090,6 +1093,7 @@
     Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.
     <div class="footer-links">
       <span class="age-badge">+18</span> Juega con responsabilidad · <a href="https://www.jugarbien.es" target="_blank" rel="noopener">jugarbien.es</a><br>
+      <a href="/glosario/">Glosario de póker</a> · <a href="/tablas/">Tablas de manos</a><br>
       <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#cookies">Cookies</a> · <a href="/legal.html#condiciones">Condiciones</a>
     </div>
   </footer>
@@ -2105,7 +2109,8 @@
   }
   function openGlossary(){
     document.getElementById('helpTitle').textContent = 'Glosario de póker';
-    document.getElementById('helpBody').innerHTML = Object.values(HELP).map(h => `<p><b>${h[0]}</b><br>${h[1]}</p>`).join('');
+    document.getElementById('helpBody').innerHTML = '<p><a href="/glosario/" target="_blank" rel="noopener"><b>Ver el glosario completo, con ejemplos →</b></a></p>' +
+      Object.values(HELP).map(h => `<p><b>${h[0]}</b><br>${h[1]}</p>`).join('');
     helpModal.classList.add('show');
   }
   document.addEventListener('click', (e) => {
@@ -2567,9 +2572,21 @@
   document.getElementById('currentHand').addEventListener('click', (e) => { if (e.target.closest('[data-open-charts]')) openCharts(); });
 
   // ---- Tablas de manos iniciales ----
-  function openCharts(pos){
+  // Tablas orientativas de apertura (defensa en la BB). 6 o 9 jugadores, cash o torneo (unas 40 ciegas o más).
+  const CHART_SETS = {
+    '6-cash':   [['UTG',15],['HJ',19],['CO',27],['BTN',45],['SB',40],['BB',60]],
+    '6-torneo': [['UTG',14],['HJ',18],['CO',26],['BTN',45],['SB',42],['BB',65]],
+    '9-cash':   [['UTG',10],['UTG+1',12],['MP',14],['HJ',18],['CO',26],['BTN',43],['SB',38],['BB',55]],
+    '9-torneo': [['UTG',9],['UTG+1',11],['MP',13],['HJ',17],['CO',25],['BTN',43],['SB',40],['BB',60]]
+  };
+  let chartPlayers = '6', chartGame = null;
+  function openCharts(pos, players, game){
+    if (players) chartPlayers = players;
+    chartGame = game || chartGame || (storageGet('rio_game', 'cash') === 'torneo' ? 'torneo' : 'cash');
+    const list = CHART_SETS[chartPlayers + '-' + chartGame];
     pos = pos || document.getElementById('heroPosInput').value;
-    const pct = pos === 'BB' ? 60 : OPEN_PCT[pos];
+    if (!list.some(([p]) => p === pos)) pos = 'BTN';
+    const pct = list.find(([p]) => p === pos)[1];
     const set = topRange(pct);
     const heroCls = hole[0] && hole[1] ? handClass(hole[0], hole[1]) : null;
     let grid = '';
@@ -2577,14 +2594,22 @@
       const n = i === j ? RANK_CHARS[i] + RANK_CHARS[j] : i < j ? RANK_CHARS[i] + RANK_CHARS[j] + 's' : RANK_CHARS[j] + RANK_CHARS[i] + 'o';
       grid += `<button type="button" tabindex="-1" class="${set.has(n) ? 'in' : ''} ${i === j ? 'pair' : ''} ${n === heroCls ? 'hero' : ''}">${n}</button>`;
     }
+    const opt = (attr, v, label, cur) => `<button type="button" data-${attr}="${v}" class="${v === cur ? 'active' : ''}">${label}</button>`;
     const body = openModal('Tablas de manos iniciales', `
-      <div class="range-presets">${RANGE_PRESETS.map(([p]) => `<button type="button" data-chart="${p}" class="${p === pos ? 'active' : ''}">${p}</button>`).join('')}</div>
-      <p style="margin:0 0 10px;">${pos === 'BB'
+      <div class="chart-opts">
+        <div class="range-presets">${opt('cp', '6', '6 jugadores', chartPlayers)}${opt('cp', '9', '9 jugadores', chartPlayers)}</div>
+        <div class="range-presets">${opt('cg', 'cash', 'Cash', chartGame)}${opt('cg', 'torneo', 'Torneo', chartGame)}</div>
+      </div>
+      <div class="range-presets">${list.map(([p]) => `<button type="button" data-chart="${p}" class="${p === pos ? 'active' : ''}">${p}</button>`).join('')}</div>
+      <p style="margin:0 0 10px;"><b>Tu rango recomendado</b> · ${pos === 'BB'
         ? 'Desde la <b>ciega grande</b>, si alguien sube, puedes <b>defender</b> (pagar o volver a subir) con las manos en rojo: unas ' + pct + '% del total.'
         : `Desde <b>${pos}</b>, si nadie ha entrado antes, <b>sube</b> con las manos en rojo (~${pct}% de las manos) y <b>tira</b> el resto.`}</p>
       <div class="range-grid chart-grid">${grid}</div>
-      <p class="hint" style="margin-top:10px;">Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o).${heroCls ? ' Recuadro verde = tu mano.' : ''} Son rangos orientativos para mesas de 6 jugadores.</p>`);
+      <p class="hint" style="margin-top:10px;">Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o).${heroCls ? ' Recuadro verde = tu mano.' : ''}</p>
+      <p class="hint">⚠️ Son <b>tablas orientativas</b> (${chartPlayers} jugadores, ${chartGame === 'torneo' ? 'torneo con unas 40 ciegas o más' : 'cash con unas 100 ciegas'}), no una solución para todas las mesas: con stacks cortos, antes grandes o rivales muy agresivos, los rangos cambian. <a href="/tablas/" target="_blank" rel="noopener">Ver todas las tablas →</a></p>`);
     body.querySelectorAll('[data-chart]').forEach(b => b.addEventListener('click', () => openCharts(b.dataset.chart)));
+    body.querySelectorAll('[data-cp]').forEach(b => b.addEventListener('click', () => openCharts(pos, b.dataset.cp)));
+    body.querySelectorAll('[data-cg]').forEach(b => b.addEventListener('click', () => openCharts(pos, null, b.dataset.cg)));
   }
 
   // ---- Estadísticas ----
@@ -2702,11 +2727,20 @@
       else if (q.kind === 'facing') why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces y para que pagar compense necesitas <b>${of20(sol.needed)}</b>.<span class="pro-only"> (Equity ${sol.eq.toFixed(1)}% · necesitas ${sol.needed.toFixed(1)}%)</span>`;
       else why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces contra su rango.${sol.rec === 'BET' ? ' Apostar rinde más que pasar: las manos peores te pagan.' : ' Apostar no rinde más que pasar: las peores se retirarían y solo te pagarían las mejores. Pasa.'}`;
       const head = { ok: '✓ ¡Correcto!', meh: '≈ Aceptable', bad: '✗ No era la mejor' }[g];
+      // Al llegar a 10 situaciones, una sola vez: invitar a analizar sus propias manos.
+      const funnel = stats.n >= 10 && !storageGet('rio_train_funnel', false);
+      if (funnel) storageSet('rio_train_funnel', true);
       document.getElementById('trainResult').innerHTML = `
         <div class="train-verdict ${g}">${head}</div>
         <p>Lo recomendado: <b>${decisionHTML(sol.rec)}</b>. ${why}</p>
-        <button type="button" class="btn-primary" id="trainNext" style="width:100%;">Siguiente mano →</button>`;
+        ${funnel ? `<div class="train-funnel">🎯 <b>Ya llevas ${stats.n} situaciones.</b> ¿Quieres analizar tus propias manos?
+          <button type="button" class="btn-primary" id="trainToAnalyzer" style="width:100%; margin-top:10px;">Ir al analizador →</button></div>` : ''}
+        <button type="button" class="${funnel ? 'btn-secondary' : 'btn-primary'}" id="trainNext" style="width:100%;">Siguiente mano →</button>`;
       document.getElementById('trainNext').addEventListener('click', openTrainer);
+      if (funnel) document.getElementById('trainToAnalyzer').addEventListener('click', () => {
+        helpModal.classList.remove('show');
+        document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     }, 30);
   }
 
