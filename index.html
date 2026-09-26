@@ -668,8 +668,8 @@
     <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
     <div class="panel-hint">Toca una carta para elegirla — puedes cambiarla cuando quieras</div>
     <div class="quick-fill">
-      <button type="button" class="quick-btn" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small></button>
-      <label class="quick-btn" for="screenshotInput" id="uploadBox">📸 Desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub">JPG o PNG</small>
+      <button type="button" class="quick-btn" id="importBtn">📋 Importar historial <span class="pro-badge" id="importProBadge">PRO</span><small>PokerStars · GGPoker</small></button>
+      <label class="quick-btn" for="screenshotInput" id="uploadBox">📸 Desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub">Cartas, bote, apuesta y posiciones</small>
         <input type="file" id="screenshotInput" accept="image/*" hidden>
       </label>
     </div>
@@ -900,7 +900,7 @@
     <button type="button" class="sidebar-link" id="navTrain"><span class="ic">🎯</span> Entrenamiento</button>
     <button type="button" class="sidebar-link" id="navCharts"><span class="ic">📊</span> Tablas de manos</button>
     <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span> Tus estadísticas</button>
-    <button type="button" class="sidebar-link" id="navImport"><span class="ic">📋</span> Importar historial</button>
+    <button type="button" class="sidebar-link" id="navImport"><span class="ic">📋</span> Importar historial <span class="pro-badge">PRO</span></button>
     <button type="button" class="sidebar-link" id="navInstall"><span class="ic">📲</span> Instalar en el móvil</button>
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span> Iniciar sesión</button>
     <button type="button" class="sidebar-link" id="navManage" style="display:none;"><span class="ic">💳</span> Gestionar suscripción</button>
@@ -998,6 +998,7 @@
           <li>Análisis de mano ilimitados</li>
           <li>Historial completo</li>
           <li>Hasta 150 capturas de manos analizadas al mes</li>
+          <li>Importar historiales de PokerStars y GGPoker</li>
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 4,99€</button>
@@ -1044,7 +1045,7 @@
       <li>♠ Análisis de manos ilimitados</li>
       <li>♥ Historial completo de tus últimas manos</li>
       <li>♦ Consejo por posición en cada calle</li>
-      <li>♣ Sin anuncios ni interrupciones</li>
+      <li>♣ Importa tus manos de PokerStars y GGPoker</li>
     </ul>
     <div class="paywall-price"><span>4,99&nbsp;€</span><small>/ mes</small></div>
     <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 4,99€</button>
@@ -2415,6 +2416,7 @@
   }
   function openImport(){
     closeSidebar();
+    if (!isPro()){ openPaywall('plans'); return; }
     const body = openModal('📋 Importar historial de mano', `
       <p style="margin-top:0;">En PokerStars o GGPoker, abre el historial de la mano, <b>cópialo entero</b> y pégalo aquí.</p>
       <textarea id="hhText" rows="9" placeholder="PokerStars Hand #…&#10;Table '…' 6-max Seat #1 is the button&#10;…" style="width:100%; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); padding:10px; font-family:monospace; font-size:0.78rem;"></textarea>
@@ -2525,7 +2527,8 @@
     const pro = isPro();
     uploadBox.classList.toggle('locked', !pro);
     uploadProBadge.style.display = pro ? 'none' : 'inline-block';
-    document.getElementById('uploadSub').textContent = pro ? 'JPG o PNG, hasta ~4 MB' : 'Solo suscriptores';
+    document.getElementById('uploadSub').textContent = 'Cartas, bote, apuesta y posiciones';
+    document.getElementById('importProBadge').style.display = pro ? 'none' : 'inline-block';
   }
   uploadBox.addEventListener('click', (e) => {
     if (!isPro()){ e.preventDefault(); openPaywall(); }
@@ -2686,6 +2689,7 @@
     return { rank, suit };
   }
   function applyScreenshotData(data){
+    seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null; selStreet = null;
     if (data.hand){
       data.hand.trim().split(/\s+/).slice(0,2).forEach((t,i) => {
         const c = parseCardToken(t); if (c) hole[i] = c;
