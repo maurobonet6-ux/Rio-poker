@@ -1,6 +1,6 @@
 // Pruebas de la web: lo importante que un usuario hace en RÍO.
 const { test, expect } = require('@playwright/test');
-const { abrir, carta, ponerMano, analizar, ORIGIN } = require('./ayuda');
+const { abrir, carta, ponerMano, ponerBote, analizar, ORIGIN } = require('./ayuda');
 
 test('la página carga sin errores y enseña cómo introducir la mano', async ({ page }) => {
   const { errores } = await abrir(page);
@@ -57,28 +57,28 @@ test('consejos conocidos antes del flop', async ({ page }) => {
   // Abrir desde UTG sin subidas: tabla de apertura.
   await page.selectOption('#heroPosInput', 'UTG');
   await ponerMano(page, ['7s', '2h']);
-  await page.fill('#potInput', '3'); await page.fill('#callInput', '2');
+  await ponerBote(page, 3, 2);
   expect(await analizar(page)).toContain('TIRA');
   await page.locator('#resetBtn').click();
   await page.selectOption('#heroPosInput', 'UTG');
   await ponerMano(page, ['As', 'Ks']);
-  await page.fill('#potInput', '3'); await page.fill('#callInput', '2');
+  await ponerBote(page, 3, 2);
   expect(await analizar(page)).toContain('SUBE');
   // Contra una subida: 7-2 se tira (antes decía SUBE) y AA resube.
   await page.locator('#resetBtn').click();
   await ponerMano(page, ['7s', '2h']);
-  await page.fill('#potInput', '9'); await page.fill('#callInput', '4');
+  await ponerBote(page, 9, 4);
   expect(await analizar(page)).toContain('TIRA');
   await page.locator('#resetBtn').click();
   await ponerMano(page, ['As', 'Ah']);
-  await page.fill('#potInput', '9'); await page.fill('#callInput', '4');
+  await ponerBote(page, 9, 4);
   expect(await analizar(page)).toContain('SUBE');
 });
 
 test('resultado: decisión, resumen, por qué, análisis completo y qué pasa si', async ({ page }) => {
   await abrir(page, { pro: true });
   await ponerMano(page, ['Ah', 'Kh'], ['Kd', '7c', '2s']);
-  await page.fill('#potInput', '24'); await page.fill('#callInput', '8');
+  await ponerBote(page, 24, 8);
   await analizar(page);
   await expect(page.locator('#verdictLine')).toContainText('RÍO recomienda');
   await expect(page.locator('#keyLine .kchip').first()).toBeVisible();
@@ -113,12 +113,12 @@ test('el ejemplo solo aparece en modo Fácil', async ({ page }) => {
 test('sin cuenta: 1 análisis de prueba y después pide crear la cuenta gratis', async ({ page }) => {
   await abrir(page);
   await ponerMano(page, ['Qs', 'Qh']);
-  await page.fill('#potInput', '9'); await page.fill('#callInput', '4');
+  await ponerBote(page, 9, 4);
   await analizar(page);
   await expect(page.locator('#trialNudge')).toBeVisible();
   await page.locator('#resetBtn').click();
   await ponerMano(page, ['Js', 'Jh']);
-  await page.fill('#potInput', '9'); await page.fill('#callInput', '4');
+  await ponerBote(page, 9, 4);
   await page.locator('#analyzeBtn').click();
   await expect(page.locator('#paywall.show')).toBeVisible();
   await expect(page.locator('#paywallTitle')).toHaveText('Crea tu cuenta gratis');
@@ -148,7 +148,7 @@ test('secuencia de apuestas: repasa tus decisiones calle a calle', async ({ page
 test('compartir: el enlace abre la misma mano sin gastar análisis', async ({ page, browser }) => {
   await abrir(page, { pro: true });
   await ponerMano(page, ['Qs', 'Qh'], ['Kh', '8c', '4s']);
-  await page.fill('#potInput', '18'); await page.fill('#callInput', '7');
+  await ponerBote(page, 18, 7);
   const decision = await analizar(page);
   const enlace = await page.evaluate(() => { const m = document.querySelector('#shareBtn'); return m ? location.origin : ''; });
   expect(enlace).toBe(ORIGIN);
@@ -168,7 +168,7 @@ test('historial: guarda la mano con posición, tipo de partida y patrones (PRO)'
   await abrir(page, { pro: true });
   await page.selectOption('#heroPosInput', 'CO');
   await ponerMano(page, ['Ts', '9s'], ['8s', '7d', '2c']);
-  await page.fill('#potInput', '20'); await page.fill('#callInput', '10');
+  await ponerBote(page, 20, 10);
   await analizar(page);
   await expect(page.locator('#historyPanel')).toBeVisible();
   await expect(page.locator('#historyList .history-item').first()).toContainText('CO vs BB · Cash');
@@ -193,7 +193,7 @@ test('en el móvil nada se sale de la pantalla', async ({ page }, info) => {
   test.skip(info.project.name !== 'movil', 'solo en móvil');
   await abrir(page, { pro: true });
   await ponerMano(page, ['Ah', 'Kh'], ['Kd', '7c', '2s']);
-  await page.fill('#potInput', '24'); await page.fill('#callInput', '8');
+  await ponerBote(page, 24, 8);
   await analizar(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });
@@ -246,4 +246,46 @@ test('"Ya he pagado, comprobar" activa PRO si el servidor ya ve el pago', async 
   await boton.click();
   await expect(page.locator('#proPlanCard .paid-msg')).toContainText('Ya eres RÍO PRO');
   expect(await page.evaluate(() => localStorage.getItem('rio_pro'))).toBe('true');
+});
+
+test('modo Fácil: pasos con guía y bote en dos preguntas', async ({ page }) => {
+  await abrir(page);
+  await expect(page.locator('#stepTodo')).toContainText('elige tus dos cartas');
+  await expect(page.locator('#cardsPanel')).toHaveClass(/step-current/);
+  await expect(page.locator('#importBtn')).toBeHidden();      // en Fácil, "Importar historial" solo está en el menú
+  await expect(page.locator('.steps-nav')).toBeHidden();      // sin la barra de calles de arriba
+  await ponerMano(page, ['As', 'Ks']);
+  await expect(page.locator('#tablePanel')).toHaveClass(/step-current/);
+  await expect(page.locator('#stepGuide2')).toBeVisible();
+  await page.locator('#posOkBtn').click();
+  await expect(page.locator('#betsPanel')).toHaveClass(/step-current/);
+  await page.fill('#potBeforeInput', '30'); await page.fill('#betInput', '10');
+  await expect(page.locator('#easyPotSum')).toContainText('Bote 40 · te toca pagar 10');
+  await expect(page.locator('#potInput')).toHaveValue('40');
+  await expect(page.locator('#callInput')).toHaveValue('10');
+  await expect(page.locator('#stepTodo')).toContainText('¡Listo!');
+  await page.locator('#noBetBtn').click();
+  await expect(page.locator('#callInput')).toHaveValue('0');
+  await expect(page.locator('#easyPotSum')).toContainText('Nadie ha apostado');
+});
+
+test('detalles avanzados: cómo juega, rivales y tipo de partida, por ese orden', async ({ page }) => {
+  await abrir(page);
+  await page.locator('#moreToggle').click();
+  // En ordenador, rivales y tipo de partida van en la misma fila; en el móvil, uno debajo del otro.
+  const [boton, comoJuega, rivales, partida] = await page.evaluate(() => ['#moreToggle', '#rangeChips', '#rivMinus', '#gameType']
+    .map(s => document.querySelector(s).closest('.field').getBoundingClientRect().top));
+  expect(boton).toBeLessThan(comoJuega);
+  expect(comoJuega).toBeLessThan(rivales);
+  expect(rivales).toBeLessThanOrEqual(partida);
+});
+
+test('resultado: "Analizar otra mano" va antes que compartir y copiar', async ({ page }) => {
+  await abrir(page, { pro: true });
+  await ponerMano(page, ['Qs', 'Qh']);
+  await ponerBote(page, 9, 4);
+  await analizar(page);
+  const [otra, compartir] = await page.evaluate(() => ['#againBtn', '#shareBtn'].map(s => document.querySelector(s).getBoundingClientRect().top));
+  expect(otra).toBeLessThan(compartir);
+  await expect(page.locator('#againBtn')).toHaveClass(/btn-primary/);
 });

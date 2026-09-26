@@ -58,10 +58,19 @@ async function ponerMano(page, mano, mesa = []){
   }
   if (await page.locator('#overlay.show').isVisible()) await page.locator('#closePicker').click();
 }
+// Escribe el bote (con la apuesta incluida) y lo que te toca pagar. En modo Fácil se pregunta
+// en dos partes ("lo que había" + "lo que ha apostado tu rival"); en Avanzado, directamente.
+async function ponerBote(page, bote, pagar){
+  if (await page.locator('#potInput').isVisible()){
+    await page.fill('#potInput', String(bote)); await page.fill('#callInput', String(pagar));
+  } else {
+    await page.fill('#potBeforeInput', String(bote - pagar)); await page.fill('#betInput', String(pagar));
+  }
+}
 async function analizar(page){
   await page.locator('#analyzeBtn').click();
   await page.locator('#resultPanel.show').waitFor();
   await page.waitForTimeout(300);
   return (await page.locator('#decisionBadge').innerText()).trim();
 }
-module.exports = { abrir, carta, ponerMano, analizar, ORIGIN };
+module.exports = { abrir, carta, ponerMano, ponerBote, analizar, ORIGIN };
