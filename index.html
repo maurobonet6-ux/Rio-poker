@@ -298,6 +298,25 @@
   }
   .advice b { color: var(--cream); }
 
+  .key-line { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
+  .key-line .kchip { flex: 1 1 0; min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: 0.72rem; color: var(--cream-dim); line-height: 1.25; }
+  .key-line .kchip:first-child { flex-grow: 1.7; }
+  .key-line .kchip b { display: block; font-size: 1.15rem; color: var(--cream); font-family: 'Bricolage Grotesque', sans-serif; }
+  .key-line .kchip.pos b { color: var(--ok); }
+  .key-line .kchip.neg b { color: var(--crimson); }
+  .why-title { margin: 16px 0 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); }
+  .full-analysis { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 6px; }
+  .full-analysis > summary { cursor: pointer; list-style: none; padding: 12px 0; font-weight: 700; font-size: 0.92rem; color: var(--cream); }
+  .full-analysis > summary::-webkit-details-marker { display: none; }
+  .full-analysis[open] > summary { color: var(--cream-dim); }
+  .next-dec { margin-top: 18px; padding: 16px; border-radius: 14px; background: var(--panel-2); border: 1px solid rgba(155,140,255,0.35); }
+  .next-dec .nd-kicker { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--lavender); }
+  .next-dec .nd-q { font-weight: 700; font-size: 1rem; margin: 4px 0 12px; }
+  .street-track { display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap; margin-top: 18px; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cream-dim); }
+  .street-track span { padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); }
+  .street-track span.done { color: var(--cream); }
+  .street-track span.cur { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .street-track i { font-style: normal; opacity: 0.5; }
   .reraise-box { margin-top: 14px; }
   .reraise-toggle {
     width: 100%; text-align: left; background: var(--panel-2); border: 1px dashed var(--line); color: var(--lavender);
@@ -340,6 +359,9 @@
   .paywall-price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 16px; }
   .paywall-price span { font-family: 'Bricolage Grotesque', sans-serif; font-size: 2.1rem; font-weight: 800; color: var(--gold); }
   .paywall-price small { color: var(--cream-dim); font-size: 0.85rem; }
+  .pw-pitch { font-size: 0.95rem; color: var(--cream-dim); margin: 0 0 12px; }
+  .pw-pitch b { display: block; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.5rem; color: var(--gold); }
+  .pw-cancel { text-align: center; font-size: 0.82rem; color: var(--cream-dim); margin-top: 8px; }
   .paywall-fine { font-size: 0.72rem; color: var(--cream-dim); text-align: center; margin: 12px 0 0; }
 
   .plan-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 4px 0 6px; }
@@ -449,6 +471,8 @@
   body:not(.mode-pro):not(.easy-more) .panel-num .n-short { display: inline; }
   body:not(.mode-pro):not(.easy-more) .panel-num .n-full { display: none; }
   body.easy-more .more-nudge { display: none !important; }
+  body.mode-pro:not(.bets-full) .full-only { display: none !important; }
+  .bets-mode { margin-bottom: 16px; }
   .more-toggle { display: block; width: 100%; text-align: left; background: var(--panel); border: 1px dashed var(--line); color: var(--cream); border-radius: 14px; padding: 14px 16px; margin: 0 0 18px; font: inherit; font-size: 0.92rem; cursor: pointer; }
   .more-toggle small { display: block; color: var(--cream-dim); font-size: 0.78rem; margin-top: 3px; }
   .more-nudge { margin-top: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); font-size: 0.88rem; color: var(--cream-dim); }
@@ -487,8 +511,9 @@
   .strength-tag.no { background: var(--crimson-soft); color: var(--crimson); }
 
   /* ---- Rango del rival ---- */
-  .range-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  @media (max-width: 560px) { .range-chips { grid-template-columns: 1fr; } }
+  .range-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 680px) { .range-chips { grid-template-columns: 1fr 1fr; } }
+  .range-explain { margin-top: 10px; }
   .range-top { display: flex; align-items: center; gap: 14px; }
   .range-top input[type=range] { flex: 1; accent-color: var(--gold); height: 28px; }
   .range-top b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.3rem; min-width: 64px; text-align: right; color: var(--gold); }
@@ -509,7 +534,7 @@
 
   /* ---- Veredicto ---- */
   .result-hand small { display: block; font-size: 0.8rem; color: var(--cream-dim); font-family: 'Space Grotesk', sans-serif; font-weight: 500; margin-top: 2px; }
-  .decision-badge { font-size: 1.15rem; padding: 10px 22px; }
+  .decision-badge { font-size: 1.4rem; padding: 11px 26px; }
   .dots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin: 20px 0 6px; max-width: 460px; }
   .dots i { aspect-ratio: 1; border-radius: 50%; background: var(--crimson); opacity: 0.85; animation: dotin .3s ease both; }
   .dots i.w { background: var(--ok); }
@@ -870,10 +895,12 @@
       <div class="field field-wide">
         <label><span class="easy-only">¿Cómo juega tu rival?</span><span class="pro-only">Rango del rival</span> <button type="button" class="help" data-help="range">?</button></label>
         <div class="range-chips easy-only" id="rangeChips">
-          <button type="button" class="toggle-btn" data-range="100">Cualquier mano<small>Juega casi todo, o no lo conoces</small></button>
+          <button type="button" class="toggle-btn" data-range="40" data-unknown="1">No lo sé<small>Usamos un rival medio</small></button>
+          <button type="button" class="toggle-btn" data-range="100">Juega casi todo<small>Entra con cualquier mano</small></button>
           <button type="button" class="toggle-btn" data-range="40">Normal<small>Juega manos decentes</small></button>
           <button type="button" class="toggle-btn" data-range="15">Solo manos buenas<small>Juega poco y cuando entra, va fuerte</small></button>
         </div>
+        <div class="hint range-explain easy-only" id="rangeExplain"></div>
         <div class="pro-only">
           <div class="range-top">
             <input type="range" id="rangeSlider" min="2" max="100" step="1" aria-label="Porcentaje de manos del rival">
@@ -886,9 +913,10 @@
             <label>¿Cuánto farolea? <button type="button" class="help" data-help="bluffs">?</button></label>
             <select id="bluffSelect">
               <option value="0.03">Casi nunca</option>
-              <option value="0.1" selected>Lo normal</option>
+              <option value="0.1" selected>Lo normal / No lo sé</option>
               <option value="0.2">Mucho</option>
             </select>
+            <div class="hint">Si no lo sabes, deja «Lo normal». Cuanto más farolea, más manos flojas tiene cuando apuesta y más compensa pagarle con manos medias.</div>
           </div>
         </div>
       </div>
@@ -897,8 +925,12 @@
 
   <section class="panel">
     <div class="panel-head"><div class="panel-num"><span class="n-full">3</span><span class="n-short">2</span></div><h2>Las apuestas</h2></div>
-    <details class="seq-box easy-extra" id="seqBox">
-      <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendado</span></summary>
+    <div class="toggle-group bets-mode pro-only" id="betsMode">
+      <button type="button" class="toggle-btn" data-bm="quick">⚡ Rápido<small>Bote y lo que pagas</small></button>
+      <button type="button" class="toggle-btn" data-bm="full">📝 Completo<small>Secuencia, stacks y SPR</small></button>
+    </div>
+    <details class="seq-box easy-extra full-only" id="seqBox">
+      <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendada</span></summary>
       <div class="hint seq-intro">Apunta qué hizo cada uno en cada calle. Calculamos el bote y lo que te toca pagar, ajustamos el rango del rival según cómo apuesta y repasamos <b>todas tus decisiones</b>, no solo la última.</div>
       <div class="seq-blinds field">
         <label>Ciega grande <button type="button" class="help" data-help="blinds">?</button></label>
@@ -912,7 +944,7 @@
         <button type="button" id="seqClear">Borrar secuencia</button>
       </div>
     </details>
-    <div class="or-line easy-extra" id="orLine">…o escribe directamente el bote y lo que te toca pagar:</div>
+    <div class="or-line easy-extra full-only" id="orLine">…o escribe directamente el bote y lo que te toca pagar:</div>
     <div class="inputs-row">
       <div class="field">
         <label><span class="pro-only">Bote actual</span><span class="easy-only">Bote</span> <button type="button" class="help" data-help="pot">?</button></label>
@@ -929,7 +961,7 @@
         <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
         <div class="hint">Fichas que te quedan detrás</div>
       </div>
-      <div class="field pro-only">
+      <div class="field pro-only full-only">
         <label>Stack del rival</label>
         <input type="number" id="villStackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
         <div class="hint">Para el SPR efectivo</div>
@@ -953,6 +985,18 @@
       <div class="result-hand" id="resultHandName">—</div>
       <div class="decision-badge" id="decisionBadge">—</div>
     </div>
+    <div class="key-line" id="keyLine"></div>
+    <div class="why-title">¿Por qué?</div>
+    <div class="advice" id="adviceBox"></div>
+    <div class="plan" id="planBox"></div>
+
+    <div id="timelineWrap" style="display:none;">
+      <div class="sub-title">Tus decisiones calle a calle</div>
+      <div id="timeline"></div>
+    </div>
+
+    <details class="full-analysis" id="fullAnalysis">
+      <summary>Ver análisis completo ↓</summary>
     <div class="easy-only">
       <div class="dots" id="oddsDots" aria-hidden="true"></div>
       <div class="dots-legend"><span class="w">Ganas</span><span class="t">Empatas</span><span class="l">Pierdes</span></div>
@@ -974,14 +1018,6 @@
       <div class="stat pro-only" data-help="spr"><b id="statSPR">—</b><span>SPR</span></div>
       <div class="stat pro-only" data-help="range"><b id="statRange">—</b><span>Rango rival</span></div>
     </div>
-    <div class="advice" id="adviceBox"></div>
-    <div class="plan" id="planBox"></div>
-
-    <div id="timelineWrap" style="display:none;">
-      <div class="sub-title">Tus decisiones calle a calle</div>
-      <div id="timeline"></div>
-    </div>
-
     <div id="outsBox" style="display:none;">
       <div class="sub-title"><span class="easy-only">Cartas que mejoran tu mano en la próxima calle</span><span class="pro-only">Outs (mejoran tu categoría en la próxima calle)</span></div>
       <div class="outs-list" id="outsList"></div>
@@ -991,8 +1027,14 @@
       <div class="finals" id="finalsBox"></div>
     </div>
 
+    </details>
+
     <div class="reraise-box" id="reraiseBox">
-      <button type="button" class="reraise-toggle" id="reraiseToggleBtn">¿Te suben la apuesta después de esto? Calcula qué hacer →</button>
+      <div class="next-dec">
+        <div class="nd-kicker">RÍO también analiza la siguiente decisión</div>
+        <div class="nd-q">¿Tu rival acaba de resubir?</div>
+        <button type="button" class="btn-secondary" id="reraiseToggleBtn" style="width:100%;">Analizar nueva apuesta →</button>
+      </div>
       <div class="reraise-panel" id="reraisePanel" style="display:none;">
         <p class="reraise-hint">Tu rival vuelve a subir después de que pagues (o subas). Pon el bote y lo que te cuesta igualar esa nueva subida y te mostramos qué conviene hacer con la misma mano.</p>
         <div class="inputs-row reraise-inputs">
@@ -1004,6 +1046,7 @@
       </div>
     </div>
 
+    <div class="street-track" id="streetTrack"></div>
     <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
     <div class="trial-nudge" id="trialNudge" style="display:none;">🎁 <b>¿Te ha servido?</b> Crea tu cuenta gratis (solo tu email) y tendrás <b>5 análisis más</b>. <button type="button" class="btn-primary" id="trialSignup">Crear cuenta gratis</button></div>
     <div class="more-nudge easy-only" id="moreNudge">🎯 <b>¿Quieres un análisis más preciso?</b> Añade tu posición, cómo juega tu rival y lo que apostó cada uno.
@@ -1148,10 +1191,10 @@
         <h4>Free</h4>
         <div class="plan-card-price"><span>0€</span></div>
         <ul class="plan-card-features">
-          <li>1 análisis de prueba + 5 con tu cuenta gratis</li>
+          <li><b>Análisis manuales: 1 de prueba + 5 con cuenta</b></li>
+          <li><b>Funciones IA: no incluidas</b></li>
           <li>Entrenamiento y tablas de manos</li>
           <li>1 mano guardada en el historial</li>
-          <li>Sin funciones de IA (capturas, Cuéntame tu mano)</li>
         </ul>
       </div>
 
@@ -1160,14 +1203,14 @@
         <h4>RÍO PRO</h4>
         <div class="plan-card-price"><span>9,99€</span><small>/ mes</small></div>
         <ul class="plan-card-features">
-          <li>Análisis de manos ilimitados</li>
-          <li>200 créditos de IA al mes (1 captura o 1 mano contada = 1 crédito)</li>
+          <li><b>Análisis manuales: ilimitados</b></li>
+          <li><b>Funciones IA: 200 usos/mes</b><br><small>1 captura = 1 crédito · 1 mano contada = 1 crédito</small></li>
           <li>Historial completo y estadísticas en tu cuenta</li>
           <li>Importar historiales de PokerStars y GGPoker</li>
           <li>Cuéntame tu mano: díctala y la rellenamos</li>
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
-        <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 9,99€</button>
+        <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Quiero RÍO PRO · 9,99 €/mes</button>
         <button class="btn-secondary" id="buyCreditsSettingsBtn" style="width:100%; margin-top:10px; display:none;">Comprar más créditos</button>
         <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:10px; display:none;">💳 Gestionar suscripción</button>
         <div class="hint" id="manageSubHint" style="display:none; margin-top:6px;">Cancelar, cambiar la tarjeta o descargar tus facturas.</div>
@@ -1206,17 +1249,21 @@
       <h3 id="paywallTitle">Has agotado tus análisis gratis</h3>
       <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
     </div>
-    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.</p>
+    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>.</p>
+    <div class="pw-pitch sub-part"><b>RÍO PRO</b>Aprende de tus manos sin límite.</div>
     <ul class="paywall-features sub-part">
-      <li>♠ Análisis de manos ilimitados</li>
-      <li>♥ 200 créditos de IA al mes para capturas y manos contadas</li>
-      <li>♦ Consejo por posición en cada calle</li>
-      <li>♣ Cuéntale tu mano por voz o importa tus historiales</li>
+      <li>✓ Análisis manuales ilimitados</li>
+      <li>✓ 200 usos de IA al mes</li>
+      <li>✓ Analiza capturas automáticamente</li>
+      <li>✓ Cuéntale la mano por voz</li>
+      <li>✓ Importa manos de PokerStars y GGPoker</li>
+      <li>✓ Historial + estadísticas</li>
     </ul>
     <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
-    <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%;">Suscribirme por 9,99€</button>
+    <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%; text-transform:uppercase; letter-spacing:0.03em;">Quiero RÍO PRO</button>
+    <div class="pw-cancel sub-part">Cancela cuando quieras.</div>
     <div class="restore-box" id="restoreBox">
-      <div class="free-note login-only">✅ Crear tu cuenta es <b>gratis</b>. No te pedimos tarjeta ni ningún pago.</div>
+      <div class="free-note login-only">💾 <b>Guarda tus manos y conserva tu progreso en cualquier dispositivo.</b><br>✅ Crear tu cuenta es <b>gratis</b>. No te pedimos tarjeta ni ningún pago.</div>
       <div class="settings-label login-label sub-part">🔑 ¿Ya tienes cuenta? Entra</div>
       <div class="hint" style="margin-top:2px;" id="restoreHint">Escribe tu email y te enviamos un código para entrar. Si aún no tienes cuenta, se crea gratis:</div>
       <input type="email" id="proEmail" placeholder="tu@email.com" autocomplete="email" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
@@ -1864,6 +1911,16 @@
   try { easyMoreSaved = localStorage.getItem('rio_easy_more') === '1'; } catch (e) {}
   setEasyMore(easyMoreSaved);
   document.getElementById('moreToggle').addEventListener('click', () => setEasyMore(!document.body.classList.contains('easy-more'), true));
+  // En Pro: modo rápido (bote y lo que pagas) o completo (secuencia, stacks, SPR).
+  function setBetsFull(on, remember){
+    document.body.classList.toggle('bets-full', on);
+    document.querySelectorAll('#betsMode [data-bm]').forEach(b => b.classList.toggle('active', (b.dataset.bm === 'full') === on));
+    if (remember) { try { localStorage.setItem('rio_bets_full', on ? '1' : '0'); } catch (e) {} }
+  }
+  let betsFullSaved = false;
+  try { betsFullSaved = localStorage.getItem('rio_bets_full') === '1'; } catch (e) {}
+  setBetsFull(betsFullSaved);
+  document.querySelectorAll('#betsMode [data-bm]').forEach(b => b.addEventListener('click', () => setBetsFull(b.dataset.bm === 'full', true)));
   document.getElementById('moreNudgeAdd').addEventListener('click', () => {
     setEasyMore(true, true);
     document.getElementById('tablePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1929,11 +1986,11 @@
       villRange = { set, pct: rangePct(set), custom: true };
     } else {
       const pct = saved && saved.pct ? Math.max(2, Math.min(100, saved.pct)) : 40;
-      villRange = { set: topRange(pct), pct, custom: false };
+      villRange = { set: topRange(pct), pct, custom: false, unknown: !saved || !!saved.unknown };
     }
   })();
-  function saveRange(){ storageSet('rio_range', { pct: villRange.pct, custom: villRange.custom ? [...villRange.set] : null }); }
-  function setRangePct(pct){ villRange = { set: topRange(pct), pct, custom: false }; saveRange(); renderRangeUI(); }
+  function saveRange(){ storageSet('rio_range', { pct: villRange.pct, custom: villRange.custom ? [...villRange.set] : null, unknown: !!villRange.unknown }); }
+  function setRangePct(pct, unknown){ villRange = { set: topRange(pct), pct, custom: false, unknown: !!unknown }; saveRange(); renderRangeUI(); }
   function toggleRangeClass(n){
     const set = new Set(villRange.set);
     if (set.has(n)) set.delete(n); else set.add(n);
@@ -1964,13 +2021,20 @@
     rangePresets.appendChild(b);
   });
   document.getElementById('rangeSlider').addEventListener('input', (e) => setRangePct(Number(e.target.value)));
-  document.querySelectorAll('#rangeChips [data-range]').forEach(b => b.addEventListener('click', () => setRangePct(Number(b.dataset.range))));
+  document.querySelectorAll('#rangeChips [data-range]').forEach(b => b.addEventListener('click', () => setRangePct(Number(b.dataset.range), !!b.dataset.unknown)));
 
   function renderRangeUI(){
     const pct = Math.round(villRange.pct);
     document.getElementById('rangeSlider').value = pct;
     document.getElementById('rangePctLabel').textContent = pct + '%';
-    document.querySelectorAll('#rangeChips [data-range]').forEach(b => b.classList.toggle('active', !villRange.custom && Number(b.dataset.range) === villRange.pct));
+    const unknown = !villRange.custom && !!villRange.unknown;
+    document.querySelectorAll('#rangeChips [data-range]').forEach(b => b.classList.toggle('active', !villRange.custom && Number(b.dataset.range) === villRange.pct && !!b.dataset.unknown === unknown));
+    // Qué cambia realmente según cómo juegue el rival.
+    document.getElementById('rangeExplain').innerHTML = villRange.custom ? ''
+      : unknown ? '<b>Rival medio:</b> juega unas 4 de cada 10 manos y farolea lo normal. Es la mejor opción si no lo conoces.'
+      : villRange.pct >= 100 ? '<b>Juega casi todo:</b> tiene muchas manos flojas, así que tus manos medias ganan más a menudo y compensa más pagar y apostar por valor.'
+      : villRange.pct <= 15 ? '<b>Solo manos buenas:</b> si está en la mano, suele llevar algo fuerte. Tus manos medias valen menos: paga menos y no te enamores de una pareja.'
+      : '<b>Normal:</b> juega unas 4 de cada 10 manos, las decentes. RÍO equilibra pagar, apostar y retirarse.';
     rangePresets.querySelectorAll('button').forEach(b => b.classList.toggle('active', !villRange.custom && Number(b.dataset.pct) === villRange.pct));
     const heroCls = hole[0] && hole[1] ? handClass(hole[0], hole[1]) : null;
     rangeGrid.querySelectorAll('button').forEach(b => {
@@ -2202,6 +2266,7 @@
     if (!has) return;
     // Si hay secuencia (relato, captura, mano compartida…), que se vea también en Fácil.
     if (!document.body.classList.contains('easy-more')) setEasyMore(true);
+    if (!document.body.classList.contains('bets-full')) setBetsFull(true);
     const dp = decisionPoint();
     const st = replay(availableStreets() - 1, dp || undefined);
     potEl.value = Math.round(st.pot * 100) / 100;
@@ -3170,10 +3235,10 @@
       document.getElementById('paywallCopy').innerHTML = 'Ya usaste tu análisis de prueba. Crea tu cuenta gratis y tendrás <b>5 análisis más</b>: solo tu email y un código, sin contraseña. Así tus manos y estadísticas se guardan aunque cambies de móvil.';
     } else if (mode === 'plans'){
       document.getElementById('paywallTitle').textContent = 'RÍO PRO';
-      document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
+      document.getElementById('paywallCopy').innerHTML = '¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
     } else {
       document.getElementById('paywallTitle').textContent = 'Has agotado tus análisis gratis';
-      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.';
+      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>.';
     }
     // Entrar o crear la cuenta gratis: sin precios, para que no parezca un pago.
     paywall.classList.toggle('login-mode', mode === 'login' || mode === 'free');
@@ -3743,6 +3808,16 @@
       evEl.style.color = call>0 ? (ev>=0 ? 'var(--ok)' : 'var(--crimson)') : 'var(--cream)';
       document.getElementById('statSPR').textContent = (effStack>0 && pot>0) ? (effStack/pot).toFixed(1) : '—';
 
+      // Lo esencial, justo debajo de la decisión: cuánto ganas de media y tus opciones frente a lo que necesitas.
+      const inBB = seqHasActions();
+      const fmtEV = (v) => (v >= 0 ? '+' : '') + (inBB ? (v / bbSize()).toFixed(1).replace('.', ',') + ' BB' : v.toFixed(1).replace('.', ',') + ' ' + unitLabel);
+      const evShown = call > 0 ? ev : bluff && (text === 'BET') ? bluff.evBet : null;
+      const kchips = [];
+      if (evShown !== null) kchips.push(`<div class="kchip ${evShown >= 0 ? 'pos' : 'neg'}"><b>${fmtEV(evShown)}</b><span class="easy-only">${call > 0 ? 'ganas de media si pagas' : 'ganas de media si apuestas'}</span><span class="pro-only">${call > 0 ? 'EV de pagar' : 'EV de apostar'}</span></div>`);
+      kchips.push(`<div class="kchip"><b>${Math.round(win)}%</b><span class="easy-only">Ganas</span><span class="pro-only">Equity</span></div>`);
+      if (call > 0) kchips.push(`<div class="kchip"><b>${Math.round(needed)}%</b><span>Necesitas</span></div>`);
+      document.getElementById('keyLine').innerHTML = kchips.join('');
+
       // --- Plan: cuánto apostar y qué hacer si te suben ---
       const curStreet = availableStreets() - 1;
       const heroPut = text === 'RAISE' ? call * 3 : text === 'BET' ? pot * 2 / 3 : text === 'CALL' ? call : 0;
@@ -3777,6 +3852,8 @@
       const reviewRows = seqHasActions() ? reviewDecisions() : [];
       renderTimeline(reviewRows);
       saveReviews(reviewRows);
+      document.getElementById('streetTrack').innerHTML = STREET_NAMES.map((n, i) =>
+        `<span class="${i === aStreet ? 'cur' : i < aStreet ? 'done' : ''}">${i < aStreet ? '✓ ' : ''}${n}</span>`).join('<i>→</i>');
       const nsBtn = document.getElementById('nextStreetBtn');
       nsBtn.style.display = curStreet < 3 && text !== 'FOLD' ? 'block' : 'none';
       nsBtn.textContent = `➡️ Siguiente calle: ${['añadir el flop', 'añadir el turn', 'añadir el river'][Math.min(2, curStreet)]}`;
@@ -3807,8 +3884,8 @@
     const open = reraisePanel.style.display !== 'none';
     reraisePanel.style.display = open ? 'none' : 'block';
     reraiseToggleBtn.textContent = open
-      ? '¿Te suben la apuesta después de esto? Calcula qué hacer →'
-      : 'Ocultar el simulador de subida ↑';
+      ? 'Analizar nueva apuesta →'
+      : 'Ocultar ↑';
   });
 
   document.getElementById('reraiseAnalyzeBtn').addEventListener('click', () => {
@@ -3895,7 +3972,7 @@
     document.getElementById('reraiseResult').innerHTML = '';
     document.getElementById('reraisePotInput').value = '';
     document.getElementById('reraiseCallInput').value = '';
-    reraiseToggleBtn.textContent = '¿Te suben la apuesta después de esto? Calcula qué hacer →';
+    reraiseToggleBtn.textContent = 'Analizar nueva apuesta →';
     document.getElementById('screenshotStatus').style.display = 'none';
     updateOrderHint();
     render();
