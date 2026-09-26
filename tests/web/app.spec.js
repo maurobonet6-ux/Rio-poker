@@ -205,3 +205,28 @@ test('captura: la IA (simulada) rellena la mano y se analiza sola', async ({ pag
   await expect(page.locator('#screenshotStatus')).toContainText('leída de la captura');
   await expect(page.locator('#resultHandName')).toContainText('Pareja de Reyes');
 });
+
+test('pagar: el enlace de Stripe lleva el email de tu cuenta', async ({ page }) => {
+  await abrir(page, { logged: true, storage: { rio_email: JSON.stringify('jugador@rio.test') } });
+  await page.evaluate(() => { window.__abiertos = []; window.open = (u) => { window.__abiertos.push(u); }; });
+  await page.evaluate(() => document.getElementById('navPlan').click());
+  await page.locator('#subscribeFromPlanBtn').click();
+  const urls = await page.evaluate(() => window.__abiertos);
+  expect(urls[0]).toMatch(/^https:\/\/buy\.stripe\.com\/.+\?prefilled_email=jugador%40rio\.test$/);
+});
+
+test('plan anual: 79,99 €/año, con el email de tu cuenta, y oculto si ya eres PRO', async ({ page, browser }) => {
+  await abrir(page, { logged: true, storage: { rio_email: JSON.stringify('jugador@rio.test') } });
+  await page.evaluate(() => { window.__abiertos = []; window.open = (u) => { window.__abiertos.push(u); }; });
+  await page.evaluate(() => document.getElementById('navPlan').click());
+  const anual = page.locator('#proPlanCard .annual-btn');
+  await expect(anual).toContainText('79,99 €/año');
+  await expect(page.locator('#proPlanCard .annual-note')).toContainText('79,99 €/año');
+  await anual.click();
+  expect((await page.evaluate(() => window.__abiertos))[0]).toBe('https://buy.stripe.com/7sY8wR3Vl3g0dOB7Ko9IQ06?prefilled_email=jugador%40rio.test');
+  const pro = await browser.newPage();
+  await abrir(pro, { pro: true });
+  await pro.evaluate(() => document.getElementById('navPlan').click());
+  await expect(pro.locator('#proPlanCard .annual-btn')).toBeHidden();
+  await pro.close();
+});
