@@ -10,6 +10,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="RÍO">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RÍO">
+<meta property="og:title" content="RÍO — Tu entrenador de póker en español">
+<meta property="og:description" content="Cuéntale tu mano y te dice qué hiciste bien en cada calle: pagar, subir o tirar, explicado fácil.">
+<meta property="og:image" content="https://rio-poker.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RÍO — Tu entrenador de póker en español">
+<meta name="twitter:description" content="Cuéntale tu mano y te dice qué hiciste bien en cada calle: pagar, subir o tirar, explicado fácil.">
+<meta name="twitter:image" content="https://rio-poker.vercel.app/og-image.png">
+<!-- Estadísticas de visitas de Vercel (sin cookies). Se activan en Vercel → Analytics. -->
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <title>RÍO — Calculadora de póker · Decide en cada calle</title>
 <meta name="description" content="Calculadora de póker para repasar tus manos: probabilidad de ganar, outs, odds del bote, EV y consejo por posición en preflop, flop, turn y river.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -605,6 +620,7 @@
   .pos-advice.ok { color: var(--ok); }
   .pos-advice.no { color: var(--crimson); }
   .pos-advice a { color: var(--cream-dim); text-decoration: underline; cursor: pointer; }
+  .inline-link { color: var(--gold); font-weight: 700; cursor: pointer; text-decoration: underline; }
   .link-btn { display: block; margin: 14px auto 0; background: none; border: none; color: var(--gold); font-weight: 700; font-size: 0.86rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
   .mini-card.big { width: 46px; height: 62px; font-size: 1.05rem; border-radius: 7px; margin-right: 5px; display: inline-flex; }
   .train-score { font-size: 0.78rem; color: var(--cream-dim); margin-bottom: 12px; }
@@ -629,6 +645,14 @@
 
   .story-btn { grid-column: 1 / -1; border-style: solid; border-color: rgba(232,40,63,0.45); background: linear-gradient(100deg, rgba(232,40,63,0.16), var(--panel-2) 70%); font-size: 0.98rem; padding: 14px; }
   #storyMic.active { border-color: var(--crimson); color: var(--crimson); }
+
+  .annual-btn { width: 100%; margin-top: 10px; }
+  .inbox-item { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .inbox-item pre { white-space: pre-wrap; word-break: break-word; font-size: 0.72rem; color: var(--cream-dim); background: var(--panel-2); padding: 8px; border-radius: 8px; margin: 0; }
+
+  .footer-links { margin-top: 10px; line-height: 1.9; }
+  .footer-links a, .paywall-fine a { color: var(--cream-dim); text-decoration: underline; }
+  .age-badge { display: inline-block; border: 1.5px solid var(--cream-dim); border-radius: 999px; padding: 0 6px; font-weight: 800; font-size: 0.72rem; margin-right: 4px; }
 </style>
 </head>
 <body>
@@ -881,6 +905,7 @@
 
     <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
     <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:14px;">📋 Copiar resumen de la mano</button>
+    <button type="button" class="link-btn" id="feedbackBtn">👎 ¿Te parece raro este consejo? Avísanos</button>
   </section>
 
   <section class="panel" id="historyPanel" style="display:none;">
@@ -888,7 +913,13 @@
     <div id="historyList"></div>
   </section>
 
-  <footer>Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.</footer>
+  <footer>
+    Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.
+    <div class="footer-links">
+      <span class="age-badge">+18</span> Juega con responsabilidad · <a href="https://www.jugarbien.es" target="_blank" rel="noopener">jugarbien.es</a><br>
+      <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#cookies">Cookies</a> · <a href="/legal.html#condiciones">Condiciones</a>
+    </div>
+  </footer>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -910,6 +941,7 @@
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span> Iniciar sesión</button>
     <button type="button" class="sidebar-link" id="navManage" style="display:none;"><span class="ic">💳</span> Gestionar suscripción</button>
     <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span> Glosario de póker</button>
+    <button type="button" class="sidebar-link" id="navInbox" style="display:none;"><span class="ic">📥</span> Avisos de usuarios</button>
     <button type="button" class="sidebar-link" id="navLogout" style="display:none;"><span class="ic">🚪</span> Cerrar sesión</button>
     <button type="button" class="sidebar-link" id="navPlan"><span class="ic">💎</span> Plan</button>
     <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span> Configuración</button>
@@ -1056,14 +1088,15 @@
     <div class="paywall-price"><span>4,99&nbsp;€</span><small>/ mes</small></div>
     <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 4,99€</button>
     <div class="restore-box" id="restoreBox">
-      <div class="settings-label" style="margin-top:16px;">🔑 Iniciar sesión</div>
-      <div class="hint" style="margin-top:2px;" id="restoreHint">¿Ya pagaste? Escribe el email con el que te suscribiste y te enviaremos un código:</div>
+      <div class="settings-label" style="margin-top:16px;">🔑 Entra o crea tu cuenta gratis</div>
+      <div class="hint" style="margin-top:2px;" id="restoreHint">Escribe tu email y te enviamos un código para entrar. Si aún no tienes cuenta, se crea gratis:</div>
       <input type="email" id="proEmail" placeholder="tu@email.com" autocomplete="email" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
       <input type="text" id="proCode" placeholder="Código de 6 dígitos" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="display:none; width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px; letter-spacing:0.3em; text-align:center;">
       <button class="btn-secondary" id="restoreBtn" style="width:100%; margin-top:10px;">Enviarme un código</button>
       <div id="restoreMsg" class="restore-msg"></div>
+      <p class="paywall-fine">Al crear tu cuenta aceptas la <a href="/legal.html#privacidad" target="_blank">política de privacidad</a>. Debes ser mayor de 18 años.</p>
     </div>
-    <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
+    <p class="paywall-fine">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Cancela cuando quieras desde "Gestionar suscripción".</p>
   </div>
 </div>
 
@@ -1107,7 +1140,7 @@
     try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); }
     catch(e){ return fallback; }
   }
-  function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+  function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} onStoredKey(key); }
 
   function isPro(){ return storageGet('rio_pro', false) === true; }
   // Token de sesión que nos da el servidor tras verificar el código del email.
@@ -1119,7 +1152,17 @@
     storageSet('rio_pro', false);
     try { localStorage.removeItem('rio_token'); } catch(e){}
   }
-  function usesCount(){ return storageGet('rio_uses', 0); }
+  // Análisis gratis que le quedan a la cuenta (lo decide el servidor; esto es la última cifra conocida).
+  function freeLeft(){ return storageGet('rio_free_left', FREE_LIMIT); }
+  let pendingAnalyze = false;
+  async function refreshFreeLeft(){
+    if (!storageGet('rio_token', '') || isPro()) return;
+    try {
+      const r = await fetch('/api/free-use', { headers: authHeaders() });
+      const d = await r.json();
+      if (r.ok && typeof d.left === 'number'){ storageSet('rio_free_left', d.left); updateUsageBadge(); renderPlanInfo(); }
+    } catch(e){}
+  }
 
   let photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
   async function refreshPhotoUsage(){
@@ -1141,7 +1184,7 @@
     if (sidebarFootEl){
       sidebarFootEl.innerHTML = pro
         ? `<span class="pro-pill">★ RÍO PRO</span><br>${photoUsage.used}/${photoUsage.limit} fotos este mes${photoUsage.extra > 0 ? ' + ' + photoUsage.extra + ' extra' : ''}`
-        : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes`;
+        : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${storageGet('rio_token', '') ? freeLeft() + ' análisis gratis restantes' : 'Crea tu cuenta gratis para analizar'}`;
     }
     const freeBadge = document.getElementById('freePlanBadge');
     const proBadge = document.getElementById('proPlanBadge');
@@ -1174,6 +1217,7 @@
     document.getElementById('navLogin').style.display = logged ? 'none' : '';
     document.getElementById('navLogout').style.display = logged ? '' : 'none';
     document.getElementById('navManage').style.display = canManage ? '' : 'none';
+    document.getElementById('navInbox').style.display = logged && storageGet('rio_admin', false) ? '' : 'none';
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
     document.getElementById('sidebarAccount').textContent = logged ? '✉️ ' + storageGet('rio_email', '') : '';
@@ -1195,6 +1239,7 @@
     logoutPro();
     try { localStorage.removeItem('rio_email'); } catch(e){}
     photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
+    try { localStorage.removeItem('rio_admin'); localStorage.removeItem('rio_free_left'); } catch(e){}
     updateUsageBadge(); renderHistory(); renderPlanInfo();
   }
 
@@ -1218,7 +1263,6 @@
     const nameInput = document.getElementById('profileNameInput');
     if (nameInput) nameInput.value = p.name;
   }
-  function bumpUses(){ storageSet('rio_uses', usesCount()+1); }
   function getHistory(){ return storageGet('rio_history', []); }
   function pushHistory(entry){
     if (!storageGet('rio_save_history', true)) return;
@@ -1235,6 +1279,7 @@
       if (r.status === 401) return 'logout';
       const data = await r.json();
       if (!r.ok) return null;
+      storageSet('rio_admin', data.admin === true);
       return data.pro === true;
     } catch(e){ return null; } // null = no se pudo comprobar (servidor no desplegado aún, sin conexión…)
   }
@@ -1243,6 +1288,8 @@
   // plano al cargar la página (por si la suscripción caducó o se canceló).
   (function revalidateOnLoad(){
     if (!storageGet('rio_token', '')){
+      // Los análisis gratis ya no se cuentan en el navegador.
+      try { localStorage.removeItem('rio_uses'); } catch(e){}
       // Sesiones antiguas (solo email, sin código): hay que volver a entrar.
       if (isPro()) logoutPro();
       return;
@@ -1251,6 +1298,7 @@
       if (pro === null) return; // sin respuesta del servidor: no tocamos nada
       if (pro === 'logout') logoutPro();
       else storageSet('rio_pro', pro);
+      refreshFreeLeft(); pullSync(); updateAccountUI();
       if (typeof updateUsageBadge === 'function') updateUsageBadge();
       refreshPhotoUsage();
     });
@@ -2477,6 +2525,7 @@
         <li>Indica <b>tu posición</b> y cómo juega tu rival.</li>
         <li>Apunta <b>las apuestas</b> y pulsa <b>Analizar</b>.</li>
       </ol>
+      <p class="hint" style="margin:-6px 0 14px;">Tienes <b>5 análisis gratis</b> con una cuenta gratuita (solo tu email). El entrenamiento y las tablas son gratis siempre.</p>
       <div style="display:grid; gap:8px;">
         <button type="button" class="btn-primary" data-welcome="facil">🙂 Soy nuevo en el póker</button>
         <button type="button" class="btn-secondary" data-welcome="pro">😎 Ya juego: quiero el modo Pro</button>
@@ -2614,6 +2663,115 @@
   document.getElementById('storyBtn').addEventListener('click', openStory);
   document.getElementById('navStory').addEventListener('click', openStory);
 
+  // ---- Tus datos en la cuenta (historial, estadísticas, entrenamiento, ajustes) ----
+  // Se guardan también en el servidor para no perderlos al cambiar de móvil.
+  function syncKeys(){
+    return ['rio_history', 'rio_reviews', 'rio_train', 'rio_train_log', 'rio_profile', 'rio_mode', 'rio_range',
+            'rio_game', 'rio_bluff', 'rio_unit', 'rio_sim_quality', 'rio_save_history', 'rio_remember_defaults', 'rio_defaults'];
+  }
+  // "var" y no "let": storageSet() la usa desde el arranque, antes de llegar a esta línea.
+  var syncTimer = null, syncing = false;
+  function onStoredKey(key){
+    if (syncing || !syncKeys().includes(key) || !storageGet('rio_token', '')) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(pushSync, 2500);
+  }
+  function collectData(){
+    const o = {};
+    syncKeys().forEach(k => { const v = storageGet(k, undefined); if (v !== undefined) o[k] = v; });
+    return o;
+  }
+  async function pushSync(){
+    if (!storageGet('rio_token', '')) return;
+    try {
+      await fetch('/api/user-data', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ data: collectData() }) });
+    } catch(e){}
+  }
+  // Junta lo del servidor con lo de este navegador sin perder nada de ninguno.
+  async function pullSync(){
+    if (!storageGet('rio_token', '')) return;
+    let remote = null;
+    try {
+      const r = await fetch('/api/user-data', { headers: authHeaders() });
+      if (!r.ok) return;
+      remote = (await r.json()).data;
+    } catch(e){ return; }
+    syncing = true;
+    try {
+      if (remote){
+        const local = collectData();
+        const hk = (h) => [h.hand, h.when, h.equity, h.decision].join('|');
+        const seen = new Set();
+        const hist = [...(local.rio_history || []), ...(remote.rio_history || [])].filter(h => h && !seen.has(hk(h)) && seen.add(hk(h)));
+        storageSet('rio_history', hist.slice(0, 10));
+        const rv = { ...(remote.rio_reviews || {}) };
+        Object.entries(local.rio_reviews || {}).forEach(([k, v]) => { if (!rv[k] || rv[k].t < v.t) rv[k] = v; });
+        storageSet('rio_reviews', rv);
+        const lt = local.rio_train || { n: 0 }, rt = remote.rio_train || { n: 0 };
+        if ((rt.n || 0) > (lt.n || 0)){ storageSet('rio_train', rt); storageSet('rio_train_log', remote.rio_train_log || []); }
+        // Ajustes: los de la cuenta, salvo que este navegador ya tenga los suyos.
+        syncKeys().filter(k => !['rio_history', 'rio_reviews', 'rio_train', 'rio_train_log'].includes(k))
+          .forEach(k => { if (local[k] === undefined && remote[k] !== undefined) storageSet(k, remote[k]); });
+        setMode(storageGet('rio_mode', 'facil')); setGame(storageGet('rio_game', 'cash'));
+        renderHistory(); updateProfileUI();
+      }
+    } finally { syncing = false; }
+    pushSync();
+  }
+
+  // ---- Plan anual (aparece cuando configures su enlace de pago de Stripe) ----
+  const ANNUAL_PAYMENT_LINK = ''; // p. ej. 'https://buy.stripe.com/...' — el Payment Link del plan anual
+  const ANNUAL_PRICE_LABEL = '';  // p. ej. '39,99 €/año (2 meses gratis)'
+  if (ANNUAL_PAYMENT_LINK){
+    ['subscribeBtn', 'subscribeFromPlanBtn'].forEach(id => {
+      const main = document.getElementById(id);
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn-secondary annual-btn';
+      b.textContent = `Plan anual: ${ANNUAL_PRICE_LABEL}`;
+      b.addEventListener('click', () => window.open(ANNUAL_PAYMENT_LINK, '_blank'));
+      main.insertAdjacentElement('afterend', b);
+    });
+  }
+
+  // ---- ¿Consejo raro? Avisos de los usuarios ----
+  function openFeedback(){
+    const body = openModal('👎 ¿Te parece raro este consejo?', `
+      <p style="margin-top:0;">Cuéntanos qué harías tú y por qué. Nos llega la mano con el análisis para revisarlo y mejorar RÍO.</p>
+      <textarea id="fbText" rows="5" placeholder="Ej.: En el river contra dos apuestas seguidas yo me retiraría: este rival nunca farolea." style="width:100%; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); padding:12px; font-family:'Space Grotesk',sans-serif; font-size:0.95rem;"></textarea>
+      <button type="button" class="btn-primary" id="fbSend" style="width:100%; margin-top:10px;">Enviar aviso</button>
+      <div id="fbMsg" class="restore-msg"></div>`);
+    body.querySelector('#fbSend').addEventListener('click', async () => {
+      const msg = body.querySelector('#fbMsg');
+      const extra = `\nSecuencia: ${JSON.stringify(seq)}\nCalle analizada: ${STREET_NAMES[analysisStreet()]}\nRango rival: ${rangeLabel()} · faroles ${bluffFrac()}\nPartida: ${storageGet('rio_game', 'cash')}\nCartas: ${JSON.stringify({ hole, board })}`;
+      try {
+        const r = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ comment: body.querySelector('#fbText').value, summary: (lastSummary || '') + extra, mode: storageGet('rio_mode', 'facil') }) });
+        if (!r.ok) throw new Error();
+        msg.className = 'restore-msg ok'; msg.textContent = '¡Gracias! Lo revisaremos.';
+        setTimeout(closeModal, 1200);
+      } catch(e){ msg.className = 'restore-msg no'; msg.textContent = 'No se pudo enviar. Inténtalo de nuevo.'; }
+    });
+  }
+  document.getElementById('feedbackBtn').addEventListener('click', openFeedback);
+
+  // Bandeja de avisos (solo para los emails de ADMIN_EMAILS)
+  async function openInbox(){
+    closeSidebar();
+    const body = openModal('📥 Avisos de consejos raros', '<p class="hint">Cargando…</p>');
+    try {
+      const r = await fetch('/api/feedback', { headers: authHeaders() });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      body.innerHTML = d.items.length ? d.items.map(it => `
+        <div class="inbox-item">
+          <div class="hint">${escHTML(new Date(it.t).toLocaleString('es-ES'))} · ${escHTML(it.email || 'anónimo')} · modo ${escHTML(it.mode || '—')}</div>
+          <p><b>${escHTML(it.comment || '(sin comentario)')}</b></p>
+          <pre>${escHTML(it.summary)}</pre>
+        </div>`).join('') : '<p>Aún no hay avisos.</p>';
+    } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar los avisos.')}</p>`; }
+  }
+  document.getElementById('navInbox').addEventListener('click', openInbox);
+
   const rivVal = document.getElementById('rivVal');
   document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
   document.getElementById('rivPlus').addEventListener('click', ()=>{ numRivals = Math.min(9, numRivals+1); rivVal.textContent = numRivals; });
@@ -2630,8 +2788,12 @@
 
   function updateUsageBadge(){
     if (isPro()){ usageRow.innerHTML = '<span class="pro-tag">★ RÍO PRO — análisis ilimitados</span>'; }
+    else if (!storageGet('rio_token', '')){
+      usageRow.innerHTML = `${FREE_LIMIT} análisis gratis con tu cuenta gratuita · <a class="inline-link" id="createFreeLink">crear cuenta</a>`;
+      document.getElementById('createFreeLink').addEventListener('click', () => openPaywall('free'));
+    }
     else {
-      const left = Math.max(0, FREE_LIMIT - usesCount());
+      const left = freeLeft();
       usageRow.innerHTML = left <= 1
         ? `<span class="low">Te queda${left===1?'':'n'} ${left} análisis gratis</span>`
         : `${left} de ${FREE_LIMIT} análisis gratis restantes`;
@@ -2676,8 +2838,11 @@
 
   function openPaywall(mode){
     if (mode === 'login'){
-      document.getElementById('paywallTitle').textContent = 'Inicia sesión con tu RÍO PRO';
-      document.getElementById('paywallCopy').innerHTML = 'Escribe el email con el que te suscribiste para desbloquear tu cuenta <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código a ese email.';
+      document.getElementById('paywallTitle').textContent = 'Entra en tu cuenta';
+      document.getElementById('paywallCopy').innerHTML = 'Escribe tu email para entrar <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código. Tus manos y estadísticas se guardan en tu cuenta.';
+    } else if (mode === 'free'){
+      document.getElementById('paywallTitle').textContent = 'Crea tu cuenta gratis';
+      document.getElementById('paywallCopy').innerHTML = 'Para usar tus <b>5 análisis gratis</b> solo necesitas una cuenta: tu email y un código, sin contraseña. Así tus manos y estadísticas se guardan aunque cambies de móvil.';
     } else if (mode === 'plans'){
       document.getElementById('paywallTitle').textContent = 'RÍO PRO';
       document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
@@ -2686,14 +2851,14 @@
       document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.';
     }
     paywall.classList.add('show');
-    if (mode === 'login'){
+    if (mode === 'login' || mode === 'free'){
       setTimeout(() => {
         document.getElementById('restoreBox').scrollIntoView({block:'center'});
         document.getElementById('proEmail').focus();
       }, 200);
     }
   }
-  function closePaywall(){ paywall.classList.remove('show'); }
+  function closePaywall(){ paywall.classList.remove('show'); pendingAnalyze = false; }
   document.getElementById('closePaywall').addEventListener('click', closePaywall);
   paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
 
@@ -2941,7 +3106,7 @@
     document.getElementById('restoreBtn').textContent = onCode ? 'Verificar código' : 'Enviarme un código';
     document.getElementById('restoreHint').textContent = onCode
       ? `Te enviamos un código a ${pendingLoginEmail}. Escríbelo aquí (caduca en 10 minutos):`
-      : '¿Ya pagaste? Escribe el email con el que te suscribiste y te enviaremos un código:';
+      : 'Escribe tu email y te enviamos un código para entrar. Si aún no tienes cuenta, se crea gratis:';
     if (onCode) codeInput.focus();
   }
   // Si cambia el email, volvemos al primer paso.
@@ -2960,7 +3125,6 @@
         if (!email || !email.includes('@')){ fail('Escribe un email válido.'); return; }
         const { ok, data } = await postJson('/api/send-code', { email });
         if (!ok){ fail(data.error || 'No se pudo enviar el código. Inténtalo de nuevo.'); return; }
-        if (!data.pro){ fail('No encontramos una suscripción activa con ese email.'); return; }
         pendingLoginEmail = email;
         msg.textContent = 'Código enviado. Revisa tu correo (y la carpeta de spam).';
         msg.className = 'restore-msg ok';
@@ -2975,14 +3139,15 @@
         }
         storageSet('rio_token', data.token);
         storageSet('rio_email', data.email);
-        storageSet('rio_pro', true);
+        storageSet('rio_pro', !!data.pro);
         pendingLoginEmail = null;
         document.getElementById('proCode').value = '';
-        refreshPhotoUsage();
-        msg.textContent = '¡Suscripción activa! Desbloqueando RÍO PRO…';
+        refreshPhotoUsage(); refreshFreeLeft(); pullSync();
+        msg.textContent = data.pro ? '¡Suscripción activa! Desbloqueando RÍO PRO…' : '¡Cuenta lista! Ya puedes usar tus análisis gratis.';
         msg.className = 'restore-msg ok';
         updateUsageBadge(); renderHistory();
-        setTimeout(closePaywall, 900);
+        const resume = pendingAnalyze;
+        setTimeout(() => { closePaywall(); if (resume) analyzeBtn.click(); }, 900);
       }
     } catch(e){
       fail('No se pudo contactar con el servidor. Inténtalo de nuevo en unos segundos.');
@@ -2997,14 +3162,26 @@
   getProfile();
 
   const analyzeBtn = document.getElementById('analyzeBtn');
-  analyzeBtn.addEventListener('click', () => {
+  analyzeBtn.addEventListener('click', async () => {
     if (!hole[0] || !hole[1]){ alert('Elige tus dos cartas antes de analizar.'); return; }
     if (analysisStreet() >= cardStreets()){
       alert(`Para analizar el ${STREET_NAMES[analysisStreet()].toLowerCase()} añade antes sus cartas.`);
       const idx = board.findIndex(c => !c); if (idx !== -1) openPicker('board', idx);
       return;
     }
-    if (!isPro() && usesCount() >= FREE_LIMIT){ openPaywall(); return; }
+    if (!isPro()){
+      // Los análisis gratis van ligados a una cuenta y los cuenta el servidor.
+      if (!storageGet('rio_token', '')){ openPaywall('free'); pendingAnalyze = true; return; }
+      analyzeBtn.disabled = true; analyzeBtn.textContent = 'Comprobando…';
+      try {
+        const r = await fetch('/api/free-use', { method: 'POST', headers: authHeaders() });
+        let d = {}; try { d = await r.json(); } catch(e){}
+        if (r.status === 401){ logoutPro(); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano'; updateUsageBadge(); openPaywall('free'); pendingAnalyze = true; return; }
+        if (r.status === 402){ storageSet('rio_free_left', 0); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano'; updateUsageBadge(); openPaywall(); return; }
+        if (d.pro) storageSet('rio_pro', true);
+        else if (typeof d.left === 'number') storageSet('rio_free_left', d.left);
+      } catch(e){ /* sin conexión: dejamos analizar */ }
+    }
     analyzeBtn.disabled = true; analyzeBtn.textContent = 'Calculando…';
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
@@ -3223,7 +3400,6 @@
       analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
       resultPanel.scrollIntoView({behavior:'smooth', block:'start'});
 
-      if (!isPro()) bumpUses();
       pushHistory({
         hand: handLabel, equity: win.toFixed(1), rivals: numRivals,
         decision: text, cls: cls,

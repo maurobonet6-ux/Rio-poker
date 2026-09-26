@@ -1,6 +1,7 @@
-// Función serverless de Vercel. Primer paso del inicio de sesión: si el email
-// es de un suscriptor PRO (o admin), le envía un código de 6 dígitos que
-// caduca en 10 minutos. El segundo paso es /api/verify-code.
+// Función serverless de Vercel. Primer paso del inicio de sesión: envía al
+// email un código de 6 dígitos que caduca en 10 minutos. Vale para suscriptores
+// PRO y para cuentas gratis (los análisis gratis van ligados a una cuenta).
+// El segundo paso es /api/verify-code.
 //
 // Variables de entorno necesarias:
 //   STRIPE_SECRET_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN,
@@ -8,7 +9,7 @@
 
 const crypto = require('crypto');
 const { redisCmd } = require('../lib/redis');
-const { isPro } = require('../lib/auth');
+const { isPro, allowByIp } = require('../lib/auth');
 const { mailConfigured, sendMail } = require('../lib/mail');
 
 const CODE_TTL_SECONDS = 10 * 60;
@@ -28,10 +29,12 @@ module.exports = async (req, res) => {
   if (!mailConfigured()) { res.status(500).json({ error: 'GMAIL_USER / GMAIL_APP_PASSWORD no configuradas en Vercel' }); return; }
 
   try {
-    if (!(await isPro(email, stripeKey))) {
-      res.status(200).json({ pro: false });
+    // Evita que alguien use el formulario para mandar códigos a muchos emails.
+    if (!(await allowByIp(req, 'code', 8, 60 * 60))) {
+      res.status(429).json({ error: 'Demasiados códigos pedidos desde tu conexión. Inténtalo dentro de un rato.' });
       return;
     }
+    const pro = await isPro(email, stripeKey);
 
     // Como mucho un código por minuto para el mismo email.
     const allowed = await redisCmd(['SET', `rio:codewait:${email}`, '1', 'NX', 'EX', RESEND_WAIT_SECONDS]);
@@ -48,7 +51,7 @@ module.exports = async (req, res) => {
       await sendMail({
         to: email,
         subject: `Tu código de RÍO: ${code}`,
-        text: `Tu código para iniciar sesión en RÍO PRO es: ${code}\n\nCaduca en 10 minutos. Si no lo has pedido tú, ignora este email.`
+        text: `Tu código para entrar en RÍO es: ${code}\n\nCaduca en 10 minutos. Si no lo has pedido tú, ignora este email.`
       });
     } catch (e) {
       await redisCmd(['DEL', `rio:codewait:${email}`]);
@@ -56,7 +59,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(200).json({ pro: true, sent: true });
+    res.status(200).json({ pro, sent: true });
   } catch (e) {
     res.status(500).json({ error: 'No se pudo enviar el código' });
   }

@@ -8,7 +8,7 @@
 // dueño de la app entre gratis a probarla (también tiene que iniciar sesión
 // con el código que le llega por email).
 
-const { emailFromRequest, isPro } = require('../lib/auth');
+const { emailFromRequest, isPro, isAdmin } = require('../lib/auth');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
   try {
     const email = await emailFromRequest(req);
     if (!email) { res.status(401).json({ error: 'Sesión no válida' }); return; }
-    res.status(200).json({ pro: await isPro(email, key), email });
+    res.status(200).json({ pro: await isPro(email, key), email, admin: isAdmin(email) });
   } catch (e) {
     res.status(500).json({ error: 'No se pudo consultar Stripe' });
   }
