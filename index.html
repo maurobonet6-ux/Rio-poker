@@ -2994,6 +2994,29 @@
     updateOrderHint();
     render();
   }
+  // Reduce la captura en el propio móvil antes de enviarla: las de móvil pesan
+  // varios MB (Vercel rechaza envíos de más de ~4,5 MB) y a veces vienen en
+  // formatos que la IA no acepta (HEIC). La IA trabaja con un máximo de ~1568 px
+  // de lado, así que reducir a ese tamaño no pierde detalle.
+  async function shrinkImage(file){
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error('Este formato de imagen no es compatible. Prueba con una captura de pantalla normal (PNG o JPG).'));
+        i.src = url;
+      });
+      const MAX = 1568;
+      const scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      return { data: canvas.toDataURL('image/jpeg', 0.88).split(',')[1], mediaType: 'image/jpeg' };
+    } finally { URL.revokeObjectURL(url); }
+  }
+
   document.getElementById('screenshotInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     e.target.value = '';
@@ -3004,22 +3027,16 @@
     statusEl.style.color = 'var(--cream-dim)';
     statusEl.textContent = 'Leyendo la imagen…';
     try{
-      const dataUrl = await new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.onerror = () => reject(new Error('No se pudo leer el archivo'));
-        r.readAsDataURL(file);
-      });
+      const small = await shrinkImage(file);
       statusEl.textContent = 'Analizando la mesa…';
       const resp = await fetch('/api/analyze-table', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({
-          image: dataUrl.split(',')[1],
-          mediaType: file.type || 'image/png'
-        })
+        body: JSON.stringify({ image: small.data, mediaType: small.mediaType })
       });
-      const data = await resp.json();
+      let data = {};
+      try { data = await resp.json(); } catch(e){}
+      if (resp.status === 413) throw new Error('La imagen es demasiado grande. Prueba con una captura de pantalla en vez de una foto.');
       if (resp.status === 401){ logoutPro(); updateUsageBadge(); statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Inicia sesión con tu email de RÍO PRO para usar esta función.'; openPaywall('login'); return; }
       if (resp.status === 402){ statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Esta función es solo para suscriptores de RÍO PRO.'; openPaywall(); return; }
       if (resp.status === 403 && data.error === 'LIMIT_REACHED'){
@@ -3028,7 +3045,7 @@
         openCreditsModal();
         return;
       }
-      if (!resp.ok || data.error) throw new Error(data.error || 'No se pudo analizar la captura');
+      if (!resp.ok || data.error) throw new Error(data.error || `No se pudo analizar la captura (error ${resp.status}).`);
       applyScreenshotData(data);
       statusEl.style.color = 'var(--ok)';
       if (hole[0] && hole[1]){
