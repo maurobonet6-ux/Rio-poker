@@ -3,6 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RÍO">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RÍO">
+<meta property="og:title" content="RÍO — Tu entrenador de póker en español">
+<meta property="og:description" content="Cuéntale tu mano y te dice qué hiciste bien en cada calle: pagar, subir o tirar, explicado fácil.">
+<meta property="og:image" content="https://rio-poker.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RÍO — Tu entrenador de póker en español">
+<meta name="twitter:description" content="Cuéntale tu mano y te dice qué hiciste bien en cada calle: pagar, subir o tirar, explicado fácil.">
+<meta name="twitter:image" content="https://rio-poker.vercel.app/og-image.png">
+<!-- Estadísticas de visitas de Vercel (sin cookies). Se activan en Vercel → Analytics. -->
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <title>RÍO — Calculadora de póker · Decide en cada calle</title>
 <meta name="description" content="Calculadora de póker para repasar tus manos: probabilidad de ganar, outs, odds del bote, EV y consejo por posición en preflop, flop, turn y river.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,7 +68,7 @@
     scroll-padding-top: env(safe-area-inset-top, 0px);
     overflow-x: hidden;
   }
-  .wrap { max-width: 940px; margin: 0 auto; padding: 26px 20px 70px; position: relative; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 26px 20px 70px; position: relative; overflow-x: clip; }
 
   .suitwatermark {
     position: absolute; font-size: 13rem; opacity: 0.05; pointer-events: none;
@@ -417,6 +439,220 @@
   }
   .switch input:checked + .slider { background: var(--gold-soft); border-color: var(--gold); }
   .switch input:checked + .slider::before { transform: translateX(18px); background: var(--gold); }
+
+  /* ---- Modo Fácil / Pro ---- */
+  body:not(.mode-pro) .pro-only { display: none !important; }
+  body.mode-pro .easy-only { display: none !important; }
+  body:not(.mode-pro) .stat-grid { grid-template-columns: 1fr 1fr; }
+  .mode-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+  .mode-switch { display: flex; flex-shrink: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
+  .mode-switch button {
+    border: none; background: none; color: var(--cream-dim); font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 0.85rem; padding: 9px 14px; border-radius: 9px; cursor: pointer; transition: background .15s, color .15s;
+  }
+  .mode-switch button.active { background: var(--gold); color: #fff; }
+  .mode-note { font-size: 0.78rem; color: var(--cream-dim); line-height: 1.4; }
+  .mode-note b { color: var(--cream); }
+
+  /* ---- Botón de ayuda (?) ---- */
+  .help {
+    display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--cream-dim); font-size: 0.7rem; font-weight: 700;
+    cursor: pointer; margin-left: 6px; vertical-align: middle; padding: 0; font-family: 'Space Grotesk', sans-serif;
+    text-transform: none; letter-spacing: 0;
+  }
+  .help:hover { border-color: var(--gold); color: var(--gold); }
+  .stat { position: relative; }
+  .stat::after { content: '?'; position: absolute; top: 6px; right: 8px; font-size: 0.62rem; color: var(--cream-dim); opacity: 0.6; }
+  .help-body { color: var(--cream-dim); font-size: 0.95rem; line-height: 1.55; }
+  .help-body b { color: var(--cream); }
+  .help-body .example { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--panel-2); font-size: 0.88rem; }
+
+  /* ---- Fuerza de la mano inicial ---- */
+  .strength-tag { display: inline-block; margin-left: 8px; padding: 3px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; vertical-align: middle; }
+  .strength-tag.ok { background: var(--ok-soft); color: var(--ok); }
+  .strength-tag.warn { background: var(--lavender-soft); color: var(--lavender); }
+  .strength-tag.no { background: var(--crimson-soft); color: var(--crimson); }
+
+  /* ---- Rango del rival ---- */
+  .range-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 560px) { .range-chips { grid-template-columns: 1fr; } }
+  .range-top { display: flex; align-items: center; gap: 14px; }
+  .range-top input[type=range] { flex: 1; accent-color: var(--gold); height: 28px; }
+  .range-top b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.3rem; min-width: 64px; text-align: right; color: var(--gold); }
+  .range-presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; }
+  .range-presets button {
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--cream-dim); border-radius: 999px;
+    padding: 6px 11px; font-size: 0.76rem; font-weight: 700; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .range-presets button:hover, .range-presets button.active { border-color: var(--gold); color: var(--cream); background: var(--gold-soft); }
+  .range-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; max-width: 520px; }
+  .range-grid button {
+    aspect-ratio: 1; border: none; border-radius: 4px; background: var(--panel-2); color: var(--cream-dim);
+    font-size: clamp(0.5rem, 2.1vw, 0.68rem); font-weight: 700; cursor: pointer; padding: 0; font-family: 'Space Grotesk', sans-serif;
+  }
+  .range-grid button.in { background: var(--gold); color: #fff; }
+  .range-grid button.pair:not(.in) { background: #232327; }
+  .range-grid button.hero { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+  /* ---- Veredicto ---- */
+  .result-hand small { display: block; font-size: 0.8rem; color: var(--cream-dim); font-family: 'Space Grotesk', sans-serif; font-weight: 500; margin-top: 2px; }
+  .decision-badge { font-size: 1.15rem; padding: 10px 22px; }
+  .dots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin: 20px 0 6px; max-width: 460px; }
+  .dots i { aspect-ratio: 1; border-radius: 50%; background: var(--crimson); opacity: 0.85; animation: dotin .3s ease both; }
+  .dots i.w { background: var(--ok); }
+  .dots i.t { background: var(--lavender); }
+  @keyframes dotin { from { transform: scale(0); } to { transform: scale(1); } }
+  .dots-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.76rem; color: var(--cream-dim); }
+  .dots-legend span::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .dots-legend .w::before { background: var(--ok); }
+  .dots-legend .t::before { background: var(--lavender); }
+  .dots-legend .l::before { background: var(--crimson); }
+  .plain { margin-top: 14px; font-size: 1rem; line-height: 1.5; }
+  .plain b { color: var(--gold); }
+
+  /* ---- Qué puedes ligar / outs ---- */
+  .sub-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cream-dim); margin: 22px 0 10px; font-weight: 700; }
+  .finals { display: grid; gap: 6px; }
+  .final-row { display: grid; grid-template-columns: 118px 1fr 48px; align-items: center; gap: 10px; font-size: 0.82rem; }
+  .final-row .bar { height: 10px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+  .final-row .bar i { display: block; height: 100%; border-radius: 999px; background: var(--gold); transition: width .6s cubic-bezier(.22,1,.36,1); }
+  .final-row.current .bar i { background: var(--ok); }
+  .final-row b { text-align: right; font-weight: 700; }
+  .outs-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .mini-card {
+    width: 30px; height: 40px; border-radius: 5px; background: var(--cream); color: var(--ink); font-weight: 800;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.78rem; line-height: 1;
+  }
+  .mini-card.crimson { color: var(--crimson); }
+  .account-line { font-size: 0.78rem; color: var(--cream-dim); margin-top: 4px; word-break: break-all; }
+
+  /* ---- Secuencia de apuestas ---- */
+  .seq-box { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 4px 14px; margin-bottom: 18px; }
+  .seq-box[open] { padding-bottom: 14px; }
+  .seq-box summary { cursor: pointer; font-weight: 700; padding: 12px 0; list-style: none; }
+  .seq-box summary::-webkit-details-marker { display: none; }
+  .seq-box summary::after { content: '▾'; float: right; color: var(--cream-dim); }
+  .seq-box[open] summary::after { content: '▴'; }
+  .seq-tag { font-size: 0.68rem; font-weight: 700; color: var(--gold); background: var(--gold-soft); padding: 3px 8px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .seq-intro { margin: 0 0 12px; line-height: 1.45; }
+  .seq-blinds { max-width: 180px; margin-bottom: 14px; }
+  .seq-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+  .seq-tabs button {
+    border: 1px solid var(--line); background: var(--panel); color: var(--cream-dim); border-radius: 10px; padding: 9px 4px;
+    font-weight: 700; font-size: 0.8rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .seq-tabs button.active { border-color: var(--gold); color: var(--cream); background: var(--gold-soft); }
+  .seq-tabs button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .seq-tabs button small { display: block; font-weight: 500; font-size: 0.66rem; margin-top: 2px; }
+  .seq-list { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 30px; margin-bottom: 10px; font-size: 0.8rem; color: var(--cream-dim); }
+  .seq-chip { padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 0.8rem; background: var(--panel); border: 1px solid var(--line); color: var(--cream); }
+  .seq-chip.hero { border-color: rgba(61,220,122,0.45); }
+  .seq-chip.vill { border-color: rgba(255,71,87,0.45); }
+  .seq-chip .who { color: var(--cream-dim); font-weight: 600; margin-right: 4px; }
+  .seq-controls { display: grid; gap: 8px; }
+  .seq-who { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .seq-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seq-controls button {
+    border: 1px solid var(--line); background: var(--panel); color: var(--cream); border-radius: 10px; padding: 11px 6px;
+    font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .seq-controls button:hover { border-color: var(--gold); }
+  .seq-controls button.active { border-color: var(--gold); background: var(--gold-soft); }
+  .seq-controls button.fold { color: var(--crimson); }
+  .seq-controls button.aggr { color: var(--ok); }
+  .seq-amount { display: none; gap: 6px; }
+  .seq-amount.show { display: flex; }
+  .seq-amount input { flex: 1; min-width: 0; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--cream); font-size: 1rem; font-weight: 600; font-family: 'Space Grotesk', sans-serif; }
+  .seq-sizes { display: flex; gap: 6px; flex-wrap: wrap; }
+  .seq-sizes button { padding: 7px 10px; font-size: 0.76rem; }
+  .seq-state { font-size: 0.78rem; color: var(--cream-dim); }
+  .seq-state b { color: var(--cream); }
+  .seq-foot { display: flex; gap: 8px; margin-top: 10px; }
+  .seq-foot button { background: none; border: none; color: var(--cream-dim); font-size: 0.8rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif; padding: 4px 0; text-decoration: underline; }
+  .field input.auto { border-color: rgba(216,166,59,0.55); }
+
+  /* ---- Plan y repaso ---- */
+  .plan { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: var(--panel-2); border-left: 3px solid var(--lavender); font-size: 0.9rem; line-height: 1.55; color: var(--cream-dim); }
+  .plan:empty { display: none; }
+  .plan b { color: var(--cream); }
+  .plan .plan-title { font-weight: 800; color: var(--lavender); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .plan ul { margin: 0; padding-left: 18px; }
+  .plan li { margin: 3px 0; }
+  .tl-row { display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .tl-row:last-child { border-bottom: none; }
+  .tl-mark { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; }
+  .tl-mark.ok { background: var(--ok-soft); color: var(--ok); }
+  .tl-mark.meh { background: var(--lavender-soft); color: var(--lavender); }
+  .tl-mark.bad { background: var(--crimson-soft); color: var(--crimson); }
+  .tl-head { font-weight: 700; font-size: 0.9rem; }
+  .tl-head small { color: var(--cream-dim); font-weight: 600; margin-left: 6px; }
+  .tl-body { font-size: 0.82rem; color: var(--cream-dim); line-height: 1.45; margin-top: 3px; }
+  .tl-body b { color: var(--cream); }
+
+  /* ---- Selector de calle ---- */
+  .street-pick { margin-top: 22px; }
+  .street-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .street-btns button {
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--cream-dim); border-radius: 12px; padding: 12px 4px;
+    font-weight: 800; font-size: 0.9rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .street-btns button small { display: block; font-weight: 500; font-size: 0.66rem; margin-top: 3px; }
+  .street-btns button.active { border-color: var(--gold); background: var(--gold-soft); color: var(--cream); }
+  .street-btns button.missing small { color: var(--lavender); }
+  .board-groups > div { transition: opacity .2s; }
+  .board-groups > div.later { opacity: 0.3; }
+
+  /* ---- Rellenar rápido ---- */
+  .quick-fill { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .quick-btn {
+    display: block; text-align: left; border: 1px dashed var(--line); background: var(--panel-2); color: var(--cream);
+    border-radius: 12px; padding: 11px 12px; font-weight: 700; font-size: 0.86rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+  }
+  .quick-btn:hover { border-color: var(--gold); }
+  .quick-btn small { display: block; font-weight: 500; font-size: 0.7rem; color: var(--cream-dim); margin-top: 2px; }
+  .quick-btn .pro-badge { margin-left: 4px; padding: 2px 7px; font-size: 0.6rem; }
+  .or-line { font-size: 0.8rem; color: var(--cream-dim); margin: 0 0 10px; }
+  body.tourney .tourney-show { display: block !important; }
+
+  /* ---- Entrenamiento, tablas y consejos ---- */
+  .pos-advice { margin-top: 6px; font-size: 0.82rem; }
+  .pos-advice.ok { color: var(--ok); }
+  .pos-advice.no { color: var(--crimson); }
+  .pos-advice a { color: var(--cream-dim); text-decoration: underline; cursor: pointer; }
+  .inline-link { color: var(--gold); font-weight: 700; cursor: pointer; text-decoration: underline; }
+  .link-btn { display: block; margin: 14px auto 0; background: none; border: none; color: var(--gold); font-weight: 700; font-size: 0.86rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+  .mini-card.big { width: 46px; height: 62px; font-size: 1.05rem; border-radius: 7px; margin-right: 5px; display: inline-flex; }
+  .train-score { font-size: 0.78rem; color: var(--cream-dim); margin-bottom: 12px; }
+  .train-cards { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 8px; }
+  .train-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin: 12px 0; }
+  .train-opts button { padding: 14px 8px; }
+  .train-opts button.chosen { border-color: var(--gold); color: var(--cream); background: var(--gold-soft); }
+  .train-verdict { font-weight: 800; font-size: 1.1rem; margin-top: 6px; }
+  .train-verdict.ok { color: var(--ok); } .train-verdict.meh { color: var(--lavender); } .train-verdict.bad { color: var(--crimson); }
+  .chart-grid button { cursor: default; }
+  .stat.no-help { cursor: default; }
+  .stat.no-help::after { content: none; }
+  #helpModal .picker { max-width: 520px; }
+
+  /* ---- Móvil: las 5 comunitarias en una fila ---- */
+  @media (max-width: 480px) {
+    .cardslot { width: 52px; height: 74px; }
+    .board-groups { gap: 10px; }
+    .board-groups .card-row { gap: 6px; }
+  }
+  #gameType { grid-template-columns: 1fr 1fr; }
+
+  .story-btn { grid-column: 1 / -1; border-style: solid; border-color: rgba(232,40,63,0.45); background: linear-gradient(100deg, rgba(232,40,63,0.16), var(--panel-2) 70%); font-size: 0.98rem; padding: 14px; }
+  #storyMic.active { border-color: var(--crimson); color: var(--crimson); }
+
+  .annual-btn { width: 100%; margin-top: 10px; }
+  .inbox-item { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .inbox-item pre { white-space: pre-wrap; word-break: break-word; font-size: 0.72rem; color: var(--cream-dim); background: var(--panel-2); padding: 8px; border-radius: 8px; margin: 0; }
+
+  .footer-links { margin-top: 10px; line-height: 1.9; }
+  .footer-links a, .paywall-fine a { color: var(--cream-dim); text-decoration: underline; }
+  .age-badge { display: inline-block; border: 1.5px solid var(--cream-dim); border-radius: 999px; padding: 0 6px; font-weight: 800; font-size: 0.72rem; margin-right: 4px; }
 </style>
 </head>
 <body>
@@ -434,6 +670,13 @@
       </div>
       <button type="button" class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
     </div>
+    <div class="mode-row">
+      <div class="mode-switch" role="group" aria-label="Modo de la calculadora">
+        <button type="button" data-mode="facil">Fácil</button>
+        <button type="button" data-mode="pro">Pro</button>
+      </div>
+      <div class="mode-note" id="modeNote"></div>
+    </div>
     <div class="steps-nav">
       <div class="dot" id="dotPreflop"></div>
       <div class="dot" id="dotFlop"></div>
@@ -449,20 +692,16 @@
   </header>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num">0</div><h2>Analiza una captura</h2><span class="pro-badge" id="uploadProBadge">★ PRO</span></div>
-    <div class="panel-hint">Sube una captura de una mano que quieras repasar y rellenamos mano, board, bote y posiciones automáticamente (beta)</div>
-    <label class="upload-box" for="screenshotInput" id="uploadBox">
-      <div class="up-ic">📸</div>
-      <div class="up-text">Sube una captura de la mano</div>
-      <div class="up-sub" id="uploadSub">JPG o PNG, hasta ~4&nbsp;MB</div>
-      <input type="file" id="screenshotInput" accept="image/*">
-    </label>
-    <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin-top:10px;"></div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-head"><div class="panel-num">1</div><h2>Tu mano y la mesa</h2></div>
+    <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
     <div class="panel-hint">Toca una carta para elegirla — puedes cambiarla cuando quieras</div>
+    <div class="quick-fill">
+      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano <span class="pro-badge" id="storyProBadge">PRO</span><small>Díctala o escríbela como se la contarías a un amigo: la rellenamos por ti</small></button>
+      <button type="button" class="quick-btn" id="importBtn">📋 Importar historial <span class="pro-badge" id="importProBadge">PRO</span><small>PokerStars · GGPoker</small></button>
+      <label class="quick-btn" for="screenshotInput" id="uploadBox">📸 Desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub">Cartas, bote, apuesta y posiciones</small>
+        <input type="file" id="screenshotInput" accept="image/*" hidden>
+      </label>
+    </div>
+    <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
     <div class="table-grid">
       <div>
         <div class="zone-label">Tu mano</div>
@@ -481,38 +720,10 @@
   </section>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num">2</div><h2>La situación</h2></div>
+    <div class="panel-head"><div class="panel-num">2</div><h2>La mesa</h2></div>
     <div class="inputs-row">
       <div class="field">
-        <label>Rivales en la mano</label>
-        <div class="stepper">
-          <button type="button" id="rivMinus">−</button>
-          <span id="rivVal">1</span>
-          <button type="button" id="rivPlus">+</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Bote actual</label>
-        <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
-        <div class="hint">Fichas o €, la unidad da igual</div>
-      </div>
-      <div class="field">
-        <label>Cantidad a igualar</label>
-        <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
-        <div class="hint">Lo que cuesta pagar ahora</div>
-      </div>
-      <div class="field">
-        <label>Tu stack efectivo</label>
-        <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
-        <div class="hint">Fichas que te quedan detrás</div>
-      </div>
-      <div class="field">
-        <label>Stack del rival</label>
-        <input type="number" id="villStackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
-        <div class="hint">Para el SPR efectivo</div>
-      </div>
-      <div class="field">
-        <label>Tu posición</label>
+        <label>Tu posición <button type="button" class="help" data-help="position">?</button></label>
         <select id="heroPosInput">
           <option value="UTG">UTG — primera en hablar</option>
           <option value="HJ">HJ — media-temprana</option>
@@ -533,6 +744,21 @@
           <option value="BB" selected>BB — ciega grande</option>
         </select>
       </div>
+      <div class="field">
+        <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
+        <div class="stepper">
+          <button type="button" id="rivMinus">−</button>
+          <span id="rivVal">1</span>
+          <button type="button" id="rivPlus">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipo de partida <button type="button" class="help" data-help="game">?</button></label>
+        <div class="toggle-group" id="gameType">
+          <button type="button" class="toggle-btn" data-game="cash">Cash<small>Fichas = dinero</small></button>
+          <button type="button" class="toggle-btn" data-game="torneo">Torneo<small>Si lo pierdes todo, fuera</small></button>
+        </div>
+      </div>
       <div class="field field-wide">
         <div class="hint" id="posInfoBox">
           Cuanto más tarde hables, más información tienes: <b>BTN</b> es la mejor posición y <b>UTG</b> la peor.
@@ -540,19 +766,96 @@
         </div>
         <div class="hint" id="orderHint">Afecta al margen de seguridad del consejo, no al cálculo de equity</div>
       </div>
+      <div class="field field-wide">
+        <label><span class="easy-only">¿Cómo juega tu rival?</span><span class="pro-only">Rango del rival</span> <button type="button" class="help" data-help="range">?</button></label>
+        <div class="range-chips easy-only" id="rangeChips">
+          <button type="button" class="toggle-btn" data-range="100">Cualquier mano<small>Juega casi todo, o no lo conoces</small></button>
+          <button type="button" class="toggle-btn" data-range="40">Normal<small>Juega manos decentes</small></button>
+          <button type="button" class="toggle-btn" data-range="15">Solo manos buenas<small>Juega poco y cuando entra, va fuerte</small></button>
+        </div>
+        <div class="pro-only">
+          <div class="range-top">
+            <input type="range" id="rangeSlider" min="2" max="100" step="1" aria-label="Porcentaje de manos del rival">
+            <b id="rangePctLabel">40%</b>
+          </div>
+          <div class="range-presets" id="rangePresets"></div>
+          <div class="range-grid" id="rangeGrid"></div>
+          <div class="hint">Toca una casilla para añadirla o quitarla. Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o). Recuadro verde = tu mano.</div>
+          <div class="field" style="margin-top:14px; max-width:320px;">
+            <label>¿Cuánto farolea? <button type="button" class="help" data-help="bluffs">?</button></label>
+            <select id="bluffSelect">
+              <option value="0.03">Casi nunca</option>
+              <option value="0.1" selected>Lo normal</option>
+              <option value="0.2">Mucho</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div class="panel-num">3</div><h2>Las apuestas</h2></div>
+    <details class="seq-box" id="seqBox">
+      <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendado</span></summary>
+      <div class="hint seq-intro">Apunta qué hizo cada uno en cada calle. Calculamos el bote y lo que te toca pagar, ajustamos el rango del rival según cómo apuesta y repasamos <b>todas tus decisiones</b>, no solo la última.</div>
+      <div class="seq-blinds field">
+        <label>Ciega grande <button type="button" class="help" data-help="blinds">?</button></label>
+        <input type="number" id="bbInput" value="2" min="0" step="any" inputmode="decimal">
+      </div>
+      <div class="seq-tabs" id="seqTabs"></div>
+      <div class="seq-list" id="seqList"></div>
+      <div class="seq-controls" id="seqControls"></div>
+      <div class="seq-foot">
+        <button type="button" id="seqUndo">↶ Deshacer</button>
+        <button type="button" id="seqClear">Borrar secuencia</button>
+      </div>
+    </details>
+    <div class="or-line" id="orLine">…o escribe directamente el bote y lo que te toca pagar:</div>
+    <div class="inputs-row">
+      <div class="field">
+        <label>Bote actual <button type="button" class="help" data-help="pot">?</button></label>
+        <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
+        <div class="hint">Fichas o €, la unidad da igual</div>
+      </div>
+      <div class="field">
+        <label>Cantidad a igualar <button type="button" class="help" data-help="call">?</button></label>
+        <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
+        <div class="hint">Lo que cuesta pagar ahora</div>
+      </div>
+      <div class="field pro-only tourney-show">
+        <label>Tu stack efectivo <button type="button" class="help" data-help="stack">?</button></label>
+        <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
+        <div class="hint">Fichas que te quedan detrás</div>
+      </div>
+      <div class="field pro-only">
+        <label>Stack del rival</label>
+        <input type="number" id="villStackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
+        <div class="hint">Para el SPR efectivo</div>
+      </div>
+    </div>
+    <div class="street-pick">
+      <div class="zone-label">¿Qué decisión quieres analizar? <button type="button" class="help" data-help="street">?</button></div>
+      <div class="street-btns" id="streetBtns"></div>
     </div>
     <div class="actions">
       <button class="btn-primary" id="analyzeBtn">Analizar mano</button>
       <button class="btn-secondary" id="resetBtn">Reiniciar</button>
     </div>
     <div class="usage-row" id="usageRow"></div>
+    <button type="button" class="link-btn" id="trainLink">🎯 ¿Quieres practicar? Prueba el modo entrenamiento</button>
   </section>
 
   <section class="panel result" id="resultPanel">
-    <div class="panel-head"><div class="panel-num">3</div><h2>Resultado</h2></div>
+    <div class="panel-head"><div class="panel-num">4</div><h2>Resultado</h2></div>
     <div class="result-top">
       <div class="result-hand" id="resultHandName">—</div>
       <div class="decision-badge" id="decisionBadge">—</div>
+    </div>
+    <div class="easy-only">
+      <div class="dots" id="oddsDots" aria-hidden="true"></div>
+      <div class="dots-legend"><span class="w">Ganas</span><span class="t">Empatas</span><span class="l">Pierdes</span></div>
+      <div class="plain" id="plainLine"></div>
     </div>
     <div class="gauge">
       <div class="gauge-fill" id="gaugeFill"></div>
@@ -560,16 +863,32 @@
     </div>
     <div class="gauge-labels"><span>0%</span><span id="markLabel">Necesitas X%</span><span>100%</span></div>
     <div class="stat-grid">
-      <div class="stat" title="Probabilidad de tener la mejor mano al final, según la simulación"><b id="statEquity">—</b><span>Prob. de ganar</span></div>
-      <div class="stat" title="Probabilidad de empatar el bote con un rival"><b id="statTie">—</b><span>Prob. de empate</span></div>
-      <div class="stat" title="Probabilidad de que tu mano acabe perdiendo"><b id="statLose">—</b><span>Prob. de perder</span></div>
-      <div class="stat" title="Cartas que mejoran la categoría de tu mano en la próxima calle (flop/turn)"><b id="statOuts">—</b><span>Outs</span></div>
-      <div class="stat" title="Equity mínima que necesitas para que pagar sea rentable a largo plazo"><b id="statNeeded">—</b><span>Odds del bote</span></div>
-      <div class="stat" title="Por cada ficha que pagas, esto es lo que hay en juego"><b id="statRatio">—</b><span>Ratio del bote</span></div>
-      <div class="stat" title="Ganancia o pérdida media esperada de pagar, en fichas"><b id="statEV">—</b><span>EV de igualar</span></div>
-      <div class="stat" title="Stack efectivo dividido entre el bote — orienta cuánta presión soportas"><b id="statSPR">—</b><span>SPR</span></div>
+      <div class="stat" data-help="equity"><b id="statEquity">—</b><span>Prob. de ganar</span></div>
+      <div class="stat pro-only" data-help="tie"><b id="statTie">—</b><span>Prob. de empate</span></div>
+      <div class="stat" data-help="lose"><b id="statLose">—</b><span>Prob. de perder</span></div>
+      <div class="stat" data-help="needed"><b id="statNeeded">—</b><span class="easy-only">Necesitas ganar</span><span class="pro-only">Odds del bote</span></div>
+      <div class="stat" data-help="outs"><b id="statOuts">—</b><span class="easy-only">Cartas que te ayudan</span><span class="pro-only">Outs</span></div>
+      <div class="stat pro-only" data-help="ratio"><b id="statRatio">—</b><span>Ratio del bote</span></div>
+      <div class="stat pro-only" data-help="ev"><b id="statEV">—</b><span>EV de igualar</span></div>
+      <div class="stat pro-only" data-help="spr"><b id="statSPR">—</b><span>SPR</span></div>
+      <div class="stat pro-only" data-help="range"><b id="statRange">—</b><span>Rango rival</span></div>
     </div>
     <div class="advice" id="adviceBox"></div>
+    <div class="plan" id="planBox"></div>
+
+    <div id="timelineWrap" style="display:none;">
+      <div class="sub-title">Tus decisiones calle a calle</div>
+      <div id="timeline"></div>
+    </div>
+
+    <div id="outsBox" style="display:none;">
+      <div class="sub-title"><span class="easy-only">Cartas que mejoran tu mano en la próxima calle</span><span class="pro-only">Outs (mejoran tu categoría en la próxima calle)</span></div>
+      <div class="outs-list" id="outsList"></div>
+    </div>
+    <div id="finalsWrap" style="display:none;">
+      <div class="sub-title"><span class="easy-only">¿Con qué jugada puedes acabar?</span><span class="pro-only">Distribución de tu mano final</span></div>
+      <div class="finals" id="finalsBox"></div>
+    </div>
 
     <div class="reraise-box" id="reraiseBox">
       <button type="button" class="reraise-toggle" id="reraiseToggleBtn">¿Te suben la apuesta después de esto? Calcula qué hacer →</button>
@@ -584,7 +903,9 @@
       </div>
     </div>
 
+    <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
     <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:14px;">📋 Copiar resumen de la mano</button>
+    <button type="button" class="link-btn" id="feedbackBtn">👎 ¿Te parece raro este consejo? Avísanos</button>
   </section>
 
   <section class="panel" id="historyPanel" style="display:none;">
@@ -592,7 +913,13 @@
     <div id="historyList"></div>
   </section>
 
-  <footer>Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.</footer>
+  <footer>
+    Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.
+    <div class="footer-links">
+      <span class="age-badge">+18</span> Juega con responsabilidad · <a href="https://www.jugarbien.es" target="_blank" rel="noopener">jugarbien.es</a><br>
+      <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#cookies">Cookies</a> · <a href="/legal.html#condiciones">Condiciones</a>
+    </div>
+  </footer>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -602,9 +929,20 @@
     <button type="button" class="sidebar-close" id="closeSidebar" aria-label="Cerrar menú">&times;</button>
   </div>
   <div class="hint" id="sidebarProfile" style="margin-bottom:14px;"></div>
+  <div class="account-line" id="sidebarAccount" style="margin:-8px 0 14px;"></div>
   <div class="sidebar-nav">
     <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span> Analizador</button>
+    <button type="button" class="sidebar-link" id="navStory"><span class="ic">🎙️</span> Cuéntame tu mano <span class="pro-badge">PRO</span></button>
+    <button type="button" class="sidebar-link" id="navTrain"><span class="ic">🎯</span> Entrenamiento</button>
+    <button type="button" class="sidebar-link" id="navCharts"><span class="ic">📊</span> Tablas de manos</button>
+    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span> Tus estadísticas</button>
+    <button type="button" class="sidebar-link" id="navImport"><span class="ic">📋</span> Importar historial <span class="pro-badge">PRO</span></button>
+    <button type="button" class="sidebar-link" id="navInstall"><span class="ic">📲</span> Instalar en el móvil</button>
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span> Iniciar sesión</button>
+    <button type="button" class="sidebar-link" id="navManage" style="display:none;"><span class="ic">💳</span> Gestionar suscripción</button>
+    <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span> Glosario de póker</button>
+    <button type="button" class="sidebar-link" id="navInbox" style="display:none;"><span class="ic">📥</span> Avisos de usuarios</button>
+    <button type="button" class="sidebar-link" id="navLogout" style="display:none;"><span class="ic">🚪</span> Cerrar sesión</button>
     <button type="button" class="sidebar-link" id="navPlan"><span class="ic">💎</span> Plan</button>
     <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span> Configuración</button>
   </div>
@@ -666,7 +1004,7 @@
       <button class="btn-secondary" id="clearHistoryBtn" style="width:100%;">Borrar historial de manos</button>
     </div>
 
-    <p class="paywall-fine">RÍO v1.1 · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
+    <p class="paywall-fine">RÍO v1.2 · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
   </div>
 </div>
 
@@ -696,15 +1034,30 @@
         <ul class="plan-card-features">
           <li>Análisis de mano ilimitados</li>
           <li>Historial completo</li>
-          <li>Hasta 150 capturas de manos analizadas al mes</li>
+          <li>Hasta 150 capturas o manos contadas al mes</li>
+          <li>Importar historiales de PokerStars y GGPoker</li>
+          <li>Cuéntame tu mano: díctala y la rellenamos</li>
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 4,99€</button>
         <button class="btn-secondary" id="buyCreditsSettingsBtn" style="width:100%; margin-top:10px; display:none;">Comprar 50 fotos más</button>
+        <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:10px; display:none;">💳 Gestionar suscripción</button>
+        <div class="hint" id="manageSubHint" style="display:none; margin-top:6px;">Cancelar, cambiar la tarjeta o descargar tus facturas.</div>
+        <div id="manageSubMsg" class="restore-msg"></div>
       </div>
     </div>
 
     <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
+  </div>
+</div>
+
+<div class="overlay" id="helpModal">
+  <div class="picker">
+    <div class="picker-head">
+      <h3 id="helpTitle">Ayuda</h3>
+      <button type="button" id="closeHelp" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="help-body" id="helpBody"></div>
   </div>
 </div>
 
@@ -730,19 +1083,20 @@
       <li>♠ Análisis de manos ilimitados</li>
       <li>♥ Historial completo de tus últimas manos</li>
       <li>♦ Consejo por posición en cada calle</li>
-      <li>♣ Sin anuncios ni interrupciones</li>
+      <li>♣ Cuéntale tu mano por voz o importa tus historiales</li>
     </ul>
     <div class="paywall-price"><span>4,99&nbsp;€</span><small>/ mes</small></div>
     <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 4,99€</button>
     <div class="restore-box" id="restoreBox">
-      <div class="settings-label" style="margin-top:16px;">🔑 Iniciar sesión</div>
-      <div class="hint" style="margin-top:2px;" id="restoreHint">¿Ya pagaste? Escribe el email con el que te suscribiste y te enviaremos un código:</div>
+      <div class="settings-label" style="margin-top:16px;">🔑 Entra o crea tu cuenta gratis</div>
+      <div class="hint" style="margin-top:2px;" id="restoreHint">Escribe tu email y te enviamos un código para entrar. Si aún no tienes cuenta, se crea gratis:</div>
       <input type="email" id="proEmail" placeholder="tu@email.com" autocomplete="email" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
       <input type="text" id="proCode" placeholder="Código de 6 dígitos" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="display:none; width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px; letter-spacing:0.3em; text-align:center;">
       <button class="btn-secondary" id="restoreBtn" style="width:100%; margin-top:10px;">Enviarme un código</button>
       <div id="restoreMsg" class="restore-msg"></div>
+      <p class="paywall-fine">Al crear tu cuenta aceptas la <a href="/legal.html#privacidad" target="_blank">política de privacidad</a>. Debes ser mayor de 18 años.</p>
     </div>
-    <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
+    <p class="paywall-fine">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Cancela cuando quieras desde "Gestionar suscripción".</p>
   </div>
 </div>
 
@@ -786,7 +1140,7 @@
     try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); }
     catch(e){ return fallback; }
   }
-  function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+  function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} onStoredKey(key); }
 
   function isPro(){ return storageGet('rio_pro', false) === true; }
   // Token de sesión que nos da el servidor tras verificar el código del email.
@@ -798,7 +1152,17 @@
     storageSet('rio_pro', false);
     try { localStorage.removeItem('rio_token'); } catch(e){}
   }
-  function usesCount(){ return storageGet('rio_uses', 0); }
+  // Análisis gratis que le quedan a la cuenta (lo decide el servidor; esto es la última cifra conocida).
+  function freeLeft(){ return storageGet('rio_free_left', FREE_LIMIT); }
+  let pendingAnalyze = false;
+  async function refreshFreeLeft(){
+    if (!storageGet('rio_token', '') || isPro()) return;
+    try {
+      const r = await fetch('/api/free-use', { headers: authHeaders() });
+      const d = await r.json();
+      if (r.ok && typeof d.left === 'number'){ storageSet('rio_free_left', d.left); updateUsageBadge(); renderPlanInfo(); }
+    } catch(e){}
+  }
 
   let photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
   async function refreshPhotoUsage(){
@@ -820,7 +1184,7 @@
     if (sidebarFootEl){
       sidebarFootEl.innerHTML = pro
         ? `<span class="pro-pill">★ RÍO PRO</span><br>${photoUsage.used}/${photoUsage.limit} fotos este mes${photoUsage.extra > 0 ? ' + ' + photoUsage.extra + ' extra' : ''}`
-        : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${Math.max(0, FREE_LIMIT - usesCount())} análisis restantes`;
+        : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${storageGet('rio_token', '') ? freeLeft() + ' análisis gratis restantes' : 'Crea tu cuenta gratis para analizar'}`;
     }
     const freeBadge = document.getElementById('freePlanBadge');
     const proBadge = document.getElementById('proPlanBadge');
@@ -843,6 +1207,40 @@
         : 'Incluye hasta 150 capturas de manos analizadas automáticamente al mes.';
     }
     if (buyBtn) buyBtn.style.display = pro ? 'inline-block' : 'none';
+    updateAccountUI();
+  }
+
+  // Menú de cuenta: iniciar/cerrar sesión y gestionar la suscripción.
+  function updateAccountUI(){
+    const logged = !!storageGet('rio_token', '');
+    const canManage = logged && isPro();
+    document.getElementById('navLogin').style.display = logged ? 'none' : '';
+    document.getElementById('navLogout').style.display = logged ? '' : 'none';
+    document.getElementById('navManage').style.display = canManage ? '' : 'none';
+    document.getElementById('navInbox').style.display = logged && storageGet('rio_admin', false) ? '' : 'none';
+    document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
+    document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
+    document.getElementById('sidebarAccount').textContent = logged ? '✉️ ' + storageGet('rio_email', '') : '';
+  }
+  async function openBillingPortal(){
+    const msg = document.getElementById('manageSubMsg');
+    msg.textContent = 'Abriendo Stripe…'; msg.className = 'restore-msg';
+    try {
+      const r = await fetch('/api/billing-portal', { method: 'POST', headers: authHeaders() });
+      const data = await r.json();
+      if (r.ok && data.url){ window.location.href = data.url; return; }
+      msg.textContent = data.error || 'No se pudo abrir el portal de Stripe.'; msg.className = 'restore-msg no';
+    } catch(e){
+      msg.textContent = 'No se pudo contactar con el servidor. Inténtalo de nuevo.'; msg.className = 'restore-msg no';
+    }
+  }
+  async function doLogout(){
+    try { await fetch('/api/logout', { method: 'POST', headers: authHeaders() }); } catch(e){}
+    logoutPro();
+    try { localStorage.removeItem('rio_email'); } catch(e){}
+    photoUsage = { pro: false, used: 0, limit: PHOTOS_INCLUDED, extra: 0 };
+    try { localStorage.removeItem('rio_admin'); localStorage.removeItem('rio_free_left'); } catch(e){}
+    updateUsageBadge(); renderHistory(); renderPlanInfo();
   }
 
   function getProfile(){
@@ -865,7 +1263,6 @@
     const nameInput = document.getElementById('profileNameInput');
     if (nameInput) nameInput.value = p.name;
   }
-  function bumpUses(){ storageSet('rio_uses', usesCount()+1); }
   function getHistory(){ return storageGet('rio_history', []); }
   function pushHistory(entry){
     if (!storageGet('rio_save_history', true)) return;
@@ -882,6 +1279,7 @@
       if (r.status === 401) return 'logout';
       const data = await r.json();
       if (!r.ok) return null;
+      storageSet('rio_admin', data.admin === true);
       return data.pro === true;
     } catch(e){ return null; } // null = no se pudo comprobar (servidor no desplegado aún, sin conexión…)
   }
@@ -890,6 +1288,8 @@
   // plano al cargar la página (por si la suscripción caducó o se canceló).
   (function revalidateOnLoad(){
     if (!storageGet('rio_token', '')){
+      // Los análisis gratis ya no se cuentan en el navegador.
+      try { localStorage.removeItem('rio_uses'); } catch(e){}
       // Sesiones antiguas (solo email, sin código): hay que volver a entrar.
       if (isPro()) logoutPro();
       return;
@@ -898,6 +1298,7 @@
       if (pro === null) return; // sin respuesta del servidor: no tocamos nada
       if (pro === 'logout') logoutPro();
       else storageSet('rio_pro', pro);
+      refreshFreeLeft(); pullSync(); updateAccountUI();
       if (typeof updateUsageBadge === 'function') updateUsageBadge();
       refreshPhotoUsage();
     });
@@ -906,7 +1307,7 @@
   let hole = [null, null];
   let board = [null, null, null, null, null];
   let numRivals = 1;
-  let lastWin = null, lastTie = null, lastOop = false;
+  let lastWin = null, lastTie = null, lastOop = false, lastE2 = null;
   let activeSlot = null;
   // Orden de acción postflop estándar: la ciega pequeña actúa primero en cada calle
   // y el botón el último. Con esto derivamos automáticamente quién va "en posición".
@@ -971,11 +1372,8 @@
       if (sel){ sel.classList.add('pop'); }
     }
 
-    const boardCount = board.filter(Boolean).length;
-    let street = 'preflop';
-    if (boardCount>=5) street='river'; else if (boardCount>=4) street='turn'; else if (boardCount>=3) street='flop';
-    const order = ['preflop','flop','turn','river'];
-    const si = order.indexOf(street);
+    if (selStreet !== null && selStreet === cardStreets() - 1) selStreet = null;
+    const si = analysisStreet();
     ['Preflop','Flop','Turn','River'].forEach((name, i) => {
       const dot = document.getElementById('dot'+name);
       const lbl = document.getElementById('lbl'+name);
@@ -985,6 +1383,8 @@
     });
 
     updateCurrentHand();
+    renderRangeUI();
+    renderSeq(); syncFromSeq(); renderStreetBtns();
     resultPanel.classList.remove('show');
   }
 
@@ -993,12 +1393,13 @@
     if (!hole[0] || !hole[1]){ currentHandEl.textContent = 'Elige tus dos cartas para empezar.'; return; }
     if (known.length < 5){
       const [a,b] = hole;
+      const tag = strengthTag(handTopPercent(a, b));
       if (a.rank === b.rank){
-        currentHandEl.innerHTML = `Mano de partida: <b>Pareja de ${RANK_PLURAL[a.rank]}</b>`;
+        currentHandEl.innerHTML = `Mano de partida: <b>Pareja de ${RANK_PLURAL[a.rank]}</b>${tag}${openAdvice(a, b)}`;
       } else {
         const suited = a.suit === b.suit ? ' (mismo palo)' : '';
         const hi = a.rank>b.rank?a:b, lo=a.rank>b.rank?b:a;
-        currentHandEl.innerHTML = `Mano de partida: <b>${RANK_LABEL(hi.rank)}-${RANK_LABEL(lo.rank)}${suited}</b>`;
+        currentHandEl.innerHTML = `Mano de partida: <b>${RANK_LABEL(hi.rank)}-${RANK_LABEL(lo.rank)}${suited}</b>${tag}${openAdvice(a, b)}`;
       }
       return;
     }
@@ -1153,17 +1554,28 @@
 
   // Cuenta las cartas que, al caer, mejoran la categoría de tu mano actual
   // (p.ej. de proyecto de color a color hecho). Solo tiene sentido en flop/turn.
-  function countOuts(holeCards, filledBoard){
+  // Una carta solo es "out" si mejora TU jugada por encima de lo que mejora la
+  // mesa: si solo empareja la mesa (y le sirve igual a todos) no cuenta.
+  function findOuts(holeCards, filledBoard){
     if (filledBoard.length !== 3 && filledBoard.length !== 4) return null;
     const known = [...holeCards, ...filledBoard];
-    const before = bestHand(known).category;
-    const deck = remainingDeck(known);
-    let outs = 0;
-    for (const c of deck){
-      const after = bestHand([...known, c]).category;
-      if (after > before) outs++;
-    }
-    return outs;
+    const before = bestHand(known).category - boardCategory(filledBoard);
+    return remainingDeck(known).filter(c => {
+      const next = [...filledBoard, c];
+      return bestHand([...known, c]).category - boardCategory(next) > before;
+    });
+  }
+  // Categoría de la jugada que forma la mesa sola (4 o 5 cartas).
+  function boardCategory(cards){
+    if (cards.length >= 5) return bestHand(cards).category;
+    const counts = {};
+    cards.forEach(c => { counts[c.rank] = (counts[c.rank] || 0) + 1; });
+    const v = Object.values(counts).sort((a, b) => b - a);
+    if (v[0] === 4) return 7;
+    if (v[0] === 3) return 3;
+    if (v[0] === 2 && v[1] === 2) return 2;
+    if (v[0] === 2) return 1;
+    return 0;
   }
 
   function fullDeck(){ const d=[]; for (const s of SUITS) for (const r of RANKS) d.push({rank:r,suit:s}); return d; }
@@ -1178,35 +1590,1195 @@
     return res;
   }
 
-  function runEquity(holeCards, boardCards, rivals, iterations){
+  // Simula la mano muchas veces. Si hay rango del rival, sus cartas salen de
+  // ese rango (quitando las que ya están a la vista); si no, al azar.
+  function runEquity(holeCards, boardCards, rivals, iterations, range){
     const filledBoard = boardCards.filter(Boolean);
     const known = [...holeCards, ...filledBoard];
+    const knownKeys = new Set(known.map(cardKey));
     const deck = remainingDeck(known);
     const boardNeeded = 5 - filledBoard.length;
+    let pool = null;
+    const combos = range instanceof Set
+      ? (range.size > 0 && range.size < 169 ? poolFromSet(range) : null)
+      : (Array.isArray(range) && range.length > 0 && range.length < 1326 ? range : null);
+    if (combos){
+      pool = combos.filter(c => !knownKeys.has(cardKey(c[0])) && !knownKeys.has(cardKey(c[1])));
+      if (!pool.length) pool = null;
+    }
+    const cats = new Array(9).fill(0);
     let equitySum = 0, tieSum = 0;
     for (let i=0;i<iterations;i++){
-      const drawn = drawN(deck, boardNeeded + rivals*2);
-      const fb = [...filledBoard, ...drawn.slice(0, boardNeeded)];
-      const myScore = bestHand([...holeCards, ...fb]).score;
-      const scores = [myScore];
-      let idx = boardNeeded;
-      for (let o=0;o<rivals;o++){
-        const oc = [drawn[idx], drawn[idx+1]]; idx += 2;
-        scores.push(bestHand([...oc, ...fb]).score);
+      let fb; const rivalHands = [];
+      if (!pool){
+        const drawn = drawN(deck, boardNeeded + rivals*2);
+        fb = [...filledBoard, ...drawn.slice(0, boardNeeded)];
+        for (let o=0;o<rivals;o++) rivalHands.push([drawn[boardNeeded+2*o], drawn[boardNeeded+2*o+1]]);
+      } else {
+        const used = new Set();
+        for (let o=0;o<rivals;o++){
+          let hand = null;
+          for (let t=0; t<40 && !hand; t++){
+            const c = pool[Math.floor(Math.random()*pool.length)];
+            if (!used.has(cardKey(c[0])) && !used.has(cardKey(c[1]))) hand = c;
+          }
+          if (!hand) hand = drawN(deck.filter(c => !used.has(cardKey(c))), 2);
+          used.add(cardKey(hand[0])); used.add(cardKey(hand[1]));
+          rivalHands.push(hand);
+        }
+        fb = [...filledBoard, ...drawN(deck.filter(c => !used.has(cardKey(c))), boardNeeded)];
       }
-      const max = Math.max(...scores);
-      const winners = scores.filter(s=>s===max).length;
-      if (myScore === max){ if (winners > 1) tieSum += 1/winners; else equitySum += 1; }
+      const mine = bestHand([...holeCards, ...fb]);
+      cats[mine.category]++;
+      let max = mine.score, winners = 1;
+      for (const h of rivalHands){
+        const sc = bestHand([...h, ...fb]).score;
+        if (sc > max){ max = sc; winners = 1; } else if (sc === max) winners++;
+      }
+      if (mine.score === max){ if (winners > 1) tieSum += 1/winners; else equitySum += 1; }
     }
-    return { win: (equitySum/iterations)*100, tie: (tieSum/iterations)*100 };
+    return {
+      win: (equitySum/iterations)*100, tie: (tieSum/iterations)*100,
+      cats: cats.map(c => c/iterations*100), usedRange: !!pool
+    };
   }
+
+  // ---- Modo Fácil / Pro ----
+  function setMode(m){
+    const pro = m === 'pro';
+    document.body.classList.toggle('mode-pro', pro);
+    storageSet('rio_mode', pro ? 'pro' : 'facil');
+    document.querySelectorAll('.mode-switch button').forEach(b => b.classList.toggle('active', b.dataset.mode === (pro ? 'pro' : 'facil')));
+    document.getElementById('modeNote').innerHTML = pro
+      ? '<b>Modo Pro:</b> rango del rival, stacks, EV, SPR y todas las estadísticas.'
+      : '<b>Modo Fácil:</b> te lo explicamos en palabras sencillas. Toca los <b>?</b> para aprender cada término.';
+  }
+  document.querySelectorAll('.mode-switch button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode(storageGet('rio_mode', 'facil'));
+
+  const DECISION_ES = { RAISE:'SUBE', CALL:'PAGA', FOLD:'TIRA', CHECK:'PASA', BET:'APUESTA' };
+  function decisionHTML(t){ return `<span class="easy-only">${DECISION_ES[t] || t}</span><span class="pro-only">${t}</span>`; }
+
+  // ---- Rangos de manos ----
+  // Las 169 manos iniciales ordenadas de mejor a peor (por su probabilidad de
+  // ganar contra una mano al azar). "Top 20%" = las primeras manos de la lista
+  // hasta sumar el 20% de las 1.326 combinaciones posibles.
+  const HAND_RANKING = 'AA KK QQ JJ TT 99 88 AKs 77 AQs AKo AJs AQo ATs AJo 66 KQs ATo A9s KJs A8s KTs 55 A9o KQo A7s KJo K9s A5s A6s A8o QJs QTs KTo A4s A7o K8s QJo A3s A2s Q9s K9o A5o A6o K7s QTo JTs 44 K6s K8o A3o A4o K5s Q8s J9s Q9o JTo K4s K7o A2o K6o Q7s J8s K3s 33 Q8o T9s Q6s K5o K2s J9o K4o Q5s J7s T8s T9o Q4s Q7o J8o K3o Q3s J6s T7s Q6o 98s K2o Q2s 22 Q5o T8o J5s 97s J7o T6s J4s Q4o Q3o 98o T7o J3s 87s 96s Q2o J5o J6o J2s T5s 97o 95s 86s T3s T4s T6o J4o 76s J3o 87o 85s T2s 96o T5o J2o 94s 75s T4o 93s 65s 92s 95o T3o 86o 84s 76o T2o 85o 74s 83s 64s 54s 94o 93o 75o 82s 65o 63s 73s 84o 53s 92o 74o 54o 43s 62s 64o 72s 83o 52s 42s 53o 73o 63o 82o 32s 43o 52o 72o 62o 42o 32o'.split(' ');
+  const RANK_CHARS = 'AKQJT98765432';
+  const CLASS_COMBOS = n => n.length === 2 ? 6 : (n[2] === 's' ? 4 : 12);
+  // Rangos de apertura típicos por posición (aprox., mesa de 6).
+  const RANGE_PRESETS = [ ['UTG',15], ['HJ',19], ['CO',27], ['BTN',45], ['SB',40], ['BB',60] ];
+  function topRange(pct){
+    if (pct >= 100) return new Set(HAND_RANKING);
+    const target = pct / 100 * 1326, set = new Set();
+    let sum = 0;
+    for (const n of HAND_RANKING){ if (sum >= target) break; set.add(n); sum += CLASS_COMBOS(n); }
+    return set;
+  }
+  function rangePct(set){ let sum = 0; set.forEach(n => { sum += CLASS_COMBOS(n); }); return sum / 1326 * 100; }
+  function handClass(a, b){
+    const L = r => RANK_CHARS[14 - r];
+    if (a.rank === b.rank) return L(a.rank) + L(a.rank);
+    const hi = a.rank > b.rank ? a : b, lo = hi === a ? b : a;
+    return L(hi.rank) + L(lo.rank) + (a.suit === b.suit ? 's' : 'o');
+  }
+  // Porcentaje de manos iniciales que son iguales o mejores que esta.
+  function handTopPercent(a, b){
+    const cls = handClass(a, b);
+    let sum = 0;
+    for (const n of HAND_RANKING){ sum += CLASS_COMBOS(n); if (n === cls) break; }
+    return sum / 1326 * 100;
+  }
+  function strengthTag(top){
+    if (top <= 15) return '<span class="strength-tag ok">Muy fuerte · top ' + Math.max(1, Math.round(top)) + '%</span>';
+    if (top <= 40) return '<span class="strength-tag warn">Jugable · top ' + Math.round(top) + '%</span>';
+    return '<span class="strength-tag no">Débil · top ' + Math.round(top) + '%</span>';
+  }
+  function classCombos(n){
+    const r1 = 14 - RANK_CHARS.indexOf(n[0]), r2 = 14 - RANK_CHARS.indexOf(n[1]);
+    const out = [];
+    for (const s1 of SUITS) for (const s2 of SUITS){
+      const ok = n.length === 2 ? s1 < s2 : (n[2] === 's' ? s1 === s2 : s1 !== s2);
+      if (ok) out.push([{rank:r1, suit:s1}, {rank:r2, suit:s2}]);
+    }
+    return out;
+  }
+
+  let villRange;
+  (function loadRange(){
+    const saved = storageGet('rio_range', null);
+    if (saved && Array.isArray(saved.custom)){
+      const set = new Set(saved.custom.filter(n => HAND_RANKING.includes(n)));
+      villRange = { set, pct: rangePct(set), custom: true };
+    } else {
+      const pct = saved && saved.pct ? Math.max(2, Math.min(100, saved.pct)) : 40;
+      villRange = { set: topRange(pct), pct, custom: false };
+    }
+  })();
+  function saveRange(){ storageSet('rio_range', { pct: villRange.pct, custom: villRange.custom ? [...villRange.set] : null }); }
+  function setRangePct(pct){ villRange = { set: topRange(pct), pct, custom: false }; saveRange(); renderRangeUI(); }
+  function toggleRangeClass(n){
+    const set = new Set(villRange.set);
+    if (set.has(n)) set.delete(n); else set.add(n);
+    villRange = { set, pct: rangePct(set), custom: true };
+    saveRange(); renderRangeUI();
+  }
+  function rangeLabel(){
+    if (villRange.set.size >= 169 || villRange.set.size === 0) return 'Cualquier mano';
+    return 'Top ' + Math.round(villRange.pct) + '%' + (villRange.custom ? ' (personalizado)' : '');
+  }
+
+  const rangeGrid = document.getElementById('rangeGrid');
+  for (let i = 0; i < 13; i++) for (let j = 0; j < 13; j++){
+    const n = i === j ? RANK_CHARS[i] + RANK_CHARS[j] : i < j ? RANK_CHARS[i] + RANK_CHARS[j] + 's' : RANK_CHARS[j] + RANK_CHARS[i] + 'o';
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = n; b.dataset.n = n;
+    if (i === j) b.classList.add('pair');
+    b.addEventListener('click', () => toggleRangeClass(n));
+    rangeGrid.appendChild(b);
+  }
+  const rangePresets = document.getElementById('rangePresets');
+  RANGE_PRESETS.concat([['Todas', 100]]).forEach(([pos, pct]) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.pct = pct;
+    b.textContent = pos === 'Todas' ? 'Todas (100%)' : `${pos} · ${pct}%`;
+    b.title = pos === 'Todas' ? 'Cualquier mano' : `Rango típico de apertura desde ${pos}`;
+    b.addEventListener('click', () => setRangePct(pct));
+    rangePresets.appendChild(b);
+  });
+  document.getElementById('rangeSlider').addEventListener('input', (e) => setRangePct(Number(e.target.value)));
+  document.querySelectorAll('#rangeChips [data-range]').forEach(b => b.addEventListener('click', () => setRangePct(Number(b.dataset.range))));
+
+  function renderRangeUI(){
+    const pct = Math.round(villRange.pct);
+    document.getElementById('rangeSlider').value = pct;
+    document.getElementById('rangePctLabel').textContent = pct + '%';
+    document.querySelectorAll('#rangeChips [data-range]').forEach(b => b.classList.toggle('active', !villRange.custom && Number(b.dataset.range) === villRange.pct));
+    rangePresets.querySelectorAll('button').forEach(b => b.classList.toggle('active', !villRange.custom && Number(b.dataset.pct) === villRange.pct));
+    const heroCls = hole[0] && hole[1] ? handClass(hole[0], hole[1]) : null;
+    rangeGrid.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('in', villRange.set.has(b.dataset.n));
+      b.classList.toggle('hero', b.dataset.n === heroCls);
+    });
+  }
+
+  // ---- Ayuda y glosario ----
+  const HELP = {
+    street: ['¿Qué decisión analizar?', 'Elige la calle cuya decisión quieres ver. Puedes meter la mano entera (hasta el river) y luego tocar <b>Flop</b> para ver qué convenía hacer en el flop, <b>Turn</b> para el turn, etc.<br><br>Si has apuntado la <b>secuencia de apuestas</b>, en cada calle se tiene en cuenta todo lo que pasó antes: no es lo mismo que el rival apueste en el river después de subir preflop y apostar flop y turn, que después de pasar en todas las calles.'],
+    game: ['Cash o torneo', '<b>Cash:</b> las fichas son dinero; si pierdes, recompras. <b>Torneo:</b> si pierdes todas tus fichas, quedas eliminado, así que jugarte buena parte del stack exige algo más de ventaja. En torneo, escribe tu stack para que lo tengamos en cuenta.'],
+    bluffs: ['¿Cuánto farolea?', 'Cuando tu rival apuesta, a veces lo hace con manos flojas para que te retires: es un <b>farol</b>. Si farolea mucho, pagar con manos medias compensa más; si casi nunca farolea, respeta más sus apuestas.'],
+    blinds: ['Ciega grande', 'La apuesta obligatoria más grande de la mesa (por ejemplo, en una partida 1/2 la ciega grande es 2). La usamos para calcular el bote inicial del preflop: ciega pequeña + ciega grande.'],
+    rivals: ['Rivales en la mano', 'Cuántos jugadores <b>siguen en la mano</b> contigo (no cuentes los que ya se han retirado). Cuantos más rivales, más difícil es ganar.'],
+    pot: ['Bote', 'Todas las fichas que hay en el centro de la mesa <b>antes</b> de que tú pagues, incluida la apuesta de tu rival.', 'Ejemplo: había 40 en el centro y tu rival apuesta 20 → el bote es 60.'],
+    call: ['Cantidad a igualar', 'Lo que te cuesta <b>pagar</b> para seguir en la mano. Si nadie ha apostado, pon 0.'],
+    stack: ['Stack efectivo', 'Las fichas que te quedan delante. El <b>efectivo</b> es el menor entre el tuyo y el de tu rival: es lo máximo que podéis jugaros entre los dos.'],
+    position: ['Posición', 'El orden en que habláis. Hablar <b>después</b> que tu rival es una ventaja, porque ves lo que hace antes de decidir.<br><br><b>BTN</b> (botón) es la mejor posición; <b>SB</b> y <b>BB</b> (ciegas) hablan primero después del flop.'],
+    range: ['Rango del rival', 'Las manos que tu rival <b>podría tener</b>. No sabes sus cartas, pero sí cómo juega: un jugador que solo entra con manos buenas tiene un rango estrecho (por ejemplo, top 15%), uno que juega casi todo tiene un rango amplio.<br><br>Calcular contra un rango realista da consejos mucho más fiables que contra una mano al azar.'],
+    equity: ['Probabilidad de ganar (equity)', 'El porcentaje de veces que tu mano acabaría ganando si la situación se repitiera muchas veces, contra las manos que puede tener tu rival.'],
+    tie: ['Empate', 'Las veces que tu mano y la de un rival acaban exactamente igual y os repartís el bote.'],
+    lose: ['Probabilidad de perder', 'El porcentaje de veces que un rival acabaría con mejor mano que tú.'],
+    needed: ['Lo que necesitas ganar (odds del bote)', 'El mínimo de veces que tienes que ganar para que <b>pagar compense a la larga</b>. Se calcula como lo que pagas dividido entre el bote final.', 'Ejemplo: pagas 20 para ganar un bote de 60 → 20 / (60 + 20) = 25%. Si ganas más del 25% de las veces, pagar es rentable.'],
+    outs: ['Outs', 'Las cartas que, si salen en la próxima calle, <b>mejoran tu jugada</b> (por ejemplo, de proyecto de color a color).', 'Truco rápido: en el flop, outs × 4 ≈ % de ligar hasta el river; en el turn, outs × 2.'],
+    ratio: ['Ratio del bote', 'Cuántas fichas hay en el bote por cada ficha que pagas. Un 3 : 1 significa que arriesgas 1 para ganar 3.'],
+    ev: ['EV (valor esperado)', 'Lo que ganas o pierdes <b>de media</b> cada vez que pagas en esta situación. Positivo (+) = pagar gana dinero a la larga; negativo (−) = lo pierde.'],
+    spr: ['SPR', 'Stack efectivo dividido entre el bote. Con SPR bajo (menos de 3) estás casi comprometido y una pareja buena suele bastar para ir all-in; con SPR alto (más de 10) necesitas manos más fuertes para jugarte todo.']
+  };
+  const helpModal = document.getElementById('helpModal');
+  function openHelp(key){
+    const h = HELP[key]; if (!h) return;
+    document.getElementById('helpTitle').textContent = h[0];
+    document.getElementById('helpBody').innerHTML = h[1] + (h[2] ? `<div class="example">${h[2]}</div>` : '');
+    helpModal.classList.add('show');
+  }
+  function openGlossary(){
+    document.getElementById('helpTitle').textContent = 'Glosario de póker';
+    document.getElementById('helpBody').innerHTML = Object.values(HELP).map(h => `<p><b>${h[0]}</b><br>${h[1]}</p>`).join('');
+    helpModal.classList.add('show');
+  }
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-help]');
+    if (!el) return;
+    e.preventDefault();
+    openHelp(el.dataset.help);
+  });
+  document.getElementById('closeHelp').addEventListener('click', () => helpModal.classList.remove('show'));
+  helpModal.addEventListener('click', (e) => { if (e.target === helpModal) helpModal.classList.remove('show'); });
+
+  // ---- Secuencia de apuestas ----
+  // Mano a dos: "hero" (tú) contra "vill" (el rival que apuesta). Cada calle
+  // guarda sus acciones; "to" es lo que ese jugador lleva puesto en la calle
+  // después de apostar o subir.
+  const STREET_NAMES = ['Preflop', 'Flop', 'Turn', 'River'];
+  const PREFLOP_ORDER = ['UTG','HJ','CO','BTN','SB','BB'];
+  let seq = [[], [], [], []];
+  let seqStreet = 0, seqActor = null, seqPending = null; // seqPending: 'bet' | 'raise' mientras se escribe la cantidad
+
+  const fmtN = (n) => (Math.round(n * 100) / 100).toLocaleString('es-ES');
+  function bbSize(){ return Math.max(0.01, Number(document.getElementById('bbInput').value) || 2); }
+  // Calles que tienen sus cartas puestas (1 = solo preflop … 4 = hasta el river).
+  function cardStreets(){
+    const n = board.filter(Boolean).length;
+    return n >= 5 ? 4 : n >= 4 ? 3 : n >= 3 ? 2 : 1;
+  }
+  // Calle cuya decisión se analiza: la que elijas, o la última con cartas.
+  let selStreet = null;
+  function analysisStreet(){ return selStreet === null ? cardStreets() - 1 : selStreet; }
+  function availableStreets(){ return Math.min(cardStreets(), analysisStreet() + 1); }
+  // Momento de la decisión en esa calle: si tu última acción ya está apuntada
+  // (o la calle ya terminó), analizamos esa decisión tuya; si no, la de ahora.
+  function decisionPoint(){
+    const s = availableStreets() - 1, list = seq[s];
+    const past = s < cardStreets() - 1;
+    const last = list[list.length - 1];
+    if (!list.length || (!past && last.who !== 'hero')) return null;
+    for (let i = list.length - 1; i >= 0; i--) if (list[i].who === 'hero') return { s, i };
+    return null;
+  }
+  function boardAt(s){ return s === 0 ? [] : board.slice(0, s === 1 ? 3 : s === 2 ? 4 : 5).filter(Boolean); }
+  function seqHasActions(){ const a = cardStreets(); return seq.slice(0, a).some(x => x.length); }
+
+  // Reproduce la secuencia hasta la calle "upto" (incluida) o hasta justo antes
+  // de la acción stopAt = {s, i}. Devuelve bote y lo que lleva cada uno en la calle.
+  function replay(upto, stopAt){
+    const bb = bbSize(), sb = bb / 2;
+    const heroPos = document.getElementById('heroPosInput').value;
+    const villPos = document.getElementById('villPosInput').value;
+    let pot = sb + bb;
+    let heroIn = heroPos === 'BB' ? bb : heroPos === 'SB' ? sb : 0;
+    let villIn = villPos === 'BB' ? bb : villPos === 'SB' ? sb : 0;
+    let raises = 0;
+    // Preflop, aunque ni tú ni el rival seáis la ciega grande, para entrar hay que
+    // poner al menos la ciega grande: "floor" es lo mínimo que hay que igualar.
+    const out = (s) => {
+      const floor = s === 0 ? bb : 0;
+      return { pot, heroIn, villIn, raises,
+        owed: Math.max(0, Math.max(villIn, floor) - heroIn), villOwed: Math.max(0, Math.max(heroIn, floor) - villIn) };
+    };
+    for (let s = 0; s <= upto; s++){
+      if (s > 0){ heroIn = 0; villIn = 0; }
+      for (let i = 0; i < seq[s].length; i++){
+        if (stopAt && stopAt.s === s && stopAt.i === i) return out(s);
+        const a = seq[s][i];
+        const mine = a.who === 'hero' ? heroIn : villIn;
+        const other = Math.max(a.who === 'hero' ? villIn : heroIn, s === 0 ? bb : 0);
+        if (s === 0 && (a.type === 'bet' || a.type === 'raise')) raises++;
+        let add = 0;
+        if (a.type === 'call') add = Math.max(0, other - mine);
+        else if (a.type === 'bet' || a.type === 'raise') add = Math.max(0, a.to - mine);
+        pot += add;
+        if (a.who === 'hero') heroIn += add; else villIn += add;
+      }
+      if (stopAt && stopAt.s === s) return out(s);
+    }
+    return out(upto);
+  }
+
+  function defaultActor(s){
+    const list = seq[s];
+    if (list.length) return list[list.length - 1].who === 'hero' ? 'vill' : 'hero';
+    if (s === 0){
+      const h = PREFLOP_ORDER.indexOf(document.getElementById('heroPosInput').value);
+      const v = PREFLOP_ORDER.indexOf(document.getElementById('villPosInput').value);
+      return h < v ? 'hero' : 'vill';
+    }
+    return heroIsOOP() ? 'hero' : 'vill';
+  }
+
+  function actionText(a, amount){
+    const who = a.who === 'hero' ? 'Tú' : 'Rival';
+    const verb = {
+      check: 'pasa', fold: a.who === 'hero' ? 'te retiras' : 'se retira',
+      call: 'paga ' + fmtN(amount), bet: 'apuesta ' + fmtN(a.to), raise: 'sube a ' + fmtN(a.to)
+    }[a.type];
+    return `<span class="who">${who}</span>${verb}`;
+  }
+
+  function renderSeq(){
+    const avail = cardStreets();
+    if (seqStreet >= avail) seqStreet = avail - 1;
+    const tabs = document.getElementById('seqTabs');
+    tabs.innerHTML = STREET_NAMES.map((n, s) => {
+      const count = seq[s].length;
+      return `<button type="button" data-s="${s}" class="${s === seqStreet ? 'active' : ''}" ${s >= avail ? 'disabled title="Añade primero las cartas de esta calle"' : ''}>${n}<small>${s >= avail ? 'sin cartas' : count ? count + ' acción' + (count > 1 ? 'es' : '') : '—'}</small></button>`;
+    }).join('');
+    tabs.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { seqStreet = Number(b.dataset.s); seqActor = null; seqPending = null; renderSeq(); }));
+
+    // Lista de acciones de la calle elegida
+    const start = replay(seqStreet, { s: seqStreet, i: 0 });
+    const chips = [];
+    for (let i = 0; i < seq[seqStreet].length; i++){
+      const st = replay(seqStreet, { s: seqStreet, i });
+      const a = seq[seqStreet][i];
+      const amount = a.type === 'call' ? (a.who === 'hero' ? st.owed : st.villOwed) : 0;
+      chips.push(`<span class="seq-chip ${a.who}">${actionText(a, amount)}</span>`);
+    }
+    document.getElementById('seqList').innerHTML = `<span>Bote: <b>${fmtN(start.pot)}</b></span>` + (chips.length ? chips.join('') : '<span>Aún no hay acciones en esta calle.</span>');
+
+    // Controles para añadir la siguiente acción
+    const actor = seqActor || defaultActor(seqStreet);
+    const now = replay(seqStreet);
+    const mine = actor === 'hero' ? now.heroIn : now.villIn;
+    const toCall = actor === 'hero' ? now.owed : now.villOwed;
+    const other = mine + toCall;
+    const facingBet = toCall > 0;
+    const pendingType = facingBet ? 'raise' : 'bet';
+    const potNow = now.pot;
+    const sizes = facingBet
+      ? [['x2,5', other * 2.5], ['x3', other * 3], ['x4', other * 4]]
+      : [['1/3 bote', potNow / 3], ['1/2 bote', potNow / 2], ['2/3 bote', potNow * 2 / 3], ['Bote', potNow]];
+    const ctl = document.getElementById('seqControls');
+    ctl.innerHTML = `
+      <div class="seq-who">
+        <button type="button" data-who="hero" class="${actor === 'hero' ? 'active' : ''}">🙋 Tú</button>
+        <button type="button" data-who="vill" class="${actor === 'vill' ? 'active' : ''}">🎯 Rival</button>
+      </div>
+      <div class="seq-state">${actor === 'hero'
+        ? (facingBet ? `Tienes que pagar <b>${fmtN(toCall)}</b>. ¿Qué hiciste?` : 'Puedes pasar o apostar. ¿Qué hiciste?')
+        : (facingBet ? `El rival tiene que pagar <b>${fmtN(toCall)}</b>. ¿Qué hizo?` : 'El rival puede pasar o apostar. ¿Qué hizo?')}</div>
+      <div class="seq-acts">
+        ${facingBet
+          ? `<button type="button" class="fold" data-act="fold">Retirarse</button><button type="button" data-act="call">Pagar ${fmtN(toCall)}</button><button type="button" class="aggr" data-act="raise">Subir…</button>`
+          : `<button type="button" data-act="check">Pasar</button><button type="button" class="aggr" data-act="bet">Apostar…</button><button type="button" class="fold" data-act="fold">Retirarse</button>`}
+      </div>
+      <div class="seq-amount ${seqPending ? 'show' : ''}">
+        <input type="number" id="seqAmount" min="0" step="any" inputmode="decimal" placeholder="${facingBet ? 'Sube a… (total)' : 'Cantidad'}">
+        <button type="button" id="seqAmountOk">Añadir</button>
+      </div>
+      ${seqPending ? `<div class="seq-sizes">${sizes.map(([l, v]) => `<button type="button" data-size="${Math.round(v * 100) / 100}">${l} · ${fmtN(Math.round(v * 100) / 100)}</button>`).join('')}</div>` : ''}`;
+    ctl.querySelectorAll('[data-who]').forEach(b => b.addEventListener('click', () => { seqActor = b.dataset.who; seqPending = null; renderSeq(); }));
+    ctl.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
+      const act = b.dataset.act;
+      if (act === 'bet' || act === 'raise'){ seqPending = pendingType; renderSeq(); document.getElementById('seqAmount').focus(); return; }
+      addSeqAction({ who: actor, type: act });
+    }));
+    const addAmount = (v) => {
+      const to = Number(v);
+      if (!(to > other)){ const inp = document.getElementById('seqAmount'); inp.value = ''; inp.placeholder = `Tiene que ser más de ${fmtN(other)}`; inp.focus(); return; }
+      addSeqAction({ who: actor, type: facingBet ? 'raise' : 'bet', to });
+    };
+    ctl.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => addAmount(b.dataset.size)));
+    const ok = document.getElementById('seqAmountOk');
+    if (ok) ok.addEventListener('click', () => addAmount(document.getElementById('seqAmount').value));
+    const amt = document.getElementById('seqAmount');
+    if (amt) amt.addEventListener('keydown', (e) => { if (e.key === 'Enter') addAmount(amt.value); });
+  }
+
+  function addSeqAction(a){
+    seq[seqStreet].push(a);
+    seqActor = null; seqPending = null;
+    renderSeq(); syncFromSeq();
+  }
+  document.getElementById('seqUndo').addEventListener('click', () => {
+    for (let s = seqStreet; s >= 0; s--){ if (seq[s].length){ seq[s].pop(); seqStreet = s; break; } }
+    seqActor = null; seqPending = null; renderSeq(); syncFromSeq();
+  });
+  document.getElementById('seqClear').addEventListener('click', () => {
+    seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null; renderSeq(); syncFromSeq();
+  });
+  document.getElementById('bbInput').addEventListener('input', () => { renderSeq(); syncFromSeq(); });
+
+  // Con secuencia, el bote y lo que te toca pagar se calculan solos.
+  function syncFromSeq(){
+    const potEl = document.getElementById('potInput'), callEl = document.getElementById('callInput');
+    const has = seqHasActions();
+    potEl.classList.toggle('auto', has); callEl.classList.toggle('auto', has);
+    if (!has) return;
+    const dp = decisionPoint();
+    const st = replay(availableStreets() - 1, dp || undefined);
+    potEl.value = Math.round(st.pot * 100) / 100;
+    callEl.value = Math.round(st.owed * 100) / 100;
+  }
+
+  // ---- Selector de calle a analizar ----
+  function renderStreetBtns(){
+    const cs = cardStreets(), a = analysisStreet();
+    const need = ['', 'faltan 3 cartas', 'falta 1 carta', 'falta 1 carta'];
+    document.getElementById('streetBtns').innerHTML = STREET_NAMES.map((n, i) =>
+      `<button type="button" data-s="${i}" class="${i === a ? 'active' : ''} ${i >= cs ? 'missing' : ''}">${n}<small>${i === a ? 'analizando' : i >= cs ? need[i] : 'ver'}</small></button>`).join('');
+    document.querySelectorAll('.board-groups > div').forEach((g, i) => g.classList.toggle('later', i + 1 > a));
+  }
+  function selectStreet(s){
+    selStreet = s === cardStreets() - 1 ? null : s;
+    seqStreet = Math.min(s, cardStreets() - 1); seqActor = null; seqPending = null;
+    render();
+    if (s >= cardStreets()){
+      const idx = board.findIndex(c => !c);
+      if (idx !== -1) openPicker('board', idx);
+    }
+  }
+  document.getElementById('streetBtns').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-s]'); if (b) selectStreet(Number(b.dataset.s));
+  });
+
+  // ---- Rango del rival según cómo ha apostado ----
+  const DRAW_SCORE = [7,0,0,0,0].reduce((x, t) => x * 15 + t, 1); // un proyecto cuenta como una pareja media
+  function hasDraw(combo, boardCards){
+    if (boardCards.length >= 5) return false;
+    const cards = [...combo, ...boardCards];
+    for (const su of SUITS){
+      if (cards.filter(c => c.suit === su).length >= 4 && combo.some(c => c.suit === su)) return true;
+    }
+    const ranks = new Set(cards.map(c => c.rank)); if (ranks.has(14)) ranks.add(1);
+    const mine = new Set(combo.map(c => c.rank)); if (mine.has(14)) mine.add(1);
+    for (let lo = 1; lo <= 10; lo++){
+      let n = 0, usesMine = false;
+      for (let r = lo; r < lo + 5; r++){ if (ranks.has(r)){ n++; if (mine.has(r)) usesMine = true; } }
+      if (n >= 4 && usesMine) return true;
+    }
+    return false;
+  }
+  function comboStrength(combo, boardCards){
+    if (boardCards.length < 3) return -HAND_RANKING.indexOf(handClass(combo[0], combo[1]));
+    const sc = bestHand([...combo, ...boardCards]).score;
+    return hasDraw(combo, boardCards) ? Math.max(sc, DRAW_SCORE) : sc;
+  }
+  // Se queda con la fracción "frac" más fuerte del rango en esa mesa.
+  function strongest(pool, boardCards, frac){
+    const blocked = new Set([...hole.filter(Boolean), ...boardCards].map(cardKey));
+    const live = pool.filter(c => !blocked.has(cardKey(c[0])) && !blocked.has(cardKey(c[1])));
+    if (live.length < 4) return live;
+    const scored = live.map(c => [comboStrength(c, boardCards), c]).sort((a, b) => b[0] - a[0]);
+    return scored.slice(0, Math.max(3, Math.ceil(scored.length * frac))).map(x => x[1]);
+  }
+  function poolFromSet(set){ const out = []; set.forEach(n => classCombos(n).forEach(c => out.push(c))); return out; }
+  function intersectTop(set, pct){ const top = topRange(pct); return new Set([...set].filter(n => top.has(n))); }
+  const OPEN_PCT = Object.fromEntries(RANGE_PRESETS);
+
+  // Rango del rival justo antes de la acción stopAt (o al final de la secuencia).
+  function villainPoolAt(stopAt){
+    const villPos = document.getElementById('villPosInput').value;
+    let set = new Set(villRange.set);
+    let raises = 0;
+    const avail = availableStreets();
+    const pre = seq[0];
+    for (let i = 0; i < pre.length; i++){
+      if (stopAt && stopAt.s === 0 && stopAt.i === i) break;
+      const a = pre[i];
+      if (a.type === 'bet' || a.type === 'raise'){
+        raises++;
+        if (a.who === 'vill') set = intersectTop(set, raises === 1 ? (OPEN_PCT[villPos] || 30) : raises === 2 ? 9 : 4);
+      } else if (a.type === 'call' && a.who === 'vill'){
+        set = intersectTop(set, raises >= 2 ? 15 : villPos === 'BB' ? 60 : 30);
+      }
+    }
+    if (set.size === 0) set = new Set(villRange.set);
+    let pool = poolFromSet(set);
+    for (let s = 1; s < avail; s++){
+      if (stopAt && stopAt.s < s) break;
+      const b = boardAt(s);
+      for (let i = 0; i < seq[s].length; i++){
+        if (stopAt && stopAt.s === s && stopAt.i === i) break;
+        const a = seq[s][i];
+        if (a.who !== 'vill') continue;
+        if (a.type === 'bet') pool = withBluffs(pool, b, 0.55, bluffFrac());
+        else if (a.type === 'raise') pool = withBluffs(pool, b, 0.25, bluffFrac() * 0.7);
+        else if (a.type === 'call') pool = strongest(pool, b, 0.7);
+      }
+    }
+    return pool;
+  }
+  // Rango con el que suele subir o resubir (para el plan "si te suben").
+  function raisingPool(pool, s, frac){
+    if (s === 0){
+      const classes = new Set(pool.map(c => handClass(c[0], c[1])));
+      const tight = intersectTop(classes, 9);
+      return poolFromSet(tight.size ? tight : classes);
+    }
+    return withBluffs(pool, boardAt(s), frac, bluffFrac() * 0.4);
+  }
+
+  // ---- Decisión recomendada ----
+  function decide(win, needed, call, oop, rivals){
+    const raiseBuffer = oop ? 8 : 4, callBuffer = oop ? -1 : -5;
+    const fairShare = 100 / (rivals + 1);
+    if (call === 0) return win >= fairShare + (oop ? 18 : 12) ? { text: 'BET', cls: 'ok' } : { text: 'CHECK', cls: 'warn' };
+    if (win >= needed + raiseBuffer) return { text: 'RAISE', cls: 'ok' };
+    if (win >= needed + callBuffer) return { text: 'CALL', cls: 'warn' };
+    return { text: 'FOLD', cls: 'no' };
+  }
+  function grade(rec, act){
+    if (rec === act) return 'ok';
+    const aggr = x => x === 'RAISE' || x === 'BET';
+    if (aggr(rec) && (act === 'CALL' || act === 'CHECK')) return 'meh';
+    if (rec === 'CALL' && aggr(act)) return 'meh';
+    if (rec === 'CHECK' && act === 'BET') return 'meh';
+    return 'bad';
+  }
+
+  // Repasa cada acción tuya de la secuencia.
+  function reviewDecisions(){
+    const avail = cardStreets(), rows = [];
+    const oop = heroIsOOP();
+    for (let s = 0; s < avail; s++){
+      for (let i = 0; i < seq[s].length; i++){
+        const a = seq[s][i];
+        if (a.who !== 'hero') continue;
+        const st = replay(s, { s, i });
+        const toCall = st.owed;
+        const pool = villainPoolAt({ s, i });
+        const reco = recommend({ heroCards: hole, boardCards: boardAt(s), pot: st.pot, toCall, rivals: numRivals, pool, oop, street: s,
+          heroPos: document.getElementById('heroPosInput').value, unraised: s === 0 && st.raises === 0, iters: 700 });
+        const win = reco.eq, needed = reco.needed, rec = reco.text;
+        const act = a.type === 'check' ? 'CHECK' : a.type === 'call' ? 'CALL' : a.type === 'fold' ? 'FOLD' : (toCall > 0 ? 'RAISE' : 'BET');
+        rows.push({ s, win, needed, toCall, pot: st.pot, rec, act, g: grade(rec, act) });
+      }
+    }
+    return rows;
+  }
+  function renderTimeline(rows){
+    const wrap = document.getElementById('timelineWrap');
+    wrap.style.display = rows.length ? 'block' : 'none';
+    if (!rows.length) return;
+    const of20 = (p) => { const n = Math.round(p / 5); return n === 0 && p > 0 ? 'menos de 1' : String(n); };
+    const MARK = { ok: '✓', meh: '≈', bad: '✗' };
+    const VERDICT = { ok: 'Bien jugado', meh: 'Aceptable', bad: 'Mejorable' };
+    document.getElementById('timeline').innerHTML = rows.map(r => {
+      const situation = r.toCall > 0
+        ? `Te tocaba pagar <b>${fmtN(r.toCall)}</b> en un bote de <b>${fmtN(r.pot)}</b>.`
+        : `Nadie había apostado (bote de <b>${fmtN(r.pot)}</b>).`;
+      const easy = `${situation} Ganabas unas <b>${of20(r.win)} de cada 20</b>${r.toCall > 0 ? ` y necesitabas <b>${of20(r.needed)}</b>` : ''}.`;
+      const pro = `${situation} Equity <b>${r.win.toFixed(1)}%</b>${r.toCall > 0 ? ` · necesitabas <b>${r.needed.toFixed(1)}%</b>` : ''}.`;
+      return `<div class="tl-row"><div class="tl-mark ${r.g}">${MARK[r.g]}</div><div>
+        <div class="tl-head">${STREET_NAMES[r.s]} <small>${VERDICT[r.g]}</small></div>
+        <div class="tl-body"><span class="easy-only">${easy}</span><span class="pro-only">${pro}</span><br>
+        Hiciste <b>${decisionHTML(r.act)}</b> · lo recomendado era <b>${decisionHTML(r.rec)}</b>.</div></div></div>`;
+    }).join('');
+  }
+
+  // ---- Recomendación (la usan el análisis, el repaso y el entrenamiento) ----
+  // c = { heroCards, boardCards, pot, toCall, rivals, pool, oop, street, heroPos, unraised, premium, eq?, iters? }
+  function recommend(c){
+    let eq = c.eq;
+    if (eq === undefined){ const r = runEquity(c.heroCards, c.boardCards, c.rivals, c.iters || 1000, c.pool); eq = r.win + r.tie / 2; }
+    const needed = c.toCall > 0 ? c.toCall / (c.pot + c.toCall) * 100 : 0;
+    // Preflop sin subidas: abrir o tirar según la tabla de tu posición.
+    if (c.street === 0 && c.unraised && c.heroPos !== 'BB'){
+      const top = handTopPercent(c.heroCards[0], c.heroCards[1]);
+      return { text: top <= OPEN_PCT[c.heroPos] ? 'RAISE' : 'FOLD', eq, needed, kind: 'open', top };
+    }
+    // Nadie ha apostado (después del flop): apostar solo si rinde más que pasar.
+    if (c.street > 0 && c.toCall === 0){
+      const bc = bluffCheck(c.heroCards, c.boardCards, c.pot, c.rivals, c.pool || poolFromSet(topRange(100)), eq);
+      if (bc && bc.better) return { text: 'BET', eq, needed, bc, kind: bc.eqCall < 0.5 ? 'bluff' : 'value' };
+      return { text: 'CHECK', eq, needed, bc };
+    }
+    let text = decide(eq, needed + (c.premium || 0), c.toCall, c.oop, c.rivals).text;
+    // Para subir hay que ganar a las manos que pagarían la subida, no a todo su rango.
+    if (text === 'RAISE' && c.street > 0){
+      const strong = withBluffs(c.pool || poolFromSet(topRange(100)), c.boardCards, 0.4, 0, c.heroCards);
+      const r2 = runEquity(c.heroCards, c.boardCards, c.rivals, 700, strong);
+      const vs = r2.win + r2.tie / 2;
+      if (vs < 60) return { text: 'CALL', eq, needed, downgraded: true, valueCheck: vs };
+      return { text, eq, needed, valueCheck: vs };
+    }
+    return { text, eq, needed };
+  }
+
+  // ---- Faroles ----
+  function bluffFrac(){ return Number(document.getElementById('bluffSelect').value) || 0.1; }
+  document.getElementById('bluffSelect').value = String(storageGet('rio_bluff', 0.1));
+  document.getElementById('bluffSelect').addEventListener('change', (e) => storageSet('rio_bluff', Number(e.target.value)));
+
+  // Cuando el rival apuesta o sube se queda con la parte fuerte de su rango
+  // más algunos faroles (sus manos más flojas: proyectos fallados, aire).
+  function withBluffs(pool, boardCards, frac, bluff, heroCards){
+    const blocked = new Set([...(heroCards || hole).filter(Boolean), ...boardCards].map(cardKey));
+    const live = pool.filter(c => !blocked.has(cardKey(c[0])) && !blocked.has(cardKey(c[1])));
+    if (live.length < 6) return live;
+    const scored = live.map(c => [comboStrength(c, boardCards), c]).sort((a, b) => b[0] - a[0]);
+    const top = Math.max(3, Math.ceil(scored.length * frac));
+    const keep = scored.slice(0, top);
+    const bot = Math.ceil(scored.length * bluff);
+    if (bot > 0) keep.push(...scored.slice(Math.max(top, scored.length - bot)));
+    return keep.map(x => x[1]);
+  }
+
+  // ¿Compensa apostar 2/3 del bote de farol o semifarol en vez de pasar?
+  // El rival paga con pareja media o mejor, o con proyecto; el resto se retira.
+  function bluffCheck(heroCards, boardCards, pot, rivals, pool, eqNow){
+    if (boardCards.length < 3 || pot <= 0 || !pool || !pool.length) return null;
+    const blocked = new Set([...heroCards, ...boardCards].map(cardKey));
+    const live = pool.filter(c => !blocked.has(cardKey(c[0])) && !blocked.has(cardKey(c[1])));
+    if (live.length < 5) return null;
+    const callers = live.filter(c => comboStrength(c, boardCards) >= DRAW_SCORE);
+    const f = Math.pow(1 - callers.length / live.length, rivals); // tienen que retirarse todos
+    const bet = pot * 2 / 3;
+    let eqCall = 0;
+    if (callers.length){ const r = runEquity(heroCards, boardCards, rivals, 700, callers); eqCall = (r.win + r.tie / 2) / 100; }
+    const evBet = f * pot + (1 - f) * (eqCall * (pot + 2 * bet) - bet);
+    const evCheck = (eqNow / 100) * pot;
+    return { f, bet, eqCall, evBet, evCheck, better: evBet > evCheck + pot * 0.03 };
+  }
+
+  // ---- Cash o torneo ----
+  function setGame(g){
+    storageSet('rio_game', g);
+    document.body.classList.toggle('tourney', g === 'torneo');
+    document.querySelectorAll('#gameType [data-game]').forEach(b => b.classList.toggle('active', b.dataset.game === g));
+  }
+  document.querySelectorAll('#gameType [data-game]').forEach(b => b.addEventListener('click', () => setGame(b.dataset.game)));
+  setGame(storageGet('rio_game', 'cash'));
+
+  // Las etiquetas Preflop/Flop/Turn/Río de la cabecera también eligen la calle.
+  ['Preflop','Flop','Turn','River'].forEach((n, i) => ['dot' + n, 'lbl' + n].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => selectStreet(i));
+  }));
+
+  const of20 = (p) => { const n = Math.round(p / 5); return n === 0 && p > 0 ? 'menos de 1' : String(n); };
+  const cardHTML = (c, big) => `<span class="mini-card${big ? ' big' : ''}${SUIT_CRIMSON[c.suit] ? ' crimson' : ''}">${RANK_LABEL(c.rank)}<span>${SUIT_SYMBOL[c.suit]}</span></span>`;
+
+  // Ventana genérica (reutiliza la de ayuda)
+  function openModal(title, html){
+    document.getElementById('helpTitle').textContent = title;
+    document.getElementById('helpBody').innerHTML = html;
+    helpModal.classList.add('show');
+    return document.getElementById('helpBody');
+  }
+  function closeModal(){ helpModal.classList.remove('show'); }
+
+  // ---- ¿Se juega esta mano desde tu posición? ----
+  function openAdvice(a, b){
+    const pos = document.getElementById('heroPosInput').value;
+    const top = handTopPercent(a, b), lim = pos === 'BB' ? 60 : OPEN_PCT[pos];
+    const ok = top <= lim;
+    const txt = pos === 'BB'
+      ? (ok ? 'Se suele defender desde BB si te suben' : 'Desde BB normalmente se tira si te suben')
+      : (ok ? `Se suele abrir (subir) desde ${pos} si nadie ha entrado` : `Desde ${pos} normalmente se tira si nadie ha entrado`);
+    return `<div class="pos-advice ${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'} ${txt} · <a data-open-charts>ver tabla</a></div>`;
+  }
+  document.getElementById('currentHand').addEventListener('click', (e) => { if (e.target.closest('[data-open-charts]')) openCharts(); });
+
+  // ---- Tablas de manos iniciales ----
+  function openCharts(pos){
+    pos = pos || document.getElementById('heroPosInput').value;
+    const pct = pos === 'BB' ? 60 : OPEN_PCT[pos];
+    const set = topRange(pct);
+    const heroCls = hole[0] && hole[1] ? handClass(hole[0], hole[1]) : null;
+    let grid = '';
+    for (let i = 0; i < 13; i++) for (let j = 0; j < 13; j++){
+      const n = i === j ? RANK_CHARS[i] + RANK_CHARS[j] : i < j ? RANK_CHARS[i] + RANK_CHARS[j] + 's' : RANK_CHARS[j] + RANK_CHARS[i] + 'o';
+      grid += `<button type="button" tabindex="-1" class="${set.has(n) ? 'in' : ''} ${i === j ? 'pair' : ''} ${n === heroCls ? 'hero' : ''}">${n}</button>`;
+    }
+    const body = openModal('Tablas de manos iniciales', `
+      <div class="range-presets">${RANGE_PRESETS.map(([p]) => `<button type="button" data-chart="${p}" class="${p === pos ? 'active' : ''}">${p}</button>`).join('')}</div>
+      <p style="margin:0 0 10px;">${pos === 'BB'
+        ? 'Desde la <b>ciega grande</b>, si alguien sube, puedes <b>defender</b> (pagar o volver a subir) con las manos en rojo: unas ' + pct + '% del total.'
+        : `Desde <b>${pos}</b>, si nadie ha entrado antes, <b>sube</b> con las manos en rojo (~${pct}% de las manos) y <b>tira</b> el resto.`}</p>
+      <div class="range-grid chart-grid">${grid}</div>
+      <p class="hint" style="margin-top:10px;">Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o).${heroCls ? ' Recuadro verde = tu mano.' : ''} Son rangos orientativos para mesas de 6 jugadores.</p>`);
+    body.querySelectorAll('[data-chart]').forEach(b => b.addEventListener('click', () => openCharts(b.dataset.chart)));
+  }
+
+  // ---- Estadísticas ----
+  function handSignature(){ return JSON.stringify([hole, board, seq]); }
+  function saveReviews(rows){
+    if (!rows.length) return;
+    const all = storageGet('rio_reviews', {});
+    all[handSignature()] = { t: Date.now(), rows: rows.map(r => ({ s: r.s, rec: r.rec, act: r.act, g: r.g })) };
+    const keys = Object.keys(all).sort((a, b) => all[b].t - all[a].t).slice(0, 100);
+    storageSet('rio_reviews', Object.fromEntries(keys.map(k => [k, all[k]])));
+  }
+  const LEAKS = {
+    'CALL>FOLD': 'Pagas cuando convenía retirarse', 'FOLD>CALL': 'Te retiras cuando convenía pagar',
+    'FOLD>RAISE': 'Te retiras con manos para subir', 'CHECK>BET': 'Pasas cuando convenía apostar',
+    'CALL>RAISE': 'Pagas cuando convenía subir', 'RAISE>CALL': 'Subes cuando bastaba con pagar',
+    'BET>CHECK': 'Apuestas cuando convenía pasar', 'RAISE>FOLD': 'Subes con manos para tirar'
+  };
+  function openStats(){
+    const hand = Object.values(storageGet('rio_reviews', {})).flatMap(x => x.rows);
+    const train = storageGet('rio_train_log', []);
+    const all = [...hand, ...train];
+    if (!all.length){
+      openModal('Tus estadísticas', `<p>Aún no hay datos. Se llenan de dos formas:</p><ul><li>Analizando tus manos con la <b>secuencia de apuestas</b> apuntada.</li><li>Jugando al <b>modo entrenamiento</b>.</li></ul><button type="button" class="btn-primary" id="statsTrain" style="width:100%;">🎯 Empezar a entrenar</button>`)
+        .querySelector('#statsTrain').addEventListener('click', openTrainer);
+      return;
+    }
+    const pct = (arr, g) => arr.length ? Math.round(arr.filter(r => r.g === g).length / arr.length * 100) : 0;
+    const leaks = {};
+    all.filter(r => r.g !== 'ok').forEach(r => { const k = r.act + '>' + r.rec; leaks[k] = (leaks[k] || 0) + (r.g === 'bad' ? 2 : 1); });
+    const topLeaks = Object.entries(leaks).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const byStreet = STREET_NAMES.map((n, s) => { const rs = all.filter(r => r.s === s); return [n, rs.length, pct(rs, 'ok')]; });
+    openModal('Tus estadísticas', `
+      <div class="stat-grid" style="margin-top:0; grid-template-columns:repeat(3,1fr);">
+        <div class="stat no-help"><b>${all.length}</b><span>Decisiones</span></div>
+        <div class="stat no-help"><b style="color:var(--ok)">${pct(all, 'ok')}%</b><span>Bien</span></div>
+        <div class="stat no-help"><b style="color:var(--crimson)">${pct(all, 'bad')}%</b><span>Mejorables</span></div>
+      </div>
+      <div class="sub-title">Por calle (% bien jugadas)</div>
+      <div class="finals">${byStreet.map(([n, c, p]) => `<div class="final-row"><span>${n} <small style="color:var(--cream-dim)">(${c})</small></span><div class="bar"><i style="width:${c ? Math.max(2, p) : 0}%"></i></div><b>${c ? p + '%' : '—'}</b></div>`).join('')}</div>
+      <div class="sub-title">Tus fugas más repetidas</div>
+      ${topLeaks.length ? `<ol style="margin:0; padding-left:20px;">${topLeaks.map(([k]) => `<li>${LEAKS[k] || k.replace('>', ' en vez de ')}</li>`).join('')}</ol>` : '<p>¡Ninguna por ahora! 👏</p>'}
+      ${train.length ? `<div class="sub-title">Entrenamiento</div><p style="margin:0;">${train.length} manos · ${pct(train, 'ok')}% acertadas</p>` : ''}
+      <p class="hint" style="margin-top:14px;">Se guardan en este navegador.</p>`);
+  }
+
+  // ---- Modo entrenamiento ----
+  const TRAIN_SPOTS = [['BTN','BB'],['CO','BB'],['BB','BTN'],['SB','BB'],['UTG','BB'],['BTN','SB'],['HJ','BTN'],['BB','CO'],['CO','BTN']];
+  let trainQ = null;
+  const pickRand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  function newTrainQ(){
+    const deck = drawN(fullDeck(), 7);
+    const hero = [deck[0], deck[1]];
+    const r = Math.random();
+    const s = r < 0.2 ? 0 : r < 0.5 ? 1 : r < 0.75 ? 2 : 3;
+    if (s === 0) return { s, hero, board: [], hp: pickRand(['UTG','HJ','CO','BTN','SB']), vp: null, pot: 3, call: 0, kind: 'open' };
+    const [hp, vp] = pickRand(TRAIN_SPOTS);
+    const potBefore = Math.round(6 + Math.random() * 54);
+    const facing = Math.random() < 0.6;
+    const bet = facing ? Math.max(1, Math.round(potBefore * pickRand([0.33, 0.5, 0.66, 1]))) : 0;
+    return { s, hero, board: deck.slice(2, 2 + [0, 3, 4, 5][s]), hp, vp, pot: potBefore + bet, call: bet, kind: facing ? 'facing' : 'checked' };
+  }
+  function solveTrainQ(q){
+    if (q.kind === 'open'){
+      const top = handTopPercent(q.hero[0], q.hero[1]), lim = OPEN_PCT[q.hp];
+      return { rec: top <= lim ? 'RAISE' : 'FOLD', top, lim, close: Math.abs(top - lim) <= 3 };
+    }
+    let pool = poolFromSet(topRange(q.vp === 'BB' ? 55 : (OPEN_PCT[q.vp] || 30)));
+    if (q.kind === 'facing') pool = withBluffs(pool, q.board, 0.55, 0.1, q.hero);
+    const r = runEquity(q.hero, q.board, 1, 1500, pool);
+    const eq = r.win + r.tie / 2;
+    const needed = q.call > 0 ? q.call / (q.pot + q.call) * 100 : 0;
+    const oop = POSITION_ORDER.indexOf(q.hp) <= POSITION_ORDER.indexOf(q.vp);
+    const reco = recommend({ heroCards: q.hero, boardCards: q.board, pot: q.pot, toCall: q.call, rivals: 1, pool, oop, street: q.s, heroPos: q.hp, eq });
+    const bluff = reco.kind === 'bluff' ? reco.bc : null;
+    return { rec: reco.text, eq, needed, oop, bluff, downgraded: reco.downgraded, close: q.call > 0 && Math.abs(eq - needed) <= 3 };
+  }
+  function openTrainer(){
+    closeSidebar();
+    trainQ = newTrainQ();
+    const q = trainQ, stats = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
+    const opts = q.kind === 'open' ? [['FOLD', 'Tirar'], ['RAISE', 'Subir']]
+      : q.kind === 'facing' ? [['FOLD', 'Tirar'], ['CALL', 'Pagar'], ['RAISE', 'Subir']]
+      : [['CHECK', 'Pasar'], ['BET', 'Apostar']];
+    const question = q.kind === 'open'
+      ? `Estás en <b>${q.hp}</b> y nadie ha entrado antes que tú. ¿Abres (subes) o tiras?`
+      : `Estás en <b>${q.hp}</b> contra <b>${q.vp}</b>, en el <b>${STREET_NAMES[q.s].toLowerCase()}</b>. ${q.kind === 'facing'
+          ? `El bote es de <b>${q.pot}</b> y tu rival apuesta <b>${q.call}</b> (ya incluido). ¿Qué haces?`
+          : `El bote es de <b>${q.pot}</b> y nadie ha apostado. ¿Qué haces?`}`;
+    const body = openModal('🎯 Entrenamiento', `
+      <div class="train-score">Mano ${stats.n + 1} · ${stats.ok}/${stats.n} acertadas${stats.streak > 1 ? ` · 🔥 racha de ${stats.streak}` : ''}</div>
+      <div class="train-cards"><div><div class="zone-label">Tu mano</div>${q.hero.map(c => cardHTML(c, true)).join('')}</div>
+      ${q.board.length ? `<div><div class="zone-label">Mesa</div>${q.board.map(c => cardHTML(c, true)).join('')}</div>` : ''}</div>
+      <p>${question}</p>
+      <div class="train-opts">${opts.map(([v, l]) => `<button type="button" class="btn-secondary" data-ans="${v}">${l}</button>`).join('')}</div>
+      <div id="trainResult"></div>`);
+    body.querySelectorAll('[data-ans]').forEach(b => b.addEventListener('click', () => answerTrainer(b.dataset.ans)));
+  }
+  function answerTrainer(act){
+    const body = document.getElementById('helpBody');
+    body.querySelectorAll('[data-ans]').forEach(b => { b.disabled = true; if (b.dataset.ans === act) b.classList.add('chosen'); });
+    document.getElementById('trainResult').innerHTML = '<p class="hint">Calculando…</p>';
+    setTimeout(() => {
+      const q = trainQ, sol = solveTrainQ(q);
+      let g = grade(sol.rec, act);
+      if (g === 'bad' && sol.close) g = 'meh';
+      if (q.kind === 'open' && g === 'meh' && !sol.close) g = 'bad';
+      const stats = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
+      stats.n++; if (g === 'ok'){ stats.ok++; stats.streak++; } else stats.streak = 0;
+      storageSet('rio_train', stats);
+      const log = storageGet('rio_train_log', []); log.push({ s: q.s, rec: sol.rec, act, g }); storageSet('rio_train_log', log.slice(-300));
+      let why;
+      if (q.kind === 'open') why = `Tu mano está en el <b>top ${Math.max(1, Math.round(sol.top))}%</b> y desde ${q.hp} se suele abrir aproximadamente el <b>${sol.lim}%</b> de las manos.`;
+      else if (sol.bluff && sol.bluff.better) why = `Tu mano no es la mejor (ganas unas ${of20(sol.eq)} de cada 20), pero si apuestas el rival se retira unas <b>${of20(sol.bluff.f * 100)} de cada 20</b> veces: el farol compensa.`;
+      else if (q.kind === 'facing' && sol.downgraded) why = `Vas por delante de buena parte de su rango (ganas unas ${of20(sol.eq)} de cada 20), pero si subes solo te pagarían las manos que te ganan: <b>paga</b>.`;
+      else if (q.kind === 'facing') why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces y para que pagar compense necesitas <b>${of20(sol.needed)}</b>.<span class="pro-only"> (Equity ${sol.eq.toFixed(1)}% · necesitas ${sol.needed.toFixed(1)}%)</span>`;
+      else why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces contra su rango.${sol.rec === 'BET' ? ' Apostar rinde más que pasar: las manos peores te pagan.' : ' Apostar no rinde más que pasar: las peores se retirarían y solo te pagarían las mejores. Pasa.'}`;
+      const head = { ok: '✓ ¡Correcto!', meh: '≈ Aceptable', bad: '✗ No era la mejor' }[g];
+      document.getElementById('trainResult').innerHTML = `
+        <div class="train-verdict ${g}">${head}</div>
+        <p>Lo recomendado: <b>${decisionHTML(sol.rec)}</b>. ${why}</p>
+        <button type="button" class="btn-primary" id="trainNext" style="width:100%;">Siguiente mano →</button>`;
+      document.getElementById('trainNext').addEventListener('click', openTrainer);
+    }, 30);
+  }
+
+  // ---- Importar historial de mano (PokerStars / GGPoker) ----
+  function parseHandHistory(txt){
+    const num = (x) => parseFloat(String(x).replace(/,/g, ''));
+    const dealt = txt.match(/Dealt to (.+?) \[(\S\S) (\S\S)\]/);
+    if (!dealt) throw new Error('No encuentro tus cartas ("Dealt to …"). ¿Has copiado la mano completa?');
+    const heroName = dealt[1].trim();
+    const heroCards = [parseCardToken(dealt[2]), parseCardToken(dealt[3])];
+    if (!heroCards[0] || !heroCards[1]) throw new Error('No entiendo tus cartas en el historial.');
+    const blinds = txt.match(/\(\s*[^\d(\/]*([\d.,]+)\s*\/\s*[^\d(\/]*([\d.,]+)/);
+    const bb = blinds ? num(blinds[2]) : null;
+    const buttonSeat = Number((txt.match(/Seat #(\d+) is the button/) || [])[1]);
+    const lines = txt.replace(/\r/g, '').split('\n').map(l => l.trim()).filter(Boolean);
+    const seats = [];
+    for (const l of lines){
+      if (l.startsWith('***')) break;
+      const m = l.match(/^Seat (\d+): (.+?) \(\s*[^\d(]*([\d.,]+)/);
+      if (m && !/sitting out/i.test(l)) seats.push({ seat: Number(m[1]), name: m[2].trim(), stack: num(m[3]) });
+    }
+    if (seats.length < 2) throw new Error('No encuentro los jugadores de la mesa ("Seat 1: …").');
+    seats.sort((a, b) => a.seat - b.seat);
+    let bi = seats.findIndex(p => p.seat === buttonSeat);
+    if (bi === -1) bi = seats.length - 1;
+    const order = [...seats.slice(bi + 1), ...seats.slice(0, bi + 1)]; // SB, BB, … , BTN
+    const n = order.length, posOf = {};
+    order.forEach((p, i) => {
+      let pos;
+      if (n === 2) pos = i === 1 ? 'BTN' : 'BB';
+      else if (i === 0) pos = 'SB'; else if (i === 1) pos = 'BB'; else if (i === n - 1) pos = 'BTN';
+      else if (i === n - 2) pos = 'CO'; else if (i === n - 3) pos = 'HJ'; else pos = 'UTG';
+      posOf[p.name] = pos;
+    });
+    const boardCards = [], acts = [];
+    let street = -1;
+    for (const l of lines){
+      if (/^\*\*\* HOLE CARDS/.test(l)){ street = 0; continue; }
+      const st = l.match(/^\*\*\* (FLOP|TURN|RIVER) \*\*\*/);
+      if (st){
+        street = { FLOP: 1, TURN: 2, RIVER: 3 }[st[1]];
+        const groups = [...l.matchAll(/\[([^\]]+)\]/g)].map(g => g[1]);
+        const fresh = street === 1 ? groups[0].split(/\s+/) : [groups[groups.length - 1].trim()];
+        fresh.forEach(t => { const c = parseCardToken(t); if (c) boardCards.push(c); });
+        continue;
+      }
+      if (/^\*\*\* (SHOW ?DOWN|SUMMARY)/.test(l)) break;
+      if (street < 0) continue;
+      const m = l.match(/^(.+?): (folds|checks|calls|bets|raises)(?:\s+[^\d\s]*([\d.,]+))?(?:\s+to\s+[^\d\s]*([\d.,]+))?/);
+      if (!m) continue;
+      acts.push({ street, name: m[1].trim(), type: m[2], amount: m[3] ? num(m[3]) : 0, to: m[4] ? num(m[4]) : 0 });
+    }
+    // El rival es el que más aguanta en la mano contigo (y, si empatan, el que más mete).
+    const opps = [...new Set(acts.map(a => a.name))].filter(nm => nm !== heroName);
+    if (!opps.length) throw new Error('No encuentro rivales que actuaran en la mano.');
+    const lastIdx = (nm) => { const i = acts.findIndex(a => a.name === nm && a.type === 'folds'); return i === -1 ? Infinity : i; };
+    const money = (nm) => acts.filter(a => a.name === nm).reduce((t, a) => t + (a.to || a.amount), 0);
+    opps.sort((a, b) => (lastIdx(b) - lastIdx(a)) || (money(b) - money(a)));
+    const villName = opps[0];
+    const newSeq = [[], [], [], []];
+    for (const a of acts){
+      if (a.name !== heroName && a.name !== villName) continue;
+      const who = a.name === heroName ? 'hero' : 'vill';
+      const type = { folds: 'fold', checks: 'check', calls: 'call', bets: 'bet', raises: 'raise' }[a.type];
+      const act = { who, type };
+      if (type === 'bet') act.to = a.amount;
+      if (type === 'raise') act.to = a.to || a.amount;
+      newSeq[a.street].push(act);
+    }
+    const stayed = opps.filter(nm => lastIdx(nm) === Infinity).length;
+    return {
+      heroCards, boardCards: boardCards.slice(0, 5), bb, seq: newSeq, villName,
+      heroPos: posOf[heroName] || 'BTN', villPos: posOf[villName] || 'BB',
+      heroStack: (seats.find(p => p.name === heroName) || {}).stack, villStack: (seats.find(p => p.name === villName) || {}).stack,
+      rivals: Math.max(1, stayed || 1), tourney: /Tournament/i.test(txt)
+    };
+  }
+  function openImport(){
+    closeSidebar();
+    if (!isPro()){ openPaywall('plans'); return; }
+    const body = openModal('📋 Importar historial de mano', `
+      <p style="margin-top:0;">En PokerStars o GGPoker, abre el historial de la mano, <b>cópialo entero</b> y pégalo aquí.</p>
+      <textarea id="hhText" rows="9" placeholder="PokerStars Hand #…&#10;Table '…' 6-max Seat #1 is the button&#10;…" style="width:100%; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); padding:10px; font-family:monospace; font-size:0.78rem;"></textarea>
+      <button type="button" class="btn-primary" id="hhGo" style="width:100%; margin-top:10px;">Importar mano</button>
+      <div id="hhMsg" class="restore-msg"></div>`);
+    body.querySelector('#hhGo').addEventListener('click', () => {
+      const msg = document.getElementById('hhMsg');
+      try {
+        const h = parseHandHistory(document.getElementById('hhText').value);
+        hole = h.heroCards; board = [0, 1, 2, 3, 4].map(i => h.boardCards[i] || null);
+        document.getElementById('heroPosInput').value = h.heroPos;
+        document.getElementById('villPosInput').value = h.villPos;
+        numRivals = h.rivals; rivVal.textContent = numRivals;
+        if (h.bb) document.getElementById('bbInput').value = h.bb;
+        document.getElementById('stackInput').value = h.heroStack || '';
+        document.getElementById('villStackInput').value = h.villStack || '';
+        if (h.tourney) setGame('torneo');
+        seq = h.seq; seqStreet = Math.max(0, h.boardCards.length >= 5 ? 3 : h.boardCards.length >= 4 ? 2 : h.boardCards.length >= 3 ? 1 : 0);
+        seqActor = null; seqPending = null; selStreet = null;
+        document.getElementById('seqBox').open = true;
+        updateOrderHint(); render();
+        closeModal();
+        const status = document.getElementById('screenshotStatus');
+        status.style.display = 'block'; status.style.color = 'var(--ok)';
+        status.textContent = `✅ Mano importada: tú (${h.heroPos}) contra ${h.villName} (${h.villPos}). Elige la calle y pulsa Analizar.`;
+        document.getElementById('streetBtns').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (e){
+        msg.textContent = e.message || 'No se pudo leer el historial.'; msg.className = 'restore-msg no';
+      }
+    });
+  }
+
+  // ---- Instalar como app ----
+  let deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstall = e; });
+  function installApp(){
+    closeSidebar();
+    if (deferredInstall){ deferredInstall.prompt(); deferredInstall = null; return; }
+    openModal('📲 Instalar RÍO en el móvil', `
+      <p><b>iPhone (Safari):</b> pulsa el botón <b>Compartir</b> (el cuadrado con la flecha) → <b>Añadir a pantalla de inicio</b>.</p>
+      <p><b>Android (Chrome):</b> pulsa los <b>tres puntos</b> arriba a la derecha → <b>Instalar aplicación</b> o <b>Añadir a pantalla de inicio</b>.</p>
+      <p class="hint">Tendrás RÍO con su icono, a pantalla completa, como una app más.</p>`);
+  }
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+  // ---- Bienvenida (primera visita) ----
+  function openWelcome(){
+    const body = openModal('¡Bienvenido a RÍO! 👋', `
+      <p style="margin-top:0;">Te ayudamos a decidir en cada calle: <b>pagar, subir o tirar</b>, y te explicamos por qué.</p>
+      <ol style="padding-left:20px; margin:0 0 16px;">
+        <li><b>Elige tus cartas</b> y las de la mesa.</li>
+        <li>Indica <b>tu posición</b> y cómo juega tu rival.</li>
+        <li>Apunta <b>las apuestas</b> y pulsa <b>Analizar</b>.</li>
+      </ol>
+      <p class="hint" style="margin:-6px 0 14px;">Tienes <b>5 análisis gratis</b> con una cuenta gratuita (solo tu email). El entrenamiento y las tablas son gratis siempre.</p>
+      <div style="display:grid; gap:8px;">
+        <button type="button" class="btn-primary" data-welcome="facil">🙂 Soy nuevo en el póker</button>
+        <button type="button" class="btn-secondary" data-welcome="pro">😎 Ya juego: quiero el modo Pro</button>
+        <button type="button" class="btn-secondary" data-welcome="train">🎯 Quiero practicar primero</button>
+      </div>`);
+    body.querySelectorAll('[data-welcome]').forEach(b => b.addEventListener('click', () => {
+      const w = b.dataset.welcome;
+      if (w === 'train'){ openTrainer(); return; }
+      setMode(w); closeModal();
+    }));
+  }
+  if (!storageGet('rio_onboarded', false)){
+    storageSet('rio_onboarded', true);
+    setTimeout(openWelcome, 400);
+  }
+
+  // Menú
+  document.getElementById('navTrain').addEventListener('click', openTrainer);
+  document.getElementById('navCharts').addEventListener('click', () => { closeSidebar(); openCharts(); });
+  document.getElementById('navStats').addEventListener('click', () => { closeSidebar(); openStats(); });
+  document.getElementById('navImport').addEventListener('click', openImport);
+  document.getElementById('navInstall').addEventListener('click', installApp);
+  document.getElementById('importBtn').addEventListener('click', openImport);
+  document.getElementById('trainLink').addEventListener('click', openTrainer);
+
+  // ---- Cuéntame tu mano (texto o voz → mano rellenada) ----
+  const escHTML = (x) => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  let storyRec = null;
+  function stopStoryRec(){ if (storyRec){ try { storyRec.stop(); } catch (e) {} storyRec = null; } }
+  document.getElementById('closeHelp').addEventListener('click', stopStoryRec);
+  helpModal.addEventListener('click', (e) => { if (e.target === helpModal) stopStoryRec(); });
+
+  function openStory(){
+    closeSidebar();
+    if (!isPro()){ openPaywall('plans'); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const body = openModal('🎙️ Cuéntame tu mano', `
+      <p style="margin-top:0;">Cuéntala como se la contarías a un amigo: <b>tus cartas, tu posición, las cartas de la mesa y qué apostó cada uno</b>.</p>
+      <textarea id="storyText" rows="7" placeholder="Ej.: Jugábamos 1/2. Tenía as-rey de picas en el botón y subí a 6. El de la ciega grande pagó. Flop rey de corazones, siete, dos. Él pasó, aposté 8 y pagó. Turn un cuatro, pasamos los dos. River una reina y me apostó 25." style="width:100%; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); padding:12px; font-family:'Space Grotesk',sans-serif; font-size:0.95rem; line-height:1.45;"></textarea>
+      ${SR ? '<button type="button" class="btn-secondary" id="storyMic" style="width:100%; margin-top:10px;">🎙️ Dictar por voz</button>'
+           : '<p class="hint">Para dictar, pulsa el micrófono del teclado de tu móvil.</p>'}
+      <button type="button" class="btn-primary" id="storyGo" style="width:100%; margin-top:10px;">Rellenar la mano</button>
+      <div id="storyMsg" class="restore-msg"></div>
+      <p class="hint" style="margin-top:8px;">Gasta 1 uso de tu cupo mensual, el mismo que las fotos.</p>`);
+    const ta = body.querySelector('#storyText');
+    const msg = body.querySelector('#storyMsg');
+    const mic = body.querySelector('#storyMic');
+    if (mic) mic.addEventListener('click', () => {
+      if (storyRec){ stopStoryRec(); return; }
+      const rec = new SR();
+      rec.lang = 'es-ES'; rec.continuous = true; rec.interimResults = true;
+      const base = ta.value ? ta.value.replace(/\s*$/, ' ') : '';
+      rec.onresult = (ev) => {
+        let finalTxt = '', interim = '';
+        for (let i = 0; i < ev.results.length; i++){
+          if (ev.results[i].isFinal) finalTxt += ev.results[i][0].transcript + ' ';
+          else interim += ev.results[i][0].transcript;
+        }
+        ta.value = (base + finalTxt + interim).replace(/\s+/g, ' ').trimStart();
+      };
+      rec.onerror = (ev) => {
+        msg.className = 'restore-msg no';
+        msg.textContent = ev.error === 'not-allowed' || ev.error === 'service-not-allowed'
+          ? 'Permite el acceso al micrófono en tu navegador para dictar.'
+          : 'No se pudo usar el micrófono. Prueba a escribirla.';
+      };
+      rec.onend = () => { storyRec = null; mic.textContent = '🎙️ Dictar por voz'; mic.classList.remove('active'); };
+      try {
+        rec.start(); storyRec = rec;
+        mic.textContent = '⏹️ Parar el dictado'; mic.classList.add('active');
+        msg.className = 'restore-msg'; msg.textContent = 'Te escucho… cuenta la mano y pulsa "Parar" al terminar.';
+      } catch (e){ msg.className = 'restore-msg no'; msg.textContent = 'No se pudo usar el micrófono. Prueba a escribirla.'; }
+    });
+    body.querySelector('#storyGo').addEventListener('click', async () => {
+      stopStoryRec();
+      const text = ta.value.trim();
+      if (text.length < 15){ msg.className = 'restore-msg no'; msg.textContent = 'Cuéntame un poco más: tus cartas, las de la mesa y qué apostó cada uno.'; return; }
+      const btn = body.querySelector('#storyGo');
+      btn.disabled = true; btn.textContent = 'Entendiendo tu mano…';
+      msg.className = 'restore-msg'; msg.textContent = '';
+      try {
+        const r = await fetch('/api/parse-hand', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ text }) });
+        let data = {}; try { data = await r.json(); } catch (e) {}
+        if (r.status === 401){ logoutPro(); updateUsageBadge(); closeModal(); openPaywall('login'); return; }
+        if (r.status === 402){ closeModal(); openPaywall('plans'); return; }
+        if (r.status === 403 && data.error === 'LIMIT_REACHED'){ closeModal(); openCreditsModal(); return; }
+        if (!r.ok) throw new Error(data.error || 'No se pudo entender la mano.');
+        const notes = applyStory(data);
+        closeModal();
+        const status = document.getElementById('screenshotStatus');
+        status.style.display = 'block'; status.style.color = 'var(--ok)';
+        status.innerHTML = '✅ Mano rellenada a partir de tu relato. Revisa que esté todo bien y pulsa <b>Analizar</b>.' +
+          (notes.length ? `<ul style="text-align:left; color:var(--cream-dim); margin:6px 0 0; padding-left:18px;">${notes.map(n => `<li>${escHTML(n)}</li>`).join('')}</ul>` : '');
+        refreshPhotoUsage();
+        document.getElementById('holeRow').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (e){
+        msg.className = 'restore-msg no'; msg.textContent = e.message || 'No se pudo entender la mano.';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Rellenar la mano';
+      }
+    });
+  }
+
+  // Aplica lo que ha entendido la IA. Devuelve las notas para enseñárselas al usuario.
+  function applyStory(d){
+    const cardsOf = (str) => String(str || '').trim().split(/\s+/).map(parseCardToken).filter(Boolean);
+    const hc = cardsOf(d.heroCards).slice(0, 2);
+    if (hc.length < 2) throw new Error('No he entendido tus dos cartas. Dilas claramente, por ejemplo: "as y rey de picas".');
+    const bc = cardsOf(d.board).slice(0, 5);
+    const keys = [...hc, ...bc].map(cardKey);
+    if (new Set(keys).size !== keys.length) throw new Error('Me sale una carta repetida. Revisa los palos en tu relato.');
+    hole = hc; board = [0, 1, 2, 3, 4].map(i => bc[i] || null);
+    if (VALID_POS.includes(d.heroPos)) document.getElementById('heroPosInput').value = d.heroPos;
+    if (VALID_POS.includes(d.villPos) && d.villPos !== d.heroPos) document.getElementById('villPosInput').value = d.villPos;
+    if (Number(d.bigBlind) > 0) document.getElementById('bbInput').value = Number(d.bigBlind);
+    if (Number(d.rivals) >= 1){ numRivals = Math.min(9, Math.round(Number(d.rivals))); rivVal.textContent = numRivals; }
+    if (Number(d.heroStack) > 0) document.getElementById('stackInput').value = Number(d.heroStack);
+    if (Number(d.villStack) > 0) document.getElementById('villStackInput').value = Number(d.villStack);
+    if (d.tournament === true) setGame('torneo'); else if (d.tournament === false) setGame('cash');
+    const ST = { preflop: 0, flop: 1, turn: 2, river: 3 };
+    const newSeq = [[], [], [], []];
+    (Array.isArray(d.actions) ? d.actions : []).forEach(a => {
+      const s = ST[a && a.street];
+      if (s === undefined || !['check', 'bet', 'call', 'raise', 'fold'].includes(a.type)) return;
+      const act = { who: a.who === 'hero' ? 'hero' : 'vill', type: a.type };
+      if (a.type === 'bet' || a.type === 'raise'){ const amt = Number(a.amount); if (!(amt > 0)) return; act.to = amt; }
+      newSeq[s].push(act);
+    });
+    seq = newSeq; seqActor = null; seqPending = null; selStreet = null;
+    seqStreet = Math.max(0, bc.length >= 5 ? 3 : bc.length >= 4 ? 2 : bc.length >= 3 ? 1 : 0);
+    if (newSeq.some(x => x.length)) document.getElementById('seqBox').open = true;
+    updateOrderHint(); render();
+    return (Array.isArray(d.notes) ? d.notes : []).filter(n => typeof n === 'string' && n.trim()).slice(0, 5);
+  }
+  document.getElementById('storyBtn').addEventListener('click', openStory);
+  document.getElementById('navStory').addEventListener('click', openStory);
+
+  // ---- Tus datos en la cuenta (historial, estadísticas, entrenamiento, ajustes) ----
+  // Se guardan también en el servidor para no perderlos al cambiar de móvil.
+  function syncKeys(){
+    return ['rio_history', 'rio_reviews', 'rio_train', 'rio_train_log', 'rio_profile', 'rio_mode', 'rio_range',
+            'rio_game', 'rio_bluff', 'rio_unit', 'rio_sim_quality', 'rio_save_history', 'rio_remember_defaults', 'rio_defaults'];
+  }
+  // "var" y no "let": storageSet() la usa desde el arranque, antes de llegar a esta línea.
+  var syncTimer = null, syncing = false;
+  function onStoredKey(key){
+    if (syncing || !syncKeys().includes(key) || !storageGet('rio_token', '')) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(pushSync, 2500);
+  }
+  function collectData(){
+    const o = {};
+    syncKeys().forEach(k => { const v = storageGet(k, undefined); if (v !== undefined) o[k] = v; });
+    return o;
+  }
+  async function pushSync(){
+    if (!storageGet('rio_token', '')) return;
+    try {
+      await fetch('/api/user-data', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ data: collectData() }) });
+    } catch(e){}
+  }
+  // Junta lo del servidor con lo de este navegador sin perder nada de ninguno.
+  async function pullSync(){
+    if (!storageGet('rio_token', '')) return;
+    let remote = null;
+    try {
+      const r = await fetch('/api/user-data', { headers: authHeaders() });
+      if (!r.ok) return;
+      remote = (await r.json()).data;
+    } catch(e){ return; }
+    syncing = true;
+    try {
+      if (remote){
+        const local = collectData();
+        const hk = (h) => [h.hand, h.when, h.equity, h.decision].join('|');
+        const seen = new Set();
+        const hist = [...(local.rio_history || []), ...(remote.rio_history || [])].filter(h => h && !seen.has(hk(h)) && seen.add(hk(h)));
+        storageSet('rio_history', hist.slice(0, 10));
+        const rv = { ...(remote.rio_reviews || {}) };
+        Object.entries(local.rio_reviews || {}).forEach(([k, v]) => { if (!rv[k] || rv[k].t < v.t) rv[k] = v; });
+        storageSet('rio_reviews', rv);
+        const lt = local.rio_train || { n: 0 }, rt = remote.rio_train || { n: 0 };
+        if ((rt.n || 0) > (lt.n || 0)){ storageSet('rio_train', rt); storageSet('rio_train_log', remote.rio_train_log || []); }
+        // Ajustes: los de la cuenta, salvo que este navegador ya tenga los suyos.
+        syncKeys().filter(k => !['rio_history', 'rio_reviews', 'rio_train', 'rio_train_log'].includes(k))
+          .forEach(k => { if (local[k] === undefined && remote[k] !== undefined) storageSet(k, remote[k]); });
+        setMode(storageGet('rio_mode', 'facil')); setGame(storageGet('rio_game', 'cash'));
+        renderHistory(); updateProfileUI();
+      }
+    } finally { syncing = false; }
+    pushSync();
+  }
+
+  // ---- Plan anual (aparece cuando configures su enlace de pago de Stripe) ----
+  const ANNUAL_PAYMENT_LINK = ''; // p. ej. 'https://buy.stripe.com/...' — el Payment Link del plan anual
+  const ANNUAL_PRICE_LABEL = '';  // p. ej. '39,99 €/año (2 meses gratis)'
+  if (ANNUAL_PAYMENT_LINK){
+    ['subscribeBtn', 'subscribeFromPlanBtn'].forEach(id => {
+      const main = document.getElementById(id);
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn-secondary annual-btn';
+      b.textContent = `Plan anual: ${ANNUAL_PRICE_LABEL}`;
+      b.addEventListener('click', () => window.open(ANNUAL_PAYMENT_LINK, '_blank'));
+      main.insertAdjacentElement('afterend', b);
+    });
+  }
+
+  // ---- ¿Consejo raro? Avisos de los usuarios ----
+  function openFeedback(){
+    const body = openModal('👎 ¿Te parece raro este consejo?', `
+      <p style="margin-top:0;">Cuéntanos qué harías tú y por qué. Nos llega la mano con el análisis para revisarlo y mejorar RÍO.</p>
+      <textarea id="fbText" rows="5" placeholder="Ej.: En el river contra dos apuestas seguidas yo me retiraría: este rival nunca farolea." style="width:100%; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); padding:12px; font-family:'Space Grotesk',sans-serif; font-size:0.95rem;"></textarea>
+      <button type="button" class="btn-primary" id="fbSend" style="width:100%; margin-top:10px;">Enviar aviso</button>
+      <div id="fbMsg" class="restore-msg"></div>`);
+    body.querySelector('#fbSend').addEventListener('click', async () => {
+      const msg = body.querySelector('#fbMsg');
+      const extra = `\nSecuencia: ${JSON.stringify(seq)}\nCalle analizada: ${STREET_NAMES[analysisStreet()]}\nRango rival: ${rangeLabel()} · faroles ${bluffFrac()}\nPartida: ${storageGet('rio_game', 'cash')}\nCartas: ${JSON.stringify({ hole, board })}`;
+      try {
+        const r = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ comment: body.querySelector('#fbText').value, summary: (lastSummary || '') + extra, mode: storageGet('rio_mode', 'facil') }) });
+        if (!r.ok) throw new Error();
+        msg.className = 'restore-msg ok'; msg.textContent = '¡Gracias! Lo revisaremos.';
+        setTimeout(closeModal, 1200);
+      } catch(e){ msg.className = 'restore-msg no'; msg.textContent = 'No se pudo enviar. Inténtalo de nuevo.'; }
+    });
+  }
+  document.getElementById('feedbackBtn').addEventListener('click', openFeedback);
+
+  // Bandeja de avisos (solo para los emails de ADMIN_EMAILS)
+  async function openInbox(){
+    closeSidebar();
+    const body = openModal('📥 Avisos de consejos raros', '<p class="hint">Cargando…</p>');
+    try {
+      const r = await fetch('/api/feedback', { headers: authHeaders() });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      body.innerHTML = d.items.length ? d.items.map(it => `
+        <div class="inbox-item">
+          <div class="hint">${escHTML(new Date(it.t).toLocaleString('es-ES'))} · ${escHTML(it.email || 'anónimo')} · modo ${escHTML(it.mode || '—')}</div>
+          <p><b>${escHTML(it.comment || '(sin comentario)')}</b></p>
+          <pre>${escHTML(it.summary)}</pre>
+        </div>`).join('') : '<p>Aún no hay avisos.</p>';
+    } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar los avisos.')}</p>`; }
+  }
+  document.getElementById('navInbox').addEventListener('click', openInbox);
 
   const rivVal = document.getElementById('rivVal');
   document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
   document.getElementById('rivPlus').addEventListener('click', ()=>{ numRivals = Math.min(9, numRivals+1); rivVal.textContent = numRivals; });
 
-  document.getElementById('heroPosInput').addEventListener('change', updateOrderHint);
-  document.getElementById('villPosInput').addEventListener('change', updateOrderHint);
+  ['heroPosInput', 'villPosInput'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+    updateOrderHint(); updateCurrentHand(); seqActor = null; renderSeq(); syncFromSeq();
+  }));
   updateOrderHint();
 
   const usageRow = document.getElementById('usageRow');
@@ -1216,8 +2788,12 @@
 
   function updateUsageBadge(){
     if (isPro()){ usageRow.innerHTML = '<span class="pro-tag">★ RÍO PRO — análisis ilimitados</span>'; }
+    else if (!storageGet('rio_token', '')){
+      usageRow.innerHTML = `${FREE_LIMIT} análisis gratis con tu cuenta gratuita · <a class="inline-link" id="createFreeLink">crear cuenta</a>`;
+      document.getElementById('createFreeLink').addEventListener('click', () => openPaywall('free'));
+    }
     else {
-      const left = Math.max(0, FREE_LIMIT - usesCount());
+      const left = freeLeft();
       usageRow.innerHTML = left <= 1
         ? `<span class="low">Te queda${left===1?'':'n'} ${left} análisis gratis</span>`
         : `${left} de ${FREE_LIMIT} análisis gratis restantes`;
@@ -1231,7 +2807,9 @@
     const pro = isPro();
     uploadBox.classList.toggle('locked', !pro);
     uploadProBadge.style.display = pro ? 'none' : 'inline-block';
-    document.getElementById('uploadSub').textContent = pro ? 'JPG o PNG, hasta ~4 MB' : 'Función exclusiva de suscriptores';
+    document.getElementById('uploadSub').textContent = 'Cartas, bote, apuesta y posiciones';
+    document.getElementById('importProBadge').style.display = pro ? 'none' : 'inline-block';
+    document.getElementById('storyProBadge').style.display = pro ? 'none' : 'inline-block';
   }
   uploadBox.addEventListener('click', (e) => {
     if (!isPro()){ e.preventDefault(); openPaywall(); }
@@ -1246,7 +2824,7 @@
     visible.forEach(h => {
       const row = document.createElement('div');
       row.className = 'history-item';
-      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${h.equity}% equity · ${h.rivals} rival(es) · ${h.when}</div></div><span class="history-tag ${h.cls}">${h.decision}</span>`;
+      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${h.equity}% de ganar · ${h.rivals} rival(es) · ${h.when}</div></div><span class="history-tag ${h.cls}">${decisionHTML(h.decision)}</span>`;
       historyList.appendChild(row);
     });
     if (!isPro() && hist.length > 1){
@@ -1260,8 +2838,11 @@
 
   function openPaywall(mode){
     if (mode === 'login'){
-      document.getElementById('paywallTitle').textContent = 'Inicia sesión con tu RÍO PRO';
-      document.getElementById('paywallCopy').innerHTML = 'Escribe el email con el que te suscribiste para desbloquear tu cuenta <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código a ese email.';
+      document.getElementById('paywallTitle').textContent = 'Entra en tu cuenta';
+      document.getElementById('paywallCopy').innerHTML = 'Escribe tu email para entrar <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código. Tus manos y estadísticas se guardan en tu cuenta.';
+    } else if (mode === 'free'){
+      document.getElementById('paywallTitle').textContent = 'Crea tu cuenta gratis';
+      document.getElementById('paywallCopy').innerHTML = 'Para usar tus <b>5 análisis gratis</b> solo necesitas una cuenta: tu email y un código, sin contraseña. Así tus manos y estadísticas se guardan aunque cambies de móvil.';
     } else if (mode === 'plans'){
       document.getElementById('paywallTitle').textContent = 'RÍO PRO';
       document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
@@ -1270,14 +2851,14 @@
       document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.';
     }
     paywall.classList.add('show');
-    if (mode === 'login'){
+    if (mode === 'login' || mode === 'free'){
       setTimeout(() => {
         document.getElementById('restoreBox').scrollIntoView({block:'center'});
         document.getElementById('proEmail').focus();
       }, 200);
     }
   }
-  function closePaywall(){ paywall.classList.remove('show'); }
+  function closePaywall(){ paywall.classList.remove('show'); pendingAnalyze = false; }
   document.getElementById('closePaywall').addEventListener('click', closePaywall);
   paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
 
@@ -1360,6 +2941,10 @@
   document.getElementById('navLogin').addEventListener('click', () => {
     closeSidebar(); openPaywall('login');
   });
+  document.getElementById('navLogout').addEventListener('click', () => { closeSidebar(); doLogout(); });
+  document.getElementById('navManage').addEventListener('click', () => { closeSidebar(); openPlanPanel(); openBillingPortal(); });
+  document.getElementById('navGlossary').addEventListener('click', () => { closeSidebar(); openGlossary(); });
+  document.getElementById('manageSubBtn').addEventListener('click', openBillingPortal);
   document.getElementById('navSettings').addEventListener('click', () => { closeSidebar(); openSettings(); });
   document.getElementById('buyCreditsSettingsBtn').addEventListener('click', () => { closeSettings(); openCreditsModal(); });
   document.getElementById('closeSettings').addEventListener('click', closeSettings);
@@ -1388,6 +2973,7 @@
     return { rank, suit };
   }
   function applyScreenshotData(data){
+    seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null; selStreet = null;
     if (data.hand){
       data.hand.trim().split(/\s+/).slice(0,2).forEach((t,i) => {
         const c = parseCardToken(t); if (c) hole[i] = c;
@@ -1520,7 +3106,7 @@
     document.getElementById('restoreBtn').textContent = onCode ? 'Verificar código' : 'Enviarme un código';
     document.getElementById('restoreHint').textContent = onCode
       ? `Te enviamos un código a ${pendingLoginEmail}. Escríbelo aquí (caduca en 10 minutos):`
-      : '¿Ya pagaste? Escribe el email con el que te suscribiste y te enviaremos un código:';
+      : 'Escribe tu email y te enviamos un código para entrar. Si aún no tienes cuenta, se crea gratis:';
     if (onCode) codeInput.focus();
   }
   // Si cambia el email, volvemos al primer paso.
@@ -1539,7 +3125,6 @@
         if (!email || !email.includes('@')){ fail('Escribe un email válido.'); return; }
         const { ok, data } = await postJson('/api/send-code', { email });
         if (!ok){ fail(data.error || 'No se pudo enviar el código. Inténtalo de nuevo.'); return; }
-        if (!data.pro){ fail('No encontramos una suscripción activa con ese email.'); return; }
         pendingLoginEmail = email;
         msg.textContent = 'Código enviado. Revisa tu correo (y la carpeta de spam).';
         msg.className = 'restore-msg ok';
@@ -1554,14 +3139,15 @@
         }
         storageSet('rio_token', data.token);
         storageSet('rio_email', data.email);
-        storageSet('rio_pro', true);
+        storageSet('rio_pro', !!data.pro);
         pendingLoginEmail = null;
         document.getElementById('proCode').value = '';
-        refreshPhotoUsage();
-        msg.textContent = '¡Suscripción activa! Desbloqueando RÍO PRO…';
+        refreshPhotoUsage(); refreshFreeLeft(); pullSync();
+        msg.textContent = data.pro ? '¡Suscripción activa! Desbloqueando RÍO PRO…' : '¡Cuenta lista! Ya puedes usar tus análisis gratis.';
         msg.className = 'restore-msg ok';
         updateUsageBadge(); renderHistory();
-        setTimeout(closePaywall, 900);
+        const resume = pendingAnalyze;
+        setTimeout(() => { closePaywall(); if (resume) analyzeBtn.click(); }, 900);
       }
     } catch(e){
       fail('No se pudo contactar con el servidor. Inténtalo de nuevo en unos segundos.');
@@ -1576,14 +3162,35 @@
   getProfile();
 
   const analyzeBtn = document.getElementById('analyzeBtn');
-  analyzeBtn.addEventListener('click', () => {
+  analyzeBtn.addEventListener('click', async () => {
     if (!hole[0] || !hole[1]){ alert('Elige tus dos cartas antes de analizar.'); return; }
-    if (!isPro() && usesCount() >= FREE_LIMIT){ openPaywall(); return; }
+    if (analysisStreet() >= cardStreets()){
+      alert(`Para analizar el ${STREET_NAMES[analysisStreet()].toLowerCase()} añade antes sus cartas.`);
+      const idx = board.findIndex(c => !c); if (idx !== -1) openPicker('board', idx);
+      return;
+    }
+    if (!isPro()){
+      // Los análisis gratis van ligados a una cuenta y los cuenta el servidor.
+      if (!storageGet('rio_token', '')){ openPaywall('free'); pendingAnalyze = true; return; }
+      analyzeBtn.disabled = true; analyzeBtn.textContent = 'Comprobando…';
+      try {
+        const r = await fetch('/api/free-use', { method: 'POST', headers: authHeaders() });
+        let d = {}; try { d = await r.json(); } catch(e){}
+        if (r.status === 401){ logoutPro(); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano'; updateUsageBadge(); openPaywall('free'); pendingAnalyze = true; return; }
+        if (r.status === 402){ storageSet('rio_free_left', 0); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano'; updateUsageBadge(); openPaywall(); return; }
+        if (d.pro) storageSet('rio_pro', true);
+        else if (typeof d.left === 'number') storageSet('rio_free_left', d.left);
+      } catch(e){ /* sin conexión: dejamos analizar */ }
+    }
     analyzeBtn.disabled = true; analyzeBtn.textContent = 'Calculando…';
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
       const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
-      const { win, tie } = runEquity(hole, board, numRivals, simIterations());
+      const aStreet = analysisStreet();
+      const aBoard = boardAt(aStreet);
+      const vPool = villainPoolAt(decisionPoint());
+      const res = runEquity(hole, aBoard, numRivals, simIterations(), vPool);
+      const { win, tie } = res;
       const needed = (pot+call) > 0 ? (call/(pot+call))*100 : 0;
 
       // Guardado para el simulador de "¿y si me suben otra vez?"
@@ -1593,48 +3200,110 @@
       document.getElementById('reraisePotInput').value = '';
       document.getElementById('reraiseCallInput').value = '';
 
-      const known = [...hole, ...board].filter(Boolean);
-      let handLabel;
+      const known = [...hole, ...aBoard].filter(Boolean);
+      const filledBoard = aBoard;
+      document.querySelector('#resultPanel .panel-head h2').textContent = 'Resultado · ' + STREET_NAMES[aStreet];
+      let handLabel, handSub = '';
+      let currentCat = null;
       if (known.length < 5){
         const [a,b] = hole;
-        handLabel = a.rank===b.rank ? 'Pareja de '+RANK_PLURAL[a.rank] : RANK_LABEL(Math.max(a.rank,b.rank))+'-'+RANK_LABEL(Math.min(a.rank,b.rank));
+        handLabel = a.rank===b.rank ? 'Pareja de '+RANK_PLURAL[a.rank] : RANK_LABEL(Math.max(a.rank,b.rank))+'-'+RANK_LABEL(Math.min(a.rank,b.rank))+(a.suit===b.suit?' (mismo palo)':'');
+        handSub = `Top ${Math.max(1, Math.round(handTopPercent(a, b)))}% de manos iniciales`;
       } else {
         const best = bestHand(known);
+        currentCat = best.category;
         handLabel = categoryName(best.category, best.tiebreak);
       }
-      document.getElementById('resultHandName').textContent = handLabel;
+      const villActed = vPool.length < poolFromSet(villRange.set).length;
+      const rangeText = !res.usedRange ? 'cualquier mano'
+        : villActed ? `rango ajustado a sus apuestas, ~${Math.max(1, Math.round(vPool.length / 1326 * 100))}%`
+        : rangeLabel().toLowerCase();
+      handSub = (handSub ? handSub + ' · ' : '') + `vs ${numRivals} rival${numRivals>1?'es':''} (${rangeText})`;
+      document.getElementById('resultHandName').innerHTML = `${handLabel}<small>${handSub}</small>`;
 
       const badge = document.getElementById('decisionBadge');
       const heroPos = document.getElementById('heroPosInput').value;
       const villPos = document.getElementById('villPosInput').value;
       const oop = heroIsOOP();
       lastOop = oop;
-      // Fuera de posición exige más margen (juegas a ciegas del rival); en posición puedes apretar con menos margen.
-      const raiseBuffer = oop ? 8 : 4;
-      const callBuffer = oop ? -1 : -5;
-      let text, cls;
-      if (call === 0){ text = 'CHECK'; cls = 'ok'; }
-      else if (win >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
-      else if (win >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
-      else { text = 'FOLD'; cls = 'no'; }
-      badge.textContent = text;
+      // Fuera de posición exige más margen; sin apuesta que pagar, apostamos si vamos
+      // claramente por encima de nuestra parte "justa" del bote (ver decide()).
+      const fairShare = 100/(numRivals+1);
+      // Torneo: jugarte buena parte del stack cuesta más (te pueden eliminar).
+      const tourney = storageGet('rio_game', 'cash') === 'torneo';
+      const stackNow = Math.max(0, Number(document.getElementById('stackInput').value) || 0);
+      const riskPremium = tourney && stackNow > 0 && call >= stackNow * 0.3 ? 5 : 0;
+      const dp = decisionPoint();
+      const unraised = aStreet === 0 && (seq[0].length ? replay(0, dp && dp.s === 0 ? dp : undefined).raises === 0 : call <= bbSize());
+      const reco = recommend({ heroCards: hole, boardCards: aBoard, pot, toCall: call, rivals: numRivals, pool: vPool, oop, street: aStreet,
+        heroPos, unraised, premium: riskPremium, eq: win + tie / 2 });
+      const text = reco.text;
+      const cls = { RAISE: 'ok', BET: 'ok', CALL: 'warn', CHECK: 'warn', FOLD: 'no' }[text];
+      const bluff = reco.bc || null;
+      const isBluff = reco.kind === 'bluff', isOpen = reco.kind === 'open';
+      const heroDraw = aStreet > 0 && aStreet < 3 && hasDraw(hole, aBoard);
+      badge.innerHTML = decisionHTML(text);
       badge.className = 'decision-badge ' + cls;
 
+      // --- Explicación modo Pro ---
       const posPhrase = oop
         ? `Vas fuera de posición (${heroPos} vs ${villPos}): actúas antes que tu rival, así que juegas con menos información`
         : `Tienes posición (${heroPos} vs ${villPos}): tu rival actúa primero, así que ves lo que hace antes de decidir`;
+      const vsRange = res.usedRange ? ` contra un rango ${rangeText}` : '';
       const edge = (win - needed).toFixed(1);
-      let adviceText;
-      if (call === 0){
-        adviceText = `No hay nada que igualar, así que ver la siguiente carta no cuesta fichas. Aprovecha para observar cómo actúan tus rivales.`;
+      let proText;
+      const evLine = bluff ? ` Apostar 2/3 del bote: el rival se retira ~<b>${Math.round(bluff.f * 100)}%</b>, cuando paga ganas ~<b>${Math.round(bluff.eqCall * 100)}%</b> · EV apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1)}</b> vs pasar <b>${bluff.evCheck.toFixed(1)}</b>.` : '';
+      if (text === 'BET'){
+        proText = `Nadie ha apostado y tu equity${vsRange} es <b>${win.toFixed(1)}%</b> (parte justa del bote: ${fairShare.toFixed(0)}%). Apuesta por valor: las manos peores te pagan.${evLine} ${posPhrase}.`;
+      } else if (text === 'CHECK'){
+        proText = `No hay nada que igualar y tu equity${vsRange} es <b>${win.toFixed(1)}%</b>. Apostar no rinde más que pasar: las manos peores se retiran y las mejores te pagan.${evLine} Pasa y ve la siguiente carta gratis. ${posPhrase}.`;
+      } else if (text === 'RAISE' && reco.valueCheck){
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera el <b>${needed.toFixed(1)}%</b> necesario y además ganas ~<b>${Math.round(reco.valueCheck)}%</b> contra la parte fuerte de su rango, la que te pagaría una subida. ${posPhrase}.`;
       } else if (text === 'RAISE'){
-        adviceText = `Tu equity (<b>${win.toFixed(1)}%</b>) supera con margen el <b>${needed.toFixed(1)}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera con margen el <b>${needed.toFixed(1)}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
+      } else if (text === 'CALL' && reco.downgraded){
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera de sobra el <b>${needed.toFixed(1)}%</b> necesario, pero contra la parte fuerte de su rango (la que pagaría una subida) solo ganas ~<b>${Math.round(reco.valueCheck)}%</b>: subir solo te lo pagarían las manos que te ganan. <b>Paga</b> y no hinches el bote. ${posPhrase}.`;
       } else if (text === 'CALL'){
-        adviceText = `Estás cerca del punto de equilibrio (diferencia de ${edge}%). ${posPhrase}. ${oop ? 'Fuera de posición conviene ser algo más conservador: iguala pero no metas más fichas todavía.' : 'Con posición puedes igualar tranquilo y decidir la siguiente calle ya con más información.'}`;
+        proText = `Estás cerca del punto de equilibrio (diferencia de ${edge}%${vsRange}). ${posPhrase}. ${oop ? 'Fuera de posición conviene ser algo más conservador: iguala pero no metas más fichas todavía.' : 'Con posición puedes igualar tranquilo y decidir la siguiente calle ya con más información.'}`;
       } else {
-        adviceText = `Necesitas <b>${needed.toFixed(1)}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1)}%</b>. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
+        proText = `Necesitas <b>${needed.toFixed(1)}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1)}%</b>${vsRange}. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
       }
-      document.getElementById('adviceBox').innerHTML = adviceText;
+
+      if (isBluff){
+        proText = `Nadie ha apostado y cuando te pagan vas por detrás, pero una apuesta de 2/3 del bote hace retirarse al rival ~<b>${Math.round(bluff.f * 100)}%</b> de las veces${heroDraw ? ' y, si paga, aún tienes proyecto' : ''}. EV de apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1)}</b> frente a <b>${bluff.evCheck.toFixed(1)}</b> pasando: ${heroDraw ? 'semifarol' : 'farol'} rentable. ${posPhrase}.`;
+      }
+      if (isOpen){
+        proText = text === 'RAISE'
+          ? `Preflop sin subidas: ${handLabel} está en el <b>top ${Math.max(1, Math.round(reco.top))}%</b> y desde ${heroPos} se abre ~<b>${OPEN_PCT[heroPos]}%</b>. Abre subiendo a unas 2,5–3 ciegas grandes (no te limites a pagar la ciega).`
+          : `Preflop sin subidas: ${handLabel} está en el <b>top ${Math.round(reco.top)}%</b> y desde ${heroPos} solo se abre ~<b>${OPEN_PCT[heroPos]}%</b> de las manos. Tírala.`;
+      }
+      if (riskPremium) proText += ` <b>Torneo:</b> pagar supone más del 30% de tu stack, así que exigimos ~5% más de equity por el riesgo de quedar eliminado.`;
+
+      // --- Explicación modo Fácil ---
+      const of20 = (p) => { const n = Math.round(p/5); return n === 0 && p > 0 ? 'menos de 1' : String(n); };
+      const posEasy = oop
+        ? 'Además hablas antes que tu rival, lo que es una pequeña desventaja.'
+        : 'Hablas después que tu rival: es una ventaja, porque ves lo que hace antes de decidir.';
+      let easyText;
+      if (text === 'BET') easyText = `Nadie ha apostado y tu mano es fuerte: ganas unas <b>${of20(win)} de cada 20</b> veces. Apuesta tú para que te paguen cuando vas por delante.`;
+      else if (text === 'CHECK') easyText = `Nadie ha apostado, así que puedes <b>pasar gratis</b> y ver la siguiente carta. Tu mano no es tan fuerte como para apostar.`;
+      else if (text === 'RAISE') easyText = `Vas claramente por delante: ganas unas <b>${of20(win)} de cada 20</b> veces y te bastaría con <b>${of20(needed)}</b>. Sube para ganar más fichas. ${posEasy}`;
+      else if (text === 'CALL') easyText = `Está justo: ganas unas <b>${of20(win)} de cada 20</b> veces y necesitas <b>${of20(needed)}</b>. Paga, pero sin meter más fichas por ahora. ${posEasy}`;
+      else easyText = `Pagar te haría perder fichas a la larga: ganas solo <b>${of20(win)} de cada 20</b> veces y necesitarías <b>${of20(needed)}</b>. Lo mejor es tirar la mano. ${posEasy}`;
+      if (isOpen) easyText = text === 'RAISE'
+        ? `Nadie ha subido todavía y tu mano es de las que se juegan desde <b>${heroPos}</b> (top ${Math.max(1, Math.round(reco.top))}%). <b>Sube</b> a unas 3 ciegas grandes: no te limites a pagar.`
+        : `Nadie ha subido todavía, pero desde <b>${heroPos}</b> esta mano no se suele jugar (top ${Math.round(reco.top)}%; se juega el ${OPEN_PCT[heroPos]}% mejor). <b>Tírala</b> sin miedo.`;
+      if (text === 'CALL' && reco.downgraded) easyText = `Vas por delante de muchas de sus manos, pero si subes solo te pagarían las que te ganan. <b>Paga</b> y no metas más fichas: ganas unas <b>${of20(win)} de cada 20</b> veces y necesitas <b>${of20(needed)}</b>. ${posEasy}`;
+      if (isBluff) easyText = `Tu mano no es la mejor ahora, pero si apuestas tu rival se retirará unas <b>${of20(bluff.f * 100)} de cada 20</b> veces${heroDraw ? ', y si paga aún puedes ligar tu proyecto' : ''}. Es un <b>${heroDraw ? 'semifarol' : 'farol'}</b> que compensa.`;
+      if (riskPremium) easyText += ' Como es un <b>torneo</b> y te juegas buena parte de tus fichas, pedimos un poco más de ventaja: si pierdes, quedas fuera.';
+      document.getElementById('adviceBox').innerHTML = `<div class="easy-only">${easyText}</div><div class="pro-only">${proText}</div>`;
+
+      // Puntos: cada uno es una de cada 20 veces
+      const wDots = Math.round(win/5), tDots = Math.min(20 - wDots, Math.round(tie/5));
+      document.getElementById('oddsDots').innerHTML = Array.from({length: 20}, (_, i) =>
+        `<i class="${i < wDots ? 'w' : i < wDots + tDots ? 't' : ''}" style="animation-delay:${i*25}ms"></i>`).join('');
+      document.getElementById('plainLine').innerHTML = `De cada 20 veces así, ganas <b>${of20(win)}</b>` +
+        (call > 0 ? ` y para que pagar compense necesitas ganar <b>${of20(needed)}</b>.` : '.');
 
       requestAnimationFrame(() => {
         document.getElementById('gaugeFill').style.width = Math.max(2, Math.min(100, win)) + '%';
@@ -1643,13 +3312,38 @@
       document.getElementById('markLabel').textContent = call > 0 ? `Necesitas ${needed.toFixed(0)}%` : 'Sin coste';
 
       const lose = Math.max(0, 100 - win - tie);
-      const outs = countOuts(hole, board.filter(Boolean));
+      const outsCards = findOuts(hole, filledBoard);
+      const outs = outsCards ? outsCards.length : null;
 
       document.getElementById('statEquity').textContent = win.toFixed(1)+'%';
       document.getElementById('statTie').textContent = tie.toFixed(1)+'%';
       document.getElementById('statLose').textContent = lose.toFixed(1)+'%';
       document.getElementById('statOuts').textContent = outs===null ? '—' : outs+' cartas';
       document.getElementById('statNeeded').textContent = call>0 ? needed.toFixed(1)+'%' : '—';
+      document.getElementById('statRange').textContent = res.usedRange ? Math.max(1, Math.round(vPool.length / 1326 * 100))+'%' : '100%';
+
+      // Cartas que te ayudan
+      const outsBox = document.getElementById('outsBox');
+      outsBox.style.display = outsCards && outsCards.length ? 'block' : 'none';
+      if (outsCards){
+        document.getElementById('outsList').innerHTML = outsCards
+          .sort((x, y) => y.rank - x.rank || SUITS.indexOf(x.suit) - SUITS.indexOf(y.suit))
+          .map(c => `<span class="mini-card${SUIT_CRIMSON[c.suit] ? ' crimson' : ''}">${RANK_LABEL(c.rank)}<span>${SUIT_SYMBOL[c.suit]}</span></span>`).join('');
+      }
+
+      // Con qué jugada puedes acabar (solo si quedan cartas por salir)
+      const finalsWrap = document.getElementById('finalsWrap');
+      finalsWrap.style.display = filledBoard.length < 5 ? 'block' : 'none';
+      if (filledBoard.length < 5){
+        const CAT_NAMES = ['Carta alta','Pareja','Doble pareja','Trío','Escalera','Color','Full','Póker','Escalera de color'];
+        const rows = [];
+        for (let c = 8; c >= 0; c--){
+          const p = res.cats[c];
+          if (p < 0.05 && c !== currentCat) continue;
+          rows.push(`<div class="final-row${c === currentCat ? ' current' : ''}"><span>${CAT_NAMES[c]}</span><div class="bar"><i style="width:${Math.max(1, p)}%"></i></div><b>${p < 1 ? p.toFixed(1) : Math.round(p)}%</b></div>`);
+        }
+        document.getElementById('finalsBox').innerHTML = rows.join('');
+      }
 
       const stack = Math.max(0, Number(document.getElementById('stackInput').value) || 0);
       const villStack = Math.max(0, Number(document.getElementById('villStackInput').value) || 0);
@@ -1664,11 +3358,48 @@
       evEl.style.color = call>0 ? (ev>=0 ? 'var(--ok)' : 'var(--crimson)') : 'var(--cream)';
       document.getElementById('statSPR').textContent = (effStack>0 && pot>0) ? (effStack/pot).toFixed(1) : '—';
 
+      // --- Plan: cuánto apostar y qué hacer si te suben ---
+      const curStreet = availableStreets() - 1;
+      const heroPut = text === 'RAISE' ? call * 3 : text === 'BET' ? pot * 2 / 3 : text === 'CALL' ? call : 0;
+      const villMatch = text === 'RAISE' ? heroPut - call : text === 'BET' ? heroPut : 0;
+      const potAfter = pot + heroPut;
+      const strongPool = raisingPool(vPool, curStreet, text === 'CHECK' ? 0.65 : 0.22);
+      const e2raw = runEquity(hole, aBoard, numRivals, 1000, strongPool);
+      const e2 = Math.max(0, (e2raw.win + e2raw.tie / 2) - (oop ? 3 : 0)) / 100;
+      lastE2 = e2 * 100;
+      const eCap = Math.min(e2, 0.49);
+      const maxCall = e2 >= 0.55 ? Infinity : eCap * (potAfter + villMatch) / (1 - 2 * eCap);
+      const behind = effStack > 0 ? Math.max(0, effStack - heroPut) : 0;
+      const u = unitLabel === 'fichas' ? '' : ' ' + unitLabel;
+      const limit = e2 >= 0.45 && e2 < 0.55 && !(behind > 0 && maxCall >= behind)
+        ? `puedes <b>pagar casi cualquier resubida</b>: contra su rango fuerte ganas ~${Math.round(e2*100)}%, casi la mitad de las veces`
+        : maxCall === Infinity || (behind > 0 && maxCall >= behind)
+        ? `<b>paga aunque vaya all-in</b>: sigues por delante incluso contra su rango fuerte (ganas ~${Math.round(e2*100)}%)`
+        : maxCall < Math.max(1, pot * 0.1)
+          ? `<b>retírate</b> salvo que la subida sea mínima: contra su rango fuerte solo ganas ~${Math.round(e2*100)}%`
+          : `paga si te toca poner <b>hasta ${fmtN(Math.round(maxCall))}${u}</b> más; si es más, <b>retírate</b> (contra su rango fuerte ganas ~${Math.round(e2*100)}%)`;
+      let planItems = [];
+      if (text === 'BET' && isBluff) planItems.push(`Apuesta unas <b>${fmtN(Math.round(heroPut))}${u}</b> (2/3 del bote) de ${heroDraw ? 'semifarol' : 'farol'}.`, heroDraw ? 'Si te suben, paga solo si te sale barato: tu proyecto aún puede ligar.' : 'Si te suben, <b>retírate</b>: el farol no ha funcionado.');
+      else if (text === 'BET') planItems.push(`Apuesta unas <b>${fmtN(Math.round(heroPut))}${u}</b> (2/3 del bote).`, `Si te suben: ${limit}.`);
+      else if (text === 'RAISE' && isOpen) planItems.push(`Abre subiendo a unas <b>${fmtN(Math.round(bbSize() * 3 * 100) / 100)}${u}</b> (3 ciegas grandes).`, `Si te resuben: ${limit}.`);
+      else if (text === 'RAISE') planItems.push(`Sube a unas <b>${fmtN(Math.round(heroPut))}${u}</b> (3 veces su apuesta).`, `Si te resuben: ${limit}.`);
+      else if (text === 'CALL') planItems.push(`Paga <b>${fmtN(call)}${u}</b>.`, `Si alguien vuelve a subir después: ${limit}.`, curStreet < 3 ? 'En la siguiente calle, vuelve a analizar con la carta nueva: pulsa <b>Siguiente calle</b>.' : '');
+      else if (text === 'CHECK') planItems.push('Pasa.', `Si después tu rival apuesta: ${limit}.`);
+      else planItems.push('Tira la mano: no hay plan que la salve a este precio.');
+      if (tourney && !stackNow) planItems.push('Torneo: escribe <b>tu stack</b> para ajustar el consejo al riesgo de quedar eliminado.');
+      document.getElementById('planBox').innerHTML = `<div class="plan-title">📋 Tu plan</div><ul>${planItems.filter(Boolean).map(x => `<li>${x}</li>`).join('')}</ul>`;
+
+      const reviewRows = seqHasActions() ? reviewDecisions() : [];
+      renderTimeline(reviewRows);
+      saveReviews(reviewRows);
+      const nsBtn = document.getElementById('nextStreetBtn');
+      nsBtn.style.display = curStreet < 3 && text !== 'FOLD' ? 'block' : 'none';
+      nsBtn.textContent = `➡️ Siguiente calle: ${['añadir el flop', 'añadir el turn', 'añadir el river'][Math.min(2, curStreet)]}`;
+
       resultPanel.classList.add('show');
       analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
-      resultPanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+      resultPanel.scrollIntoView({behavior:'smooth', block:'start'});
 
-      if (!isPro()) bumpUses();
       pushHistory({
         hand: handLabel, equity: win.toFixed(1), rivals: numRivals,
         decision: text, cls: cls,
@@ -1681,7 +3412,7 @@
         storageSet('rio_defaults', { heroPos, villPos, numRivals });
       }
 
-      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nPosiciones: tú ${heroPos} vs rival ${villPos}\nGanar ${win.toFixed(1)}% · Empatar ${tie.toFixed(1)}% · Perder ${lose.toFixed(1)}%\nOuts: ${outs===null?'—':outs}\nOdds necesarias: ${call>0?needed.toFixed(1)+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1)+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1):'—'}\nDecisión: ${text}`;
+      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nPosiciones: tú ${heroPos} vs rival ${villPos}\nRango del rival: ${res.usedRange ? rangeLabel() : 'cualquier mano'}\nGanar ${win.toFixed(1)}% · Empatar ${tie.toFixed(1)}% · Perder ${lose.toFixed(1)}%\nOuts: ${outs===null?'—':outs}\nOdds necesarias: ${call>0?needed.toFixed(1)+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1)+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1):'—'}\nDecisión: ${text} (${DECISION_ES[text]})`;
     }, 30);
   });
 
@@ -1705,28 +3436,48 @@
     const needed = (pot > 0) ? (call/(pot+call))*100 : 100;
     // Una segunda subida suele venir con un rango más fuerte del rival, así que exigimos más margen
     // que en la decisión inicial de la misma posición.
-    const raiseBuffer = lastOop ? 12 : 7;
-    const callBuffer = lastOop ? 4 : -1;
+    // Usamos tu equity contra el rango con el que suele resubir (más fuerte).
+    const eq = lastE2 !== null ? lastE2 : lastWin;
+    const raiseBuffer = lastOop ? 10 : 6;
+    const callBuffer = lastOop ? 2 : 0;
 
     let text, cls;
-    if (lastWin >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
-    else if (lastWin >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
+    if (eq >= needed + raiseBuffer){ text = 'RAISE'; cls = 'ok'; }
+    else if (eq >= needed + callBuffer){ text = 'CALL'; cls = 'warn'; }
     else { text = 'FOLD'; cls = 'no'; }
 
     const posPhrase = lastOop
       ? 'Sigues fuera de posición, y encima tu rival ha subido dos veces: su rango real suele ser más fuerte de lo normal.'
       : 'Tienes posición, lo que ayuda, pero una segunda subida suele indicar una mano más fuerte de lo habitual.';
-    const edge = (lastWin - needed).toFixed(1);
+    const edge = (eq - needed).toFixed(1);
     let text2;
     if (text === 'RAISE'){
-      text2 = `Con <b>${lastWin.toFixed(1)}%</b> de equity sigues muy por encima del <b>${needed.toFixed(1)}%</b> que necesitas, incluso exigiendo un margen extra por la segunda subida. ${posPhrase}`;
+      text2 = `Con <b>${eq.toFixed(1)}%</b> de equity contra su rango de resubida sigues muy por encima del <b>${needed.toFixed(1)}%</b> que necesitas, incluso exigiendo un margen extra por la segunda subida. ${posPhrase}`;
     } else if (text === 'CALL'){
-      text2 = `Tu equity (<b>${lastWin.toFixed(1)}%</b>) sigue por encima del <b>${needed.toFixed(1)}%</b> necesario (diferencia de ${edge}%), aunque justo. ${posPhrase} Iguala, pero no metas más fichas sin mejorar la mano.`;
+      text2 = `Tu equity contra su rango de resubida (<b>${eq.toFixed(1)}%</b>) sigue por encima del <b>${needed.toFixed(1)}%</b> necesario (diferencia de ${edge}%), aunque justo. ${posPhrase} Iguala, pero no metas más fichas sin mejorar la mano.`;
     } else {
-      text2 = `Necesitarías <b>${needed.toFixed(1)}%</b> de equity y solo tienes <b>${lastWin.toFixed(1)}%</b>, con el añadido de que la segunda subida suele significar una mano fuerte del rival. ${posPhrase} Lo más sólido aquí es retirarse.`;
+      text2 = `Necesitarías <b>${needed.toFixed(1)}%</b> de equity y contra su rango de resubida solo tienes <b>${eq.toFixed(1)}%</b>, con el añadido de que la segunda subida suele significar una mano fuerte del rival. ${posPhrase} Lo más sólido aquí es retirarse.`;
     }
 
-    rrResult.innerHTML = `<span class="rr-badge ${cls}">${text}</span><br>${text2}`;
+    const easy2 = text === 'RAISE'
+      ? 'Sigues muy por delante incluso después de la segunda subida: vuelve a subir.'
+      : text === 'CALL'
+        ? 'Está justo, pero todavía compensa pagar. No metas más fichas sin mejorar tu mano.'
+        : 'Que te suban dos veces suele significar una mano muy fuerte. Aquí lo mejor es tirar.';
+    rrResult.innerHTML = `<span class="rr-badge ${cls}">${decisionHTML(text)}</span><br><span class="easy-only">${easy2}</span><span class="pro-only">${text2}</span>`;
+  });
+
+  document.getElementById('nextStreetBtn').addEventListener('click', () => {
+    // Sin secuencia: si has pagado, lo pagado pasa al bote y la nueva calle empieza sin apuesta.
+    if (!seqHasActions()){
+      const pot = Number(document.getElementById('potInput').value) || 0;
+      const call = Number(document.getElementById('callInput').value) || 0;
+      document.getElementById('potInput').value = Math.round((pot + call * 2) * 100) / 100;
+      document.getElementById('callInput').value = 0;
+    }
+    const next = Math.min(3, analysisStreet() + 1);
+    document.querySelector('#holeRow').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => selectStreet(next), 350);
   });
 
   let lastSummary = '';
@@ -1752,12 +3503,15 @@
     document.getElementById('villStackInput').value = '';
     document.getElementById('heroPosInput').value = 'BTN';
     document.getElementById('villPosInput').value = 'BB';
-    lastWin = null; lastTie = null; lastOop = false;
+    lastWin = null; lastTie = null; lastOop = false; lastE2 = null;
+    seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null; selStreet = null;
+    document.getElementById('planBox').innerHTML = '';
     document.getElementById('reraisePanel').style.display = 'none';
     document.getElementById('reraiseResult').innerHTML = '';
     document.getElementById('reraisePotInput').value = '';
     document.getElementById('reraiseCallInput').value = '';
     reraiseToggleBtn.textContent = '¿Te suben la apuesta después de esto? Calcula qué hacer →';
+    document.getElementById('screenshotStatus').style.display = 'none';
     updateOrderHint();
     render();
   });
