@@ -653,6 +653,63 @@
   .footer-links { margin-top: 10px; line-height: 1.9; }
   .footer-links a, .paywall-fine a { color: var(--cream-dim); text-decoration: underline; }
   .age-badge { display: inline-block; border: 1.5px solid var(--cream-dim); border-radius: 999px; padding: 0 6px; font-weight: 800; font-size: 0.72rem; margin-right: 4px; }
+
+  /* ---- Menú lateral ordenado ---- */
+  .sidebar { width: 300px; max-width: 86vw; overflow-y: auto; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+  .sidebar-brand { margin-bottom: 16px; }
+  .acct-card { background: linear-gradient(160deg, rgba(232,40,63,0.14), var(--panel-2) 70%); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 18px; }
+  .acct-top { display: flex; align-items: center; gap: 12px; }
+  .acct-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--gold); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; font-family: 'Bricolage Grotesque', sans-serif; flex-shrink: 0; }
+  .acct-info { min-width: 0; }
+  .acct-name { font-weight: 700; font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acct-mail { font-size: 0.74rem; color: var(--cream-dim); overflow: hidden; text-overflow: ellipsis; }
+  .acct-card .sidebar-foot { border-top: none; padding: 0; margin: 12px 0 0; }
+  .plan-line { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--cream-dim); margin-bottom: 6px; }
+  .plan-line .pro-pill { margin: 0; }
+  .pro-pill.free { background: rgba(255,255,255,0.08); color: var(--cream-dim); }
+  .usage-text { font-size: 0.76rem; color: var(--cream-dim); line-height: 1.4; }
+  .usage-text b { color: var(--cream); }
+  .usage-bar { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.08); margin-top: 6px; overflow: hidden; }
+  .usage-bar i { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
+  .acct-cta { width: 100%; margin-top: 12px; padding: 11px; border-radius: 10px; border: none; background: var(--gold); color: #fff; font-weight: 800; font-size: 0.86rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+  .acct-cta.gold { background: linear-gradient(100deg, var(--gold), #FF6B5B); }
+  .acct-cta.ghost { background: transparent; border: 1px solid var(--line); color: var(--cream); }
+  .sidebar-nav { gap: 2px; flex: none; }
+  .nav-section { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cream-dim); font-weight: 800; margin: 14px 12px 6px; opacity: 0.8; }
+  .nav-section:first-child { margin-top: 0; }
+  .sidebar-link { padding: 9px 10px; gap: 11px; font-size: 0.92rem; }
+  .sidebar-link .ic { width: 30px; height: 30px; border-radius: 9px; background: var(--panel-2); display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+  .sidebar-link .lbl { flex: 1; }
+  .sidebar-link .pro-badge, .sidebar-link .free-badge, .sidebar-link .admin-badge { margin-left: auto; }
+  .free-badge { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.04em; color: var(--ok); background: var(--ok-soft); padding: 3px 8px; border-radius: 999px; }
+  .admin-badge { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.04em; color: var(--lavender); background: var(--lavender-soft); padding: 3px 8px; border-radius: 999px; }
+  .sidebar-link.logout { color: var(--crimson); }
+  .sidebar-legal { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 0.72rem; color: var(--cream-dim); line-height: 1.9; text-align: center; }
+  .sidebar-legal a { color: var(--cream-dim); }
+
+  .shared-banner { background: var(--lavender-soft); border: 1px solid rgba(216,166,59,0.45); color: var(--cream); border-radius: 12px; padding: 12px 14px; font-size: 0.9rem; line-height: 1.45; margin-bottom: 14px; }
+  .trial-nudge { margin-top: 14px; padding: 14px; border-radius: 12px; background: linear-gradient(120deg, rgba(232,40,63,0.16), var(--panel-2)); border: 1px solid rgba(232,40,63,0.35); font-size: 0.9rem; line-height: 1.45; }
+  .trial-nudge .btn-primary { display: block; width: 100%; min-width: 0; margin-top: 10px; padding: 12px; font-size: 0.95rem; }
+  .share-wa { display: block; text-align: center; text-decoration: none; background: #25D366; box-shadow: none; }
+
+  .packs { display: grid; gap: 10px; margin: 6px 0 4px; }
+  .pack { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 12px; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); color: var(--cream); cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+  .pack:hover { border-color: var(--gold); }
+  .pack.best { border-color: var(--gold); background: linear-gradient(120deg, rgba(232,40,63,0.16), var(--panel-2)); padding-top: 22px; }
+  .pack-tag { position: absolute; top: -10px; left: 14px; background: var(--gold); color: #fff; font-size: 0.64rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+  .pack-credits { font-weight: 800; font-size: 1.05rem; }
+  .pack-price { grid-row: span 2; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.35rem; font-weight: 800; color: var(--gold); }
+  .pack-unit { font-size: 0.74rem; color: var(--cream-dim); }
+
+  /* Ventana de entrar / crear cuenta gratis: sin precios */
+  #paywall.login-mode .sub-part { display: none !important; }
+  #paywall:not(.login-mode) .login-only { display: none !important; }
+  .login-label { margin-top: 16px; }
+  #paywall.login-mode .login-label { margin-top: 12px; }
+  #paywall.login-mode #restoreBtn { background: linear-gradient(100deg, var(--gold), #FF6B5B); color: #fff; border: none; font-weight: 800; }
+  .free-note { background: var(--ok-soft); color: var(--cream); border: 1px solid rgba(61,220,122,0.35); border-radius: 12px; padding: 11px 13px; font-size: 0.88rem; line-height: 1.4; }
+  #restoreHint { font-size: 0.82rem; color: var(--cream-dim); line-height: 1.4; margin-top: 12px !important; }
+  .see-plans { color: var(--cream-dim); font-weight: 600; font-size: 0.8rem; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -695,12 +752,13 @@
     <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
     <div class="panel-hint">Toca una carta para elegirla — puedes cambiarla cuando quieras</div>
     <div class="quick-fill">
-      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano <span class="pro-badge" id="storyProBadge">PRO</span><small>Díctala o escríbela como se la contarías a un amigo: la rellenamos por ti</small></button>
+      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano <span class="pro-badge" id="storyProBadge">PRO</span><small>Díctala o escríbela como se la contarías a un amigo: la rellenamos por ti · 1 crédito</small></button>
       <button type="button" class="quick-btn" id="importBtn">📋 Importar historial <span class="pro-badge" id="importProBadge">PRO</span><small>PokerStars · GGPoker</small></button>
-      <label class="quick-btn" for="screenshotInput" id="uploadBox">📸 Desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub">Cartas, bote, apuesta y posiciones</small>
+      <label class="quick-btn" for="screenshotInput" id="uploadBox">📸 Desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub">1 crédito · cartas, bote, apuesta y posiciones</small>
         <input type="file" id="screenshotInput" accept="image/*" hidden>
       </label>
     </div>
+    <div class="shared-banner" id="sharedBanner" style="display:none;"></div>
     <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
     <div class="table-grid">
       <div>
@@ -904,7 +962,9 @@
     </div>
 
     <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
-    <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:14px;">📋 Copiar resumen de la mano</button>
+    <div class="trial-nudge" id="trialNudge" style="display:none;">🎁 <b>¿Te ha servido?</b> Crea tu cuenta gratis (solo tu email) y tendrás <b>5 análisis más</b>. <button type="button" class="btn-primary" id="trialSignup">Crear cuenta gratis</button></div>
+    <button class="btn-primary" id="shareBtn" style="width:100%; margin-top:14px;">📤 Compartir esta mano</button>
+    <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:10px;">📋 Copiar resumen de la mano</button>
     <button type="button" class="link-btn" id="feedbackBtn">👎 ¿Te parece raro este consejo? Avísanos</button>
   </section>
 
@@ -928,25 +988,47 @@
     <b>RÍO</b>
     <button type="button" class="sidebar-close" id="closeSidebar" aria-label="Cerrar menú">&times;</button>
   </div>
-  <div class="hint" id="sidebarProfile" style="margin-bottom:14px;"></div>
-  <div class="account-line" id="sidebarAccount" style="margin:-8px 0 14px;"></div>
-  <div class="sidebar-nav">
-    <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span> Analizador</button>
-    <button type="button" class="sidebar-link" id="navStory"><span class="ic">🎙️</span> Cuéntame tu mano <span class="pro-badge">PRO</span></button>
-    <button type="button" class="sidebar-link" id="navTrain"><span class="ic">🎯</span> Entrenamiento</button>
-    <button type="button" class="sidebar-link" id="navCharts"><span class="ic">📊</span> Tablas de manos</button>
-    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span> Tus estadísticas</button>
-    <button type="button" class="sidebar-link" id="navImport"><span class="ic">📋</span> Importar historial <span class="pro-badge">PRO</span></button>
-    <button type="button" class="sidebar-link" id="navInstall"><span class="ic">📲</span> Instalar en el móvil</button>
-    <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span> Iniciar sesión</button>
-    <button type="button" class="sidebar-link" id="navManage" style="display:none;"><span class="ic">💳</span> Gestionar suscripción</button>
-    <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span> Glosario de póker</button>
-    <button type="button" class="sidebar-link" id="navInbox" style="display:none;"><span class="ic">📥</span> Avisos de usuarios</button>
-    <button type="button" class="sidebar-link" id="navLogout" style="display:none;"><span class="ic">🚪</span> Cerrar sesión</button>
-    <button type="button" class="sidebar-link" id="navPlan"><span class="ic">💎</span> Plan</button>
-    <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span> Configuración</button>
+
+  <div class="acct-card">
+    <div class="acct-top">
+      <div class="acct-avatar" id="acctAvatar">R</div>
+      <div class="acct-info">
+        <div class="acct-name" id="sidebarProfile"></div>
+        <div class="acct-mail" id="sidebarAccount"></div>
+      </div>
+    </div>
+    <div class="sidebar-foot" id="sidebarFoot"></div>
+    <button type="button" class="acct-cta" id="acctCta"></button>
   </div>
-  <div class="sidebar-foot" id="sidebarFoot"></div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section">Analizar</div>
+    <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span><span class="lbl">Analizador</span></button>
+    <button type="button" class="sidebar-link" id="navStory"><span class="ic">🎙️</span><span class="lbl">Cuéntame tu mano</span><span class="pro-badge">PRO</span></button>
+    <button type="button" class="sidebar-link" id="navImport"><span class="ic">📋</span><span class="lbl">Importar historial</span><span class="pro-badge">PRO</span></button>
+
+    <div class="nav-section">Aprender</div>
+    <button type="button" class="sidebar-link" id="navTrain"><span class="ic">🎯</span><span class="lbl">Entrenamiento</span><span class="free-badge">GRATIS</span></button>
+    <button type="button" class="sidebar-link" id="navCharts"><span class="ic">📊</span><span class="lbl">Tablas de manos</span></button>
+    <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span><span class="lbl">Glosario de póker</span></button>
+
+    <div class="nav-section">Tu progreso</div>
+    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span><span class="lbl">Tus estadísticas</span></button>
+
+    <div class="nav-section">Cuenta</div>
+    <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span><span class="lbl">Entrar o crear cuenta</span></button>
+    <button type="button" class="sidebar-link" id="navManage" style="display:none;"><span class="ic">💳</span><span class="lbl">Gestionar suscripción</span></button>
+    <button type="button" class="sidebar-link" id="navPlan"><span class="ic">💎</span><span class="lbl">Planes y precios</span></button>
+    <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span><span class="lbl">Configuración</span></button>
+    <button type="button" class="sidebar-link" id="navInstall"><span class="ic">📲</span><span class="lbl">Instalar en el móvil</span></button>
+    <button type="button" class="sidebar-link" id="navInbox" style="display:none;"><span class="ic">📥</span><span class="lbl">Avisos de usuarios</span><span class="admin-badge">ADMIN</span></button>
+    <button type="button" class="sidebar-link logout" id="navLogout" style="display:none;"><span class="ic">🚪</span><span class="lbl">Cerrar sesión</span></button>
+  </div>
+
+  <div class="sidebar-legal">
+    <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a><br>
+    <span class="age-badge">+18</span> RÍO v1.3
+  </div>
 </nav>
 
 <div class="overlay" id="settingsPanel">
@@ -1021,26 +1103,27 @@
         <h4>Free</h4>
         <div class="plan-card-price"><span>0€</span></div>
         <ul class="plan-card-features">
-          <li>5 análisis de mano gratis</li>
+          <li>1 análisis de prueba + 5 con tu cuenta gratis</li>
+          <li>Entrenamiento y tablas de manos</li>
           <li>1 mano guardada en el historial</li>
-          <li>Sin lectura automática de fotos</li>
+          <li>Sin funciones de IA (capturas, Cuéntame tu mano)</li>
         </ul>
       </div>
 
       <div class="plan-card pro" id="proPlanCard">
         <div class="plan-card-badge" id="proPlanBadge" style="display:none;">Tu plan actual</div>
         <h4>RÍO PRO</h4>
-        <div class="plan-card-price"><span>4,99€</span><small>/ mes</small></div>
+        <div class="plan-card-price"><span>9,99€</span><small>/ mes</small></div>
         <ul class="plan-card-features">
-          <li>Análisis de mano ilimitados</li>
-          <li>Historial completo</li>
-          <li>Hasta 150 capturas o manos contadas al mes</li>
+          <li>Análisis de manos ilimitados</li>
+          <li>200 créditos de IA al mes (1 captura o 1 mano contada = 1 crédito)</li>
+          <li>Historial completo y estadísticas en tu cuenta</li>
           <li>Importar historiales de PokerStars y GGPoker</li>
           <li>Cuéntame tu mano: díctala y la rellenamos</li>
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
-        <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 4,99€</button>
-        <button class="btn-secondary" id="buyCreditsSettingsBtn" style="width:100%; margin-top:10px; display:none;">Comprar 50 fotos más</button>
+        <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 9,99€</button>
+        <button class="btn-secondary" id="buyCreditsSettingsBtn" style="width:100%; margin-top:10px; display:none;">Comprar más créditos</button>
         <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:10px; display:none;">💳 Gestionar suscripción</button>
         <div class="hint" id="manageSubHint" style="display:none; margin-top:6px;">Cancelar, cambiar la tarjeta o descargar tus facturas.</div>
         <div id="manageSubMsg" class="restore-msg"></div>
@@ -1079,16 +1162,17 @@
       <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
     </div>
     <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.</p>
-    <ul class="paywall-features">
+    <ul class="paywall-features sub-part">
       <li>♠ Análisis de manos ilimitados</li>
-      <li>♥ Historial completo de tus últimas manos</li>
+      <li>♥ 200 créditos de IA al mes para capturas y manos contadas</li>
       <li>♦ Consejo por posición en cada calle</li>
       <li>♣ Cuéntale tu mano por voz o importa tus historiales</li>
     </ul>
-    <div class="paywall-price"><span>4,99&nbsp;€</span><small>/ mes</small></div>
-    <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 4,99€</button>
+    <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
+    <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%;">Suscribirme por 9,99€</button>
     <div class="restore-box" id="restoreBox">
-      <div class="settings-label" style="margin-top:16px;">🔑 Entra o crea tu cuenta gratis</div>
+      <div class="free-note login-only">✅ Crear tu cuenta es <b>gratis</b>. No te pedimos tarjeta ni ningún pago.</div>
+      <div class="settings-label login-label sub-part">🔑 ¿Ya tienes cuenta? Entra</div>
       <div class="hint" style="margin-top:2px;" id="restoreHint">Escribe tu email y te enviamos un código para entrar. Si aún no tienes cuenta, se crea gratis:</div>
       <input type="email" id="proEmail" placeholder="tu@email.com" autocomplete="email" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
       <input type="text" id="proCode" placeholder="Código de 6 dígitos" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="display:none; width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px; letter-spacing:0.3em; text-align:center;">
@@ -1096,25 +1180,25 @@
       <div id="restoreMsg" class="restore-msg"></div>
       <p class="paywall-fine">Al crear tu cuenta aceptas la <a href="/legal.html#privacidad" target="_blank">política de privacidad</a>. Debes ser mayor de 18 años.</p>
     </div>
-    <p class="paywall-fine">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Cancela cuando quieras desde "Gestionar suscripción".</p>
+    <p class="paywall-fine sub-part">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Cancela cuando quieras desde "Gestionar suscripción".</p>
+    <button type="button" class="link-btn login-only see-plans" id="seePlansLink">¿Quieres RÍO PRO? Ver planes (opcional)</button>
   </div>
 </div>
 
 <div class="overlay" id="creditsModal">
   <div class="picker paywall-card">
     <div class="picker-head">
-      <h3>Se acabaron tus fotos de este mes</h3>
+      <h3 id="creditsTitle">Packs de créditos</h3>
       <button type="button" id="closeCreditsModal" aria-label="Cerrar">&times;</button>
     </div>
-    <p class="paywall-copy">RÍO PRO incluye <b>150 capturas de manos al mes</b>. Ya las has usado todas — puedes comprar un paquete extra para seguir.</p>
-    <div class="paywall-price"><span>2,99&nbsp;€</span><small>/ 50 fotos</small></div>
-    <button class="btn-primary" id="buyCreditsBtn" style="width:100%;">Comprar 50 fotos más</button>
+    <p class="paywall-copy" id="creditsCopy"></p>
+    <div class="packs" id="packList"></div>
     <div class="restore-box">
-      <div class="hint" style="margin-top:14px;">Después de pagar, vuelve aquí y pulsa:</div>
-      <button class="btn-secondary" id="redeemCreditsBtn" style="width:100%; margin-top:10px;">Ya las compré, actualizar créditos</button>
+      <div class="hint" style="margin-top:14px;">Los créditos se suman solos al pagar. Si no los ves, pulsa:</div>
+      <button class="btn-secondary" id="redeemCreditsBtn" style="width:100%; margin-top:10px;">Ya los compré, actualizar créditos</button>
       <div id="redeemMsg" class="restore-msg"></div>
     </div>
-    <p class="paywall-fine">Los créditos comprados no caducan y se suman a tu cuenta en cuanto los confirmamos con Stripe.</p>
+    <p class="paywall-fine">1 captura o 1 mano contada = 1 crédito. Los créditos comprados no caducan. Al comprar aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones</a>.</p>
   </div>
 </div>
 
@@ -1131,9 +1215,22 @@
   const SLOT_ORDER = [{zone:'hole',idx:0},{zone:'hole',idx:1},{zone:'board',idx:0},{zone:'board',idx:1},{zone:'board',idx:2},{zone:'board',idx:3},{zone:'board',idx:4}];
 
   const FREE_LIMIT = 5;
-  const PHOTOS_INCLUDED = 150;
-  const PAYMENT_LINK = 'https://buy.stripe.com/00wfZj2Rh17SaCp1m09IQ00'; // tu Payment Link real de Stripe
-  const CREDIT_PACK_LINK = 'https://buy.stripe.com/dRmfZjbnN2bWfWJ4yc9IQ01'; // Payment Link del pago único "50 fotos extra"
+  const MONTHLY_CREDITS = 200;           // créditos de IA incluidos en PRO cada mes (igual que lib/quota.js)
+  const PHOTOS_INCLUDED = MONTHLY_CREDITS;
+  const PRO_PRICE_LABEL = '9,99 €';
+  const PAYMENT_LINK = 'https://buy.stripe.com/7sYaEZ8bB2bW8uh7Ko9IQ02'; // RÍO PRO · 9,99 €/mes
+  const CREDIT_PACK_LINK = 'https://buy.stripe.com/dRmfZjbnN2bWfWJ4yc9IQ01'; // pack antiguo (50 créditos · 2,99 €)
+  // Packs de créditos (pago único). Pega aquí el Payment Link de cada uno; los
+  // que no tengan enlace no se muestran. Sin ninguno, se ofrece el pack antiguo.
+  const CREDIT_PACKS_UI = [
+    { credits: 100,  price: '2,99 €',  unit: '3 cént. por crédito',   link: 'https://buy.stripe.com/8x2aEZbnN17SaCp5Cg9IQ03' },
+    { credits: 300,  price: '6,99 €',  unit: '2,3 cént. por crédito', link: 'https://buy.stripe.com/aFa8wR8bB9Eoh0Nd4I9IQ04', best: true },
+    { credits: 1000, price: '17,99 €', unit: '1,8 cént. por crédito', link: 'https://buy.stripe.com/eVq6oJ1Nd7wg25Tc0E9IQ05' }
+  ];
+  function activePacks(){
+    const packs = CREDIT_PACKS_UI.filter(pk => pk.link);
+    return packs.length ? packs : [{ credits: 50, price: '2,99 €', unit: '6 cént. por crédito', link: CREDIT_PACK_LINK }];
+  }
   const API_ENDPOINT = '/api/check-pro'; // ruta relativa: funciona sola una vez desplegado en Vercel junto a la carpeta /api
 
   function storageGet(key, fallback){
@@ -1182,9 +1279,18 @@
     const pro = isPro();
     const sidebarFootEl = document.getElementById('sidebarFoot');
     if (sidebarFootEl){
-      sidebarFootEl.innerHTML = pro
-        ? `<span class="pro-pill">★ RÍO PRO</span><br>${photoUsage.used}/${photoUsage.limit} fotos este mes${photoUsage.extra > 0 ? ' + ' + photoUsage.extra + ' extra' : ''}`
-        : `<span class="pro-pill" style="background:var(--panel-2);color:var(--cream-dim);">PLAN GRATIS</span><br>${storageGet('rio_token', '') ? freeLeft() + ' análisis gratis restantes' : 'Crea tu cuenta gratis para analizar'}`;
+      const bar = (used, total) => `<div class="usage-bar"><i style="width:${Math.min(100, Math.round(used / Math.max(1, total) * 100))}%"></i></div>`;
+      if (pro){
+        sidebarFootEl.innerHTML = `<div class="plan-line"><span class="pro-pill">★ RÍO PRO</span><span>Análisis ilimitados</span></div>
+          <div class="usage-text">Créditos de IA: <b>${Math.min(photoUsage.used, photoUsage.limit)}/${photoUsage.limit}</b> este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} comprados` : ''}</div>${bar(photoUsage.used, photoUsage.limit)}`;
+      } else if (storageGet('rio_token', '')){
+        const left = freeLeft();
+        sidebarFootEl.innerHTML = `<div class="plan-line"><span class="pro-pill free">PLAN GRATIS</span></div>
+          <div class="usage-text">Te quedan <b>${left} de ${FREE_LIMIT}</b> análisis gratis</div>${bar(FREE_LIMIT - left, FREE_LIMIT)}`;
+      } else {
+        sidebarFootEl.innerHTML = `<div class="plan-line"><span class="pro-pill free">SIN CUENTA</span></div>
+          <div class="usage-text">${storageGet('rio_anon_used', false) ? 'Ya usaste tu análisis de prueba. Crea tu cuenta gratis para 5 más.' : 'Tienes <b>1 análisis de prueba</b>; con cuenta gratis, 5 más.'}</div>`;
+      }
     }
     const freeBadge = document.getElementById('freePlanBadge');
     const proBadge = document.getElementById('proPlanBadge');
@@ -1203,8 +1309,8 @@
     if (photoBox){
       const left = Math.max(0, photoUsage.limit - photoUsage.used);
       photoBox.textContent = pro
-        ? `${left} de ${photoUsage.limit} fotos incluidas restantes este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} fotos extra compradas` : ''}`
-        : 'Incluye hasta 150 capturas de manos analizadas automáticamente al mes.';
+        ? `Te quedan ${left} de ${photoUsage.limit} créditos este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} créditos comprados` : ''}`
+        : `Incluye ${MONTHLY_CREDITS} créditos de IA al mes: 1 captura o 1 mano contada = 1 crédito.`;
     }
     if (buyBtn) buyBtn.style.display = pro ? 'inline-block' : 'none';
     updateAccountUI();
@@ -1216,11 +1322,17 @@
     const canManage = logged && isPro();
     document.getElementById('navLogin').style.display = logged ? 'none' : '';
     document.getElementById('navLogout').style.display = logged ? '' : 'none';
-    document.getElementById('navManage').style.display = canManage ? '' : 'none';
+    // "Gestionar suscripción" ya está en el botón de la tarjeta de cuenta.
+    document.getElementById('navManage').style.display = 'none';
+    document.querySelectorAll('.sidebar-link .pro-badge').forEach(el => { el.style.display = isPro() ? 'none' : ''; });
     document.getElementById('navInbox').style.display = logged && storageGet('rio_admin', false) ? '' : 'none';
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
-    document.getElementById('sidebarAccount').textContent = logged ? '✉️ ' + storageGet('rio_email', '') : '';
+    document.getElementById('sidebarAccount').textContent = logged ? storageGet('rio_email', '') : 'Sin cuenta · tus datos solo en este navegador';
+    const cta = document.getElementById('acctCta');
+    if (!logged){ cta.textContent = 'Entrar o crear cuenta gratis'; cta.dataset.go = 'login'; cta.className = 'acct-cta'; }
+    else if (!isPro()){ cta.textContent = `⭐ Hazte PRO · ${PRO_PRICE_LABEL}/mes`; cta.dataset.go = 'plans'; cta.className = 'acct-cta gold'; }
+    else { cta.textContent = '💳 Gestionar suscripción'; cta.dataset.go = 'manage'; cta.className = 'acct-cta ghost'; }
   }
   async function openBillingPortal(){
     const msg = document.getElementById('manageSubMsg');
@@ -1259,7 +1371,8 @@
   }
   function updateProfileUI(){
     const p = getProfile();
-    document.getElementById('sidebarProfile').textContent = '👤 ' + p.name;
+    document.getElementById('sidebarProfile').textContent = p.name;
+    document.getElementById('acctAvatar').textContent = (p.name.trim()[0] || 'R').toUpperCase();
     const nameInput = document.getElementById('profileNameInput');
     if (nameInput) nameInput.value = p.name;
   }
@@ -1899,7 +2012,7 @@
     const tabs = document.getElementById('seqTabs');
     tabs.innerHTML = STREET_NAMES.map((n, s) => {
       const count = seq[s].length;
-      return `<button type="button" data-s="${s}" class="${s === seqStreet ? 'active' : ''}" ${s >= avail ? 'disabled title="Añade primero las cartas de esta calle"' : ''}>${n}<small>${s >= avail ? 'sin cartas' : count ? count + ' acción' + (count > 1 ? 'es' : '') : '—'}</small></button>`;
+      return `<button type="button" data-s="${s}" class="${s === seqStreet ? 'active' : ''}" ${s >= avail ? 'disabled title="Añade primero las cartas de esta calle"' : ''}>${n}<small>${s >= avail ? 'sin cartas' : count ? (count === 1 ? '1 acción' : count + ' acciones') : '—'}</small></button>`;
     }).join('');
     tabs.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { seqStreet = Number(b.dataset.s); seqActor = null; seqPending = null; renderSeq(); }));
 
@@ -2525,7 +2638,7 @@
         <li>Indica <b>tu posición</b> y cómo juega tu rival.</li>
         <li>Apunta <b>las apuestas</b> y pulsa <b>Analizar</b>.</li>
       </ol>
-      <p class="hint" style="margin:-6px 0 14px;">Tienes <b>5 análisis gratis</b> con una cuenta gratuita (solo tu email). El entrenamiento y las tablas son gratis siempre.</p>
+      <p class="hint" style="margin:-6px 0 14px;">Prueba <b>1 análisis sin registrarte</b> y consigue <b>5 más</b> con una cuenta gratis (solo tu email). El entrenamiento y las tablas son gratis siempre.</p>
       <div style="display:grid; gap:8px;">
         <button type="button" class="btn-primary" data-welcome="facil">🙂 Soy nuevo en el póker</button>
         <button type="button" class="btn-secondary" data-welcome="pro">😎 Ya juego: quiero el modo Pro</button>
@@ -2569,7 +2682,7 @@
            : '<p class="hint">Para dictar, pulsa el micrófono del teclado de tu móvil.</p>'}
       <button type="button" class="btn-primary" id="storyGo" style="width:100%; margin-top:10px;">Rellenar la mano</button>
       <div id="storyMsg" class="restore-msg"></div>
-      <p class="hint" style="margin-top:8px;">Gasta 1 uso de tu cupo mensual, el mismo que las fotos.</p>`);
+      <p class="hint" style="margin-top:8px;">Gasta <b>1 crédito</b> de IA.</p>`);
     const ta = body.querySelector('#storyText');
     const msg = body.querySelector('#storyMsg');
     const mic = body.querySelector('#storyMic');
@@ -2611,7 +2724,7 @@
         let data = {}; try { data = await r.json(); } catch (e) {}
         if (r.status === 401){ logoutPro(); updateUsageBadge(); closeModal(); openPaywall('login'); return; }
         if (r.status === 402){ closeModal(); openPaywall('plans'); return; }
-        if (r.status === 403 && data.error === 'LIMIT_REACHED'){ closeModal(); openCreditsModal(); return; }
+        if (r.status === 403 && data.error === 'LIMIT_REACHED'){ closeModal(); openCreditsModal(true); return; }
         if (!r.ok) throw new Error(data.error || 'No se pudo entender la mano.');
         const notes = applyStory(data);
         closeModal();
@@ -2773,6 +2886,104 @@
   }
   document.getElementById('navInbox').addEventListener('click', openInbox);
 
+  // ---- Compartir una mano por enlace ----
+  // Toda la mano va dentro del propio enlace (#m=…), así no hace falta guardar
+  // nada en el servidor. Quien lo abre ve el análisis sin cuenta y sin gastar
+  // sus análisis gratis: es la forma de que RÍO llegue a gente nueva.
+  var lastHandLabel = '';
+  var freeRun = false;
+  const TYPE_CH = { check: 'x', bet: 'b', call: 'c', raise: 'r', fold: 'f' };
+  const CH_TYPE = { x: 'check', b: 'bet', c: 'call', r: 'raise', f: 'fold' };
+  const cardTok = (c) => c ? RANK_CHARS[14 - c.rank] + c.suit : '-';
+  function parseTokens(str){
+    const out = [];
+    for (let i = 0; i < str.length;){
+      if (str[i] === '-'){ out.push(null); i++; continue; }
+      out.push(parseCardToken(str.slice(i, i + 2))); i += 2;
+    }
+    return out;
+  }
+  const b64url = (str) => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const unb64url = (str) => decodeURIComponent(escape(atob(str.replace(/-/g, '+').replace(/_/g, '/'))));
+  function encodeHand(){
+    const o = {
+      v: 1, h: hole.map(cardTok).join(''), b: board.map(cardTok).join(''),
+      hp: document.getElementById('heroPosInput').value, vp: document.getElementById('villPosInput').value,
+      r: numRivals, bb: bbSize(),
+      q: seq.map(st => st.map(a => (a.who === 'hero' ? 'h' : 'v') + TYPE_CH[a.type] + (a.to != null ? a.to : '')).join(',')),
+      p: Number(document.getElementById('potInput').value) || 0, c: Number(document.getElementById('callInput').value) || 0,
+      s: Number(document.getElementById('stackInput').value) || 0, vs: Number(document.getElementById('villStackInput').value) || 0,
+      g: storageGet('rio_game', 'cash') === 'torneo' ? 1 : 0, bf: bluffFrac(), st: selStreet,
+      rg: villRange.custom ? [...villRange.set].join('.') : Math.round(villRange.pct)
+    };
+    return b64url(JSON.stringify(o));
+  }
+  function shareUrl(){ return `${location.origin}/#m=${encodeHand()}`; }
+
+  function loadSharedHand(){
+    const m = location.hash.match(/^#m=([A-Za-z0-9_-]+)$/);
+    if (!m) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    let o;
+    try { o = JSON.parse(unb64url(m[1])); } catch(e){ return; }
+    if (!o || o.v !== 1) return;
+    const hc = parseTokens(String(o.h || '')), bc = parseTokens(String(o.b || ''));
+    if (!hc[0] || !hc[1]) return;
+    hole = [hc[0], hc[1]]; board = [0, 1, 2, 3, 4].map(i => bc[i] || null);
+    if (VALID_POS.includes(o.hp)) document.getElementById('heroPosInput').value = o.hp;
+    if (VALID_POS.includes(o.vp)) document.getElementById('villPosInput').value = o.vp;
+    numRivals = Math.max(1, Math.min(9, Number(o.r) || 1)); rivVal.textContent = numRivals;
+    if (Number(o.bb) > 0) document.getElementById('bbInput').value = Number(o.bb);
+    seq = [0, 1, 2, 3].map(i => String((o.q || [])[i] || '').split(',').filter(Boolean).map(t => {
+      const a = { who: t[0] === 'h' ? 'hero' : 'vill', type: CH_TYPE[t[1]] };
+      if (t.length > 2) a.to = Number(t.slice(2));
+      return a;
+    }).filter(a => a.type));
+    document.getElementById('potInput').value = o.p || '';
+    document.getElementById('callInput').value = o.c || '';
+    document.getElementById('stackInput').value = o.s || '';
+    document.getElementById('villStackInput').value = o.vs || '';
+    // Rango y ajustes de la mano compartida, sin tocar los guardados de quien la abre.
+    if (typeof o.rg === 'string'){ const set = new Set(o.rg.split('.').filter(n => HAND_RANKING.includes(n))); villRange = { set, pct: rangePct(set), custom: true }; }
+    else if (Number(o.rg) > 0){ const pct = Math.max(2, Math.min(100, Number(o.rg))); villRange = { set: topRange(pct), pct, custom: false }; }
+    if ([0.03, 0.1, 0.2].includes(o.bf)) document.getElementById('bluffSelect').value = String(o.bf);
+    document.body.classList.toggle('tourney', o.g === 1);
+    document.querySelectorAll('#gameType [data-game]').forEach(b => b.classList.toggle('active', b.dataset.game === (o.g === 1 ? 'torneo' : 'cash')));
+    selStreet = Number.isInteger(o.st) ? o.st : null;
+    seqStreet = Math.max(0, cardStreets() - 1); seqActor = null; seqPending = null;
+    if (seq.some(x => x.length)) document.getElementById('seqBox').open = true;
+    updateOrderHint(); render(); renderRangeUI();
+    const banner = document.getElementById('sharedBanner');
+    banner.innerHTML = '👀 <b>Te han compartido esta mano.</b> Abajo tienes el análisis de RÍO. ¿Tú qué habrías hecho?' +
+      (storageGet('rio_token', '') ? '' : ' <a class="inline-link" id="sharedSignup">Crea tu cuenta gratis</a> para analizar las tuyas.');
+    banner.style.display = 'block';
+    const su = document.getElementById('sharedSignup');
+    if (su) su.addEventListener('click', () => openPaywall('free'));
+    freeRun = true;
+    setTimeout(() => analyzeBtn.click(), 300);
+  }
+
+  async function shareHand(){
+    const url = shareUrl();
+    const text = `¿Tú qué harías con ${lastHandLabel || 'esta mano'}? Mírala en RÍO:`;
+    const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    if (navigator.share && touch){
+      try { await navigator.share({ title: 'RÍO — mano de póker', text, url }); return; } catch(e){ if (e && e.name === 'AbortError') return; }
+    }
+    const body = openModal('📤 Compartir esta mano', `
+      <p style="margin-top:0;">Quien abra el enlace verá la mano con el análisis, <b>sin registrarse</b>.</p>
+      <a class="btn-primary share-wa" href="https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}" target="_blank" rel="noopener">💬 Enviar por WhatsApp</a>
+      <button type="button" class="btn-secondary" id="shareCopy" style="width:100%; margin-top:10px;">🔗 Copiar enlace</button>
+      <div id="shareMsg" class="restore-msg"></div>`);
+    body.querySelector('#shareCopy').addEventListener('click', async () => {
+      const msg = body.querySelector('#shareMsg');
+      try { await navigator.clipboard.writeText(url); msg.className = 'restore-msg ok'; msg.textContent = '¡Enlace copiado!'; }
+      catch(e){ msg.className = 'restore-msg'; msg.textContent = url; }
+    });
+  }
+  document.getElementById('shareBtn').addEventListener('click', shareHand);
+  document.getElementById('trialSignup').addEventListener('click', () => openPaywall('free'));
+
   const rivVal = document.getElementById('rivVal');
   document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
   document.getElementById('rivPlus').addEventListener('click', ()=>{ numRivals = Math.min(9, numRivals+1); rivVal.textContent = numRivals; });
@@ -2790,7 +3001,9 @@
   function updateUsageBadge(){
     if (isPro()){ usageRow.innerHTML = '<span class="pro-tag">★ RÍO PRO — análisis ilimitados</span>'; }
     else if (!storageGet('rio_token', '')){
-      usageRow.innerHTML = `${FREE_LIMIT} análisis gratis con tu cuenta gratuita · <a class="inline-link" id="createFreeLink">crear cuenta</a>`;
+      usageRow.innerHTML = storageGet('rio_anon_used', false)
+        ? `Ya usaste tu análisis de prueba · <a class="inline-link" id="createFreeLink">crea tu cuenta gratis</a> y tendrás ${FREE_LIMIT} más`
+        : `1 análisis de prueba sin registrarte · luego ${FREE_LIMIT} más con tu <a class="inline-link" id="createFreeLink">cuenta gratis</a>`;
       document.getElementById('createFreeLink').addEventListener('click', () => openPaywall('free'));
     }
     else {
@@ -2808,7 +3021,7 @@
     const pro = isPro();
     uploadBox.classList.toggle('locked', !pro);
     uploadProBadge.style.display = pro ? 'none' : 'inline-block';
-    document.getElementById('uploadSub').textContent = 'Cartas, bote, apuesta y posiciones';
+    document.getElementById('uploadSub').textContent = '1 crédito · cartas, bote, apuesta y posiciones';
     document.getElementById('importProBadge').style.display = pro ? 'none' : 'inline-block';
     document.getElementById('storyProBadge').style.display = pro ? 'none' : 'inline-block';
   }
@@ -2839,11 +3052,11 @@
 
   function openPaywall(mode){
     if (mode === 'login'){
-      document.getElementById('paywallTitle').textContent = 'Entra en tu cuenta';
+      document.getElementById('paywallTitle').textContent = 'Entra o crea tu cuenta gratis';
       document.getElementById('paywallCopy').innerHTML = 'Escribe tu email para entrar <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código. Tus manos y estadísticas se guardan en tu cuenta.';
     } else if (mode === 'free'){
       document.getElementById('paywallTitle').textContent = 'Crea tu cuenta gratis';
-      document.getElementById('paywallCopy').innerHTML = 'Para usar tus <b>5 análisis gratis</b> solo necesitas una cuenta: tu email y un código, sin contraseña. Así tus manos y estadísticas se guardan aunque cambies de móvil.';
+      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tu análisis de prueba. Crea tu cuenta gratis y tendrás <b>5 análisis más</b>: solo tu email y un código, sin contraseña. Así tus manos y estadísticas se guardan aunque cambies de móvil.';
     } else if (mode === 'plans'){
       document.getElementById('paywallTitle').textContent = 'RÍO PRO';
       document.getElementById('paywallCopy').innerHTML = 'Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos. ¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
@@ -2851,6 +3064,8 @@
       document.getElementById('paywallTitle').textContent = 'Has agotado tus análisis gratis';
       document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.';
     }
+    // Entrar o crear la cuenta gratis: sin precios, para que no parezca un pago.
+    paywall.classList.toggle('login-mode', mode === 'login' || mode === 'free');
     paywall.classList.add('show');
     if (mode === 'login' || mode === 'free'){
       setTimeout(() => {
@@ -2861,14 +3076,29 @@
   }
   function closePaywall(){ paywall.classList.remove('show'); pendingAnalyze = false; }
   document.getElementById('closePaywall').addEventListener('click', closePaywall);
+  document.getElementById('seePlansLink').addEventListener('click', () => openPaywall('plans'));
   paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
 
   const creditsModal = document.getElementById('creditsModal');
-  function openCreditsModal(){ creditsModal.classList.add('show'); }
+  // Si "out" es true, es porque se ha quedado sin créditos; si no, solo quiere ver los packs.
+  function openCreditsModal(out){
+    document.getElementById('creditsTitle').textContent = out ? 'Te has quedado sin créditos' : 'Packs de créditos';
+    document.getElementById('creditsCopy').innerHTML = (out ? 'Ya has gastado los créditos de este mes. ' : '') +
+      `RÍO PRO incluye <b>${MONTHLY_CREDITS} créditos de IA al mes</b>. Si necesitas más, compra un pack: los análisis de manos siguen siendo <b>ilimitados</b>.`;
+    const packs = activePacks();
+    document.getElementById('packList').innerHTML = packs.map((pk, i) => `
+      <button type="button" class="pack ${pk.best ? 'best' : ''}" data-pack="${i}">
+        ${pk.best ? '<span class="pack-tag">⭐ El más popular</span>' : ''}
+        <span class="pack-credits">${pk.credits.toLocaleString('es-ES')} créditos</span>
+        <span class="pack-price">${pk.price}</span>
+        <span class="pack-unit">${pk.unit}</span>
+      </button>`).join('');
+    document.querySelectorAll('#packList [data-pack]').forEach(b => b.addEventListener('click', () => window.open(packs[Number(b.dataset.pack)].link, '_blank')));
+    creditsModal.classList.add('show');
+  }
   function closeCreditsModal(){ creditsModal.classList.remove('show'); }
   document.getElementById('closeCreditsModal').addEventListener('click', closeCreditsModal);
   creditsModal.addEventListener('click', (e)=>{ if (e.target === creditsModal) closeCreditsModal(); });
-  document.getElementById('buyCreditsBtn').addEventListener('click', () => { window.open(CREDIT_PACK_LINK, '_blank'); });
   document.getElementById('redeemCreditsBtn').addEventListener('click', async () => {
     const msg = document.getElementById('redeemMsg');
     const btn = document.getElementById('redeemCreditsBtn');
@@ -2878,10 +3108,10 @@
     try {
       const r = await fetch('/api/redeem-credits', { headers: authHeaders() });
       const data = await r.json();
-      btn.disabled = false; btn.textContent = 'Ya las compré, actualizar créditos';
+      btn.disabled = false; btn.textContent = 'Ya los compré, actualizar créditos';
       if (!r.ok || data.error){ throw new Error(data.error || 'No se pudo comprobar la compra'); }
       if (data.added > 0){
-        msg.textContent = `¡Añadidas ${data.added} fotos! Saldo extra: ${data.balance}.`;
+        msg.textContent = `¡Añadidos ${data.added} créditos! Créditos extra: ${data.balance}.`;
         msg.className = 'restore-msg ok';
         refreshPhotoUsage();
         setTimeout(closeCreditsModal, 1400);
@@ -2890,7 +3120,7 @@
         msg.className = 'restore-msg no';
       }
     } catch(e){
-      btn.disabled = false; btn.textContent = 'Ya las compré, actualizar créditos';
+      btn.disabled = false; btn.textContent = 'Ya los compré, actualizar créditos';
       msg.textContent = 'No se pudo comprobar la compra. Inténtalo de nuevo en unos segundos.';
       msg.className = 'restore-msg no';
     }
@@ -2943,11 +3173,18 @@
     closeSidebar(); openPaywall('login');
   });
   document.getElementById('navLogout').addEventListener('click', () => { closeSidebar(); doLogout(); });
+  document.getElementById('acctCta').addEventListener('click', (e) => {
+    const go = e.currentTarget.dataset.go;
+    closeSidebar();
+    if (go === 'login') openPaywall('login');
+    else if (go === 'plans') openPlanPanel();
+    else { openPlanPanel(); openBillingPortal(); }
+  });
   document.getElementById('navManage').addEventListener('click', () => { closeSidebar(); openPlanPanel(); openBillingPortal(); });
   document.getElementById('navGlossary').addEventListener('click', () => { closeSidebar(); openGlossary(); });
   document.getElementById('manageSubBtn').addEventListener('click', openBillingPortal);
   document.getElementById('navSettings').addEventListener('click', () => { closeSidebar(); openSettings(); });
-  document.getElementById('buyCreditsSettingsBtn').addEventListener('click', () => { closeSettings(); openCreditsModal(); });
+  document.getElementById('buyCreditsSettingsBtn').addEventListener('click', () => { closeSettings(); closePlanPanel(); openCreditsModal(false); });
   document.getElementById('closeSettings').addEventListener('click', closeSettings);
   settingsPanel.addEventListener('click', (e)=>{ if (e.target === settingsPanel) closeSettings(); });
 
@@ -3049,8 +3286,8 @@
       if (resp.status === 402){ statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Esta función es solo para suscriptores de RÍO PRO.'; openPaywall(); return; }
       if (resp.status === 403 && data.error === 'LIMIT_REACHED'){
         statusEl.style.color = 'var(--crimson)';
-        statusEl.innerHTML = '📷 Has usado tus 150 fotos incluidas este mes.';
-        openCreditsModal();
+        statusEl.innerHTML = '📷 Has gastado tus créditos de este mes.';
+        openCreditsModal(true);
         return;
       }
       if (!resp.ok || data.error) throw new Error(data.error || `No se pudo analizar la captura (error ${resp.status}).`);
@@ -3197,7 +3434,15 @@
       const idx = board.findIndex(c => !c); if (idx !== -1) openPicker('board', idx);
       return;
     }
-    if (!isPro()){
+    const sharedRun = freeRun; freeRun = false;
+    let trialRun = false;
+    if (!isPro() && !sharedRun && !storageGet('rio_token', '')){
+      // Sin cuenta: 1 análisis de prueba; después, cuenta gratis para 5 más.
+      if (storageGet('rio_anon_used', false)){ openPaywall('free'); pendingAnalyze = true; return; }
+      storageSet('rio_anon_used', true); trialRun = true;
+    }
+    document.getElementById('trialNudge').style.display = trialRun ? 'block' : 'none';
+    if (!isPro() && !sharedRun && !trialRun){
       // Los análisis gratis van ligados a una cuenta y los cuenta el servidor.
       if (!storageGet('rio_token', '')){ openPaywall('free'); pendingAnalyze = true; return; }
       analyzeBtn.disabled = true; analyzeBtn.textContent = 'Comprobando…';
@@ -3248,6 +3493,7 @@
         : rangeLabel().toLowerCase();
       handSub = (handSub ? handSub + ' · ' : '') + `vs ${numRivals} rival${numRivals>1?'es':''} (${rangeText})`;
       document.getElementById('resultHandName').innerHTML = `${handLabel}<small>${handSub}</small>`;
+      lastHandLabel = handLabel;
 
       const badge = document.getElementById('decisionBadge');
       const heroPos = document.getElementById('heroPosInput').value;
@@ -3555,6 +3801,9 @@
   })();
 
   render();
+  loadSharedHand();
+  // Si RÍO ya estaba abierto y se abre otro enlace compartido en la misma pestaña.
+  window.addEventListener('hashchange', loadSharedHand);
 })();
 </script>
 </body>

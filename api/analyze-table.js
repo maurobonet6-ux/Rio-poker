@@ -1,7 +1,7 @@
 // Función serverless de Vercel. Recibe una captura de la mesa (imagen en base64)
 // y le pide a Claude que extraiga mano, board, bote, stacks y posiciones.
 //
-// Solo para suscriptores PRO. Además tiene un límite de 150 fotos/mes incluidas
+// Solo para suscriptores PRO. Gasta 1 crédito de IA (200 al mes incluidos
 // en la suscripción; a partir de ahí consume créditos extra comprados aparte
 // (ver /api/redeem-credits). Todo esto se guarda en Upstash Redis, no en el
 // navegador, para que no se pueda falsear.
@@ -44,20 +44,20 @@ module.exports = async (req, res) => {
     res.status(500).json({ error: 'No se pudo comprobar la suscripción' }); return;
   }
 
-  // --- Límite de 150 usos/mes + créditos extra (ver lib/quota.js) ---
+  // --- 1 crédito de IA (200 al mes incluidos + créditos extra, ver lib/quota.js) ---
   let refundPhoto = async () => {};
   try {
     const charge = await chargeUse(email);
     if (!charge.ok) {
       res.status(403).json({
         error: 'LIMIT_REACHED',
-        message: 'Has usado tus 150 fotos incluidas este mes. Compra más créditos para seguir.'
+        message: 'Has gastado tus créditos de este mes. Compra un pack de créditos para seguir.'
       });
       return;
     }
     refundPhoto = charge.refund;
   } catch (e) {
-    res.status(500).json({ error: 'No se pudo comprobar tu saldo de fotos' }); return;
+    res.status(500).json({ error: 'No se pudo comprobar tus créditos' }); return;
   }
 
   const prompt = `Eres un asistente que lee capturas de pantalla de mesas de póker online (PokerStars, GGPoker, partypoker, apps de móvil, etc.).
