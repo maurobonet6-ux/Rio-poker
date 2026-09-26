@@ -5,12 +5,13 @@ Este proyecto tiene estas partes:
 - `api/send-code.js` y `api/verify-code.js` — inicio de sesión: envían un código de 6 dígitos al email del suscriptor y lo comprueban
 - `api/check-pro.js` — le pregunta a Stripe si el usuario con sesión iniciada tiene suscripción activa
 - `api/analyze-table.js` — lee una captura de la mesa con Claude (solo PRO, 150 fotos/mes + créditos extra)
+- `api/parse-hand.js` — "Cuéntame tu mano": convierte el relato de una mano (escrito o dictado) en cartas, posiciones y apuestas con Claude (solo PRO, gasta del mismo cupo que las fotos)
 - `api/photo-usage.js` — cuántas fotos lleva gastadas el usuario este mes
 - `api/redeem-credits.js` — suma los créditos de fotos extra comprados en Stripe
 - `api/billing-portal.js` — abre el portal de Stripe para que el suscriptor cancele o cambie la tarjeta
 - `api/logout.js` — cierra la sesión
 - `manifest.webmanifest`, `sw.js` e `icons/` — permiten instalar RÍO en el móvil como una app
-- `lib/` — código compartido (Stripe, Redis, sesiones y envío de emails)
+- `lib/` — código compartido (Stripe, Redis, sesiones, cupo de usos de IA y envío de emails)
 - `package.json` — la librería `nodemailer` para enviar emails con Gmail (Vercel la instala sola)
 
 ## Pasos para publicarlo

@@ -10,10 +10,7 @@
 //   ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
 
 const { emailFromRequest, isPro } = require('../lib/auth');
-const { redisCmd } = require('../lib/redis');
-
-const FREE_MONTHLY_PHOTOS = 150;
-const USED_TTL_SECONDS = 60 * 60 * 24 * 40; // 40 días, se autolimpia pasado el mes
+const { chargeUse } = require('../lib/quota');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -46,38 +43,18 @@ module.exports = async (req, res) => {
     res.status(500).json({ error: 'No se pudo comprobar la suscripción' }); return;
   }
 
-  // --- Límite de 150 fotos/mes + créditos extra ---
-  // Primero se descuenta y después se comprueba (INCR/DECR son atómicos en
-  // Redis), así varias fotos enviadas a la vez no pueden pasarse del límite.
-  // Si al final el análisis falla, se devuelve la foto con refundPhoto().
-  const period = new Date().toISOString().slice(0, 7); // "2026-09"
-  const usedKey = `rio:used:${email}:${period}`;
-  const extraKey = `rio:extra:${email}`;
-  let chargedKey = null;
-  const refundPhoto = async () => {
-    if (!chargedKey) return;
-    try { await redisCmd([chargedKey === usedKey ? 'DECR' : 'INCR', chargedKey]); } catch (e) {}
-  };
-
+  // --- Límite de 150 usos/mes + créditos extra (ver lib/quota.js) ---
+  let refundPhoto = async () => {};
   try {
-    const used = await redisCmd(['INCR', usedKey]);
-    await redisCmd(['EXPIRE', usedKey, USED_TTL_SECONDS]);
-    if (used <= FREE_MONTHLY_PHOTOS) {
-      chargedKey = usedKey;
-    } else {
-      await redisCmd(['DECR', usedKey]);
-      const extraLeft = await redisCmd(['DECR', extraKey]);
-      if (extraLeft >= 0) {
-        chargedKey = extraKey;
-      } else {
-        await redisCmd(['INCR', extraKey]);
-        res.status(403).json({
-          error: 'LIMIT_REACHED',
-          message: 'Has usado tus 150 fotos incluidas este mes. Compra más créditos para seguir.'
-        });
-        return;
-      }
+    const charge = await chargeUse(email);
+    if (!charge.ok) {
+      res.status(403).json({
+        error: 'LIMIT_REACHED',
+        message: 'Has usado tus 150 fotos incluidas este mes. Compra más créditos para seguir.'
+      });
+      return;
     }
+    refundPhoto = charge.refund;
   } catch (e) {
     res.status(500).json({ error: 'No se pudo comprobar tu saldo de fotos' }); return;
   }

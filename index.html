@@ -626,6 +626,9 @@
     .board-groups .card-row { gap: 6px; }
   }
   #gameType { grid-template-columns: 1fr 1fr; }
+
+  .story-btn { grid-column: 1 / -1; border-style: solid; border-color: rgba(232,40,63,0.45); background: linear-gradient(100deg, rgba(232,40,63,0.16), var(--panel-2) 70%); font-size: 0.98rem; padding: 14px; }
+  #storyMic.active { border-color: var(--crimson); color: var(--crimson); }
 </style>
 </head>
 <body>
@@ -668,6 +671,7 @@
     <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
     <div class="panel-hint">Toca una carta para elegirla — puedes cambiarla cuando quieras</div>
     <div class="quick-fill">
+      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano <span class="pro-badge" id="storyProBadge">PRO</span><small>Díctala o escríbela como se la contarías a un amigo: la rellenamos por ti</small></button>
       <button type="button" class="quick-btn" id="importBtn">📋 Importar historial <span class="pro-badge" id="importProBadge">PRO</span><small>PokerStars · GGPoker</small></button>
       <label class="quick-btn" for="screenshotInput" id="uploadBox">📸 Desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub">Cartas, bote, apuesta y posiciones</small>
         <input type="file" id="screenshotInput" accept="image/*" hidden>
@@ -897,6 +901,7 @@
   <div class="account-line" id="sidebarAccount" style="margin:-8px 0 14px;"></div>
   <div class="sidebar-nav">
     <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span> Analizador</button>
+    <button type="button" class="sidebar-link" id="navStory"><span class="ic">🎙️</span> Cuéntame tu mano <span class="pro-badge">PRO</span></button>
     <button type="button" class="sidebar-link" id="navTrain"><span class="ic">🎯</span> Entrenamiento</button>
     <button type="button" class="sidebar-link" id="navCharts"><span class="ic">📊</span> Tablas de manos</button>
     <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span> Tus estadísticas</button>
@@ -997,8 +1002,9 @@
         <ul class="plan-card-features">
           <li>Análisis de mano ilimitados</li>
           <li>Historial completo</li>
-          <li>Hasta 150 capturas de manos analizadas al mes</li>
+          <li>Hasta 150 capturas o manos contadas al mes</li>
           <li>Importar historiales de PokerStars y GGPoker</li>
+          <li>Cuéntame tu mano: díctala y la rellenamos</li>
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Suscribirme por 4,99€</button>
@@ -1045,7 +1051,7 @@
       <li>♠ Análisis de manos ilimitados</li>
       <li>♥ Historial completo de tus últimas manos</li>
       <li>♦ Consejo por posición en cada calle</li>
-      <li>♣ Importa tus manos de PokerStars y GGPoker</li>
+      <li>♣ Cuéntale tu mano por voz o importa tus historiales</li>
     </ul>
     <div class="paywall-price"><span>4,99&nbsp;€</span><small>/ mes</small></div>
     <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 4,99€</button>
@@ -2496,6 +2502,118 @@
   document.getElementById('importBtn').addEventListener('click', openImport);
   document.getElementById('trainLink').addEventListener('click', openTrainer);
 
+  // ---- Cuéntame tu mano (texto o voz → mano rellenada) ----
+  const escHTML = (x) => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  let storyRec = null;
+  function stopStoryRec(){ if (storyRec){ try { storyRec.stop(); } catch (e) {} storyRec = null; } }
+  document.getElementById('closeHelp').addEventListener('click', stopStoryRec);
+  helpModal.addEventListener('click', (e) => { if (e.target === helpModal) stopStoryRec(); });
+
+  function openStory(){
+    closeSidebar();
+    if (!isPro()){ openPaywall('plans'); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const body = openModal('🎙️ Cuéntame tu mano', `
+      <p style="margin-top:0;">Cuéntala como se la contarías a un amigo: <b>tus cartas, tu posición, las cartas de la mesa y qué apostó cada uno</b>.</p>
+      <textarea id="storyText" rows="7" placeholder="Ej.: Jugábamos 1/2. Tenía as-rey de picas en el botón y subí a 6. El de la ciega grande pagó. Flop rey de corazones, siete, dos. Él pasó, aposté 8 y pagó. Turn un cuatro, pasamos los dos. River una reina y me apostó 25." style="width:100%; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); padding:12px; font-family:'Space Grotesk',sans-serif; font-size:0.95rem; line-height:1.45;"></textarea>
+      ${SR ? '<button type="button" class="btn-secondary" id="storyMic" style="width:100%; margin-top:10px;">🎙️ Dictar por voz</button>'
+           : '<p class="hint">Para dictar, pulsa el micrófono del teclado de tu móvil.</p>'}
+      <button type="button" class="btn-primary" id="storyGo" style="width:100%; margin-top:10px;">Rellenar la mano</button>
+      <div id="storyMsg" class="restore-msg"></div>
+      <p class="hint" style="margin-top:8px;">Gasta 1 uso de tu cupo mensual, el mismo que las fotos.</p>`);
+    const ta = body.querySelector('#storyText');
+    const msg = body.querySelector('#storyMsg');
+    const mic = body.querySelector('#storyMic');
+    if (mic) mic.addEventListener('click', () => {
+      if (storyRec){ stopStoryRec(); return; }
+      const rec = new SR();
+      rec.lang = 'es-ES'; rec.continuous = true; rec.interimResults = true;
+      const base = ta.value ? ta.value.replace(/\s*$/, ' ') : '';
+      rec.onresult = (ev) => {
+        let finalTxt = '', interim = '';
+        for (let i = 0; i < ev.results.length; i++){
+          if (ev.results[i].isFinal) finalTxt += ev.results[i][0].transcript + ' ';
+          else interim += ev.results[i][0].transcript;
+        }
+        ta.value = (base + finalTxt + interim).replace(/\s+/g, ' ').trimStart();
+      };
+      rec.onerror = (ev) => {
+        msg.className = 'restore-msg no';
+        msg.textContent = ev.error === 'not-allowed' || ev.error === 'service-not-allowed'
+          ? 'Permite el acceso al micrófono en tu navegador para dictar.'
+          : 'No se pudo usar el micrófono. Prueba a escribirla.';
+      };
+      rec.onend = () => { storyRec = null; mic.textContent = '🎙️ Dictar por voz'; mic.classList.remove('active'); };
+      try {
+        rec.start(); storyRec = rec;
+        mic.textContent = '⏹️ Parar el dictado'; mic.classList.add('active');
+        msg.className = 'restore-msg'; msg.textContent = 'Te escucho… cuenta la mano y pulsa "Parar" al terminar.';
+      } catch (e){ msg.className = 'restore-msg no'; msg.textContent = 'No se pudo usar el micrófono. Prueba a escribirla.'; }
+    });
+    body.querySelector('#storyGo').addEventListener('click', async () => {
+      stopStoryRec();
+      const text = ta.value.trim();
+      if (text.length < 15){ msg.className = 'restore-msg no'; msg.textContent = 'Cuéntame un poco más: tus cartas, las de la mesa y qué apostó cada uno.'; return; }
+      const btn = body.querySelector('#storyGo');
+      btn.disabled = true; btn.textContent = 'Entendiendo tu mano…';
+      msg.className = 'restore-msg'; msg.textContent = '';
+      try {
+        const r = await fetch('/api/parse-hand', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ text }) });
+        let data = {}; try { data = await r.json(); } catch (e) {}
+        if (r.status === 401){ logoutPro(); updateUsageBadge(); closeModal(); openPaywall('login'); return; }
+        if (r.status === 402){ closeModal(); openPaywall('plans'); return; }
+        if (r.status === 403 && data.error === 'LIMIT_REACHED'){ closeModal(); openCreditsModal(); return; }
+        if (!r.ok) throw new Error(data.error || 'No se pudo entender la mano.');
+        const notes = applyStory(data);
+        closeModal();
+        const status = document.getElementById('screenshotStatus');
+        status.style.display = 'block'; status.style.color = 'var(--ok)';
+        status.innerHTML = '✅ Mano rellenada a partir de tu relato. Revisa que esté todo bien y pulsa <b>Analizar</b>.' +
+          (notes.length ? `<ul style="text-align:left; color:var(--cream-dim); margin:6px 0 0; padding-left:18px;">${notes.map(n => `<li>${escHTML(n)}</li>`).join('')}</ul>` : '');
+        refreshPhotoUsage();
+        document.getElementById('holeRow').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (e){
+        msg.className = 'restore-msg no'; msg.textContent = e.message || 'No se pudo entender la mano.';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Rellenar la mano';
+      }
+    });
+  }
+
+  // Aplica lo que ha entendido la IA. Devuelve las notas para enseñárselas al usuario.
+  function applyStory(d){
+    const cardsOf = (str) => String(str || '').trim().split(/\s+/).map(parseCardToken).filter(Boolean);
+    const hc = cardsOf(d.heroCards).slice(0, 2);
+    if (hc.length < 2) throw new Error('No he entendido tus dos cartas. Dilas claramente, por ejemplo: "as y rey de picas".');
+    const bc = cardsOf(d.board).slice(0, 5);
+    const keys = [...hc, ...bc].map(cardKey);
+    if (new Set(keys).size !== keys.length) throw new Error('Me sale una carta repetida. Revisa los palos en tu relato.');
+    hole = hc; board = [0, 1, 2, 3, 4].map(i => bc[i] || null);
+    if (VALID_POS.includes(d.heroPos)) document.getElementById('heroPosInput').value = d.heroPos;
+    if (VALID_POS.includes(d.villPos) && d.villPos !== d.heroPos) document.getElementById('villPosInput').value = d.villPos;
+    if (Number(d.bigBlind) > 0) document.getElementById('bbInput').value = Number(d.bigBlind);
+    if (Number(d.rivals) >= 1){ numRivals = Math.min(9, Math.round(Number(d.rivals))); rivVal.textContent = numRivals; }
+    if (Number(d.heroStack) > 0) document.getElementById('stackInput').value = Number(d.heroStack);
+    if (Number(d.villStack) > 0) document.getElementById('villStackInput').value = Number(d.villStack);
+    if (d.tournament === true) setGame('torneo'); else if (d.tournament === false) setGame('cash');
+    const ST = { preflop: 0, flop: 1, turn: 2, river: 3 };
+    const newSeq = [[], [], [], []];
+    (Array.isArray(d.actions) ? d.actions : []).forEach(a => {
+      const s = ST[a && a.street];
+      if (s === undefined || !['check', 'bet', 'call', 'raise', 'fold'].includes(a.type)) return;
+      const act = { who: a.who === 'hero' ? 'hero' : 'vill', type: a.type };
+      if (a.type === 'bet' || a.type === 'raise'){ const amt = Number(a.amount); if (!(amt > 0)) return; act.to = amt; }
+      newSeq[s].push(act);
+    });
+    seq = newSeq; seqActor = null; seqPending = null; selStreet = null;
+    seqStreet = Math.max(0, bc.length >= 5 ? 3 : bc.length >= 4 ? 2 : bc.length >= 3 ? 1 : 0);
+    if (newSeq.some(x => x.length)) document.getElementById('seqBox').open = true;
+    updateOrderHint(); render();
+    return (Array.isArray(d.notes) ? d.notes : []).filter(n => typeof n === 'string' && n.trim()).slice(0, 5);
+  }
+  document.getElementById('storyBtn').addEventListener('click', openStory);
+  document.getElementById('navStory').addEventListener('click', openStory);
+
   const rivVal = document.getElementById('rivVal');
   document.getElementById('rivMinus').addEventListener('click', ()=>{ numRivals = Math.max(1, numRivals-1); rivVal.textContent = numRivals; });
   document.getElementById('rivPlus').addEventListener('click', ()=>{ numRivals = Math.min(9, numRivals+1); rivVal.textContent = numRivals; });
@@ -2529,6 +2647,7 @@
     uploadProBadge.style.display = pro ? 'none' : 'inline-block';
     document.getElementById('uploadSub').textContent = 'Cartas, bote, apuesta y posiciones';
     document.getElementById('importProBadge').style.display = pro ? 'none' : 'inline-block';
+    document.getElementById('storyProBadge').style.display = pro ? 'none' : 'inline-block';
   }
   uploadBox.addEventListener('click', (e) => {
     if (!isPro()){ e.preventDefault(); openPaywall(); }
