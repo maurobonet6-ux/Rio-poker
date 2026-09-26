@@ -1403,7 +1403,7 @@
     </ul>
     <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
     <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%; text-transform:uppercase; letter-spacing:0.03em;">Quiero RÍO PRO</button>
-    <div class="pw-cancel sub-part">Cancela cuando quieras.</div>
+    <div class="pw-cancel sub-part">Cancela cuando quieras. Paga con el mismo email con el que entras en RÍO.</div>
     <div class="pw-packs sub-part">¿Necesitas más IA? Packs extra desde <b>2,99 €</b> (+100 créditos), pago único.</div>
     <div class="restore-box" id="restoreBox">
       <div class="free-note login-only">💾 <b>Guarda tus manos y conserva tu progreso en cualquier dispositivo.</b><br>✅ Crear tu cuenta es <b>gratis</b>. No te pedimos tarjeta ni ningún pago.</div>
@@ -1456,6 +1456,16 @@
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; });
   const PRO_PRICE_LABEL = '9,99 €';
   const PAYMENT_LINK = 'https://buy.stripe.com/7sYaEZ8bB2bW8uh7Ko9IQ02'; // RÍO PRO · 9,99 €/mes
+  // Abre un enlace de pago de Stripe con el email de tu cuenta ya puesto: RÍO reconoce PRO
+  // y los packs por ese email, así que si pagas con otro no se activaría.
+  function openPayment(link){
+    let url = link;
+    try {
+      const email = JSON.parse(localStorage.getItem('rio_email') || '""');
+      if (email) url += (link.includes('?') ? '&' : '?') + 'prefilled_email=' + encodeURIComponent(email);
+    } catch (e) {}
+    window.open(url, '_blank');
+  }
   const CREDIT_PACK_LINK = 'https://buy.stripe.com/dRmfZjbnN2bWfWJ4yc9IQ01'; // pack antiguo (50 créditos · 2,99 €)
   // Packs de créditos (pago único). Pega aquí el Payment Link de cada uno; los
   // que no tengan enlace no se muestran. Sin ninguno, se ofrece el pack antiguo.
@@ -3288,7 +3298,7 @@
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'btn-secondary annual-btn';
       b.textContent = `Plan anual: ${ANNUAL_PRICE_LABEL}`;
-      b.addEventListener('click', () => window.open(ANNUAL_PAYMENT_LINK, '_blank'));
+      b.addEventListener('click', () => openPayment(ANNUAL_PAYMENT_LINK));
       main.insertAdjacentElement('afterend', b);
     });
   }
@@ -3586,7 +3596,7 @@
         <span class="pack-price">${pk.price}</span>
         <span class="pack-unit">${pk.unit}</span>
       </button>`).join('');
-    document.querySelectorAll('#packList [data-pack]').forEach(b => b.addEventListener('click', () => window.open(packs[Number(b.dataset.pack)].link, '_blank')));
+    document.querySelectorAll('#packList [data-pack]').forEach(b => b.addEventListener('click', () => openPayment(packs[Number(b.dataset.pack)].link)));
     creditsModal.classList.add('show');
   }
   function closeCreditsModal(){ creditsModal.classList.remove('show'); }
@@ -3618,8 +3628,8 @@
       msg.className = 'restore-msg no';
     }
   });
-  document.getElementById('subscribeBtn').addEventListener('click', () => { window.open(PAYMENT_LINK, '_blank'); });
-  document.getElementById('subscribeFromPlanBtn').addEventListener('click', () => { window.open(PAYMENT_LINK, '_blank'); });
+  document.getElementById('subscribeBtn').addEventListener('click', () => openPayment(PAYMENT_LINK));
+  document.getElementById('subscribeFromPlanBtn').addEventListener('click', () => openPayment(PAYMENT_LINK));
 
   // ---- Panel de Plan ----
   const planPanel = document.getElementById('planPanel');
@@ -3689,7 +3699,7 @@
     document.getElementById('planPacksHint').textContent = pro
       ? 'Pago único · no caducan · se suman solos a tu cuenta.'
       : 'Solo para suscriptores PRO · pago único · no caducan.';
-    box.querySelectorAll('[data-plan-pack]').forEach(b => b.addEventListener('click', () => window.open(packs[Number(b.dataset.planPack)].link, '_blank')));
+    box.querySelectorAll('[data-plan-pack]').forEach(b => b.addEventListener('click', () => openPayment(packs[Number(b.dataset.planPack)].link)));
   }
   document.getElementById('closeSettings').addEventListener('click', closeSettings);
   settingsPanel.addEventListener('click', (e)=>{ if (e.target === settingsPanel) closeSettings(); });

@@ -205,3 +205,12 @@ test('captura: la IA (simulada) rellena la mano y se analiza sola', async ({ pag
   await expect(page.locator('#screenshotStatus')).toContainText('leída de la captura');
   await expect(page.locator('#resultHandName')).toContainText('Pareja de Reyes');
 });
+
+test('pagar: el enlace de Stripe lleva el email de tu cuenta', async ({ page }) => {
+  await abrir(page, { logged: true, storage: { rio_email: JSON.stringify('jugador@rio.test') } });
+  await page.evaluate(() => { window.__abiertos = []; window.open = (u) => { window.__abiertos.push(u); }; });
+  await page.evaluate(() => document.getElementById('navPlan').click());
+  await page.locator('#subscribeFromPlanBtn').click();
+  const urls = await page.evaluate(() => window.__abiertos);
+  expect(urls[0]).toMatch(/^https:\/\/buy\.stripe\.com\/.+\?prefilled_email=jugador%40rio\.test$/);
+});
