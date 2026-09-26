@@ -2383,6 +2383,12 @@
         set = intersectTop(set, raises >= 2 ? 15 : villPos === 'BB' ? 60 : 30);
       }
     }
+    // Sin secuencia, antes del flop y con algo más que la ciega por pagar: el rival ha subido,
+    // así que no juega todo su rango, solo el de apertura (o el de resubida si la subida es grande).
+    if (!pre.length && analysisStreet() === 0){
+      const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
+      if (call > bbSize()) set = intersectTop(set, call > bbSize() * 5 ? 9 : Math.min(OPEN_PCT[villPos] || 30, 30));
+    }
     if (set.size === 0) set = new Set(villRange.set);
     let pool = poolFromSet(set);
     for (let s = 1; s < avail; s++){
@@ -2485,8 +2491,12 @@
       return { text: 'CHECK', eq, needed, bc };
     }
     let text = decide(eq, needed + (c.premium || 0), c.toCall, c.oop, c.rivals).text;
-    // Para subir hay que ganar a las manos que pagarían la subida, no a todo su rango.
-    if (text === 'RAISE' && c.street > 0){
+    // Antes del flop, pagar exige algo más de lo justo: las manos flojas rara vez aprovechan
+    // toda su equity (ligan poco y suelen jugar el resto de la mano en desventaja).
+    if (text === 'CALL' && c.street === 0 && eq < needed + 3 + (c.premium || 0)) text = 'FOLD';
+    // Para subir hay que ganar a las manos que pagarían la subida, no a todo su rango
+    // (también antes del flop: resubir con 7-2 porque el bote paga bien no tiene sentido).
+    if (text === 'RAISE'){
       const strong = withBluffs(c.pool || poolFromSet(topRange(100)), c.boardCards, 0.4, 0, c.heroCards);
       const r2 = runEquity(c.heroCards, c.boardCards, c.rivals, 700, strong);
       const vs = r2.win + r2.tie / 2;
