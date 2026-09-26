@@ -794,7 +794,11 @@
   .story-btn { border-style: solid; border-color: rgba(232,40,63,0.45); background: linear-gradient(160deg, rgba(232,40,63,0.14), var(--panel-2) 70%); }
   #storyMic.active { border-color: var(--crimson); color: var(--crimson); }
 
-  .annual-btn { width: 100%; margin-top: 10px; }
+  .annual-btn { width: 100%; margin-top: 10px; color: var(--cream); }
+  .annual-btn b { color: var(--cream); }
+  .annual-btn small { display: block; margin-top: 3px; font-size: 0.74rem; color: var(--ok); font-weight: 700; }
+  .annual-note { font-size: 0.78rem; color: var(--cream-dim); margin: -10px 0 12px; }
+  .annual-note:empty { display: none; }
   .inbox-item { border-bottom: 1px solid var(--line); padding: 10px 0; }
   .inbox-item pre { white-space: pre-wrap; word-break: break-word; font-size: 0.72rem; color: var(--cream-dim); background: var(--panel-2); padding: 8px; border-radius: 8px; margin: 0; }
 
@@ -1339,6 +1343,7 @@
         <div class="plan-card-badge" id="proPlanBadge" style="display:none;">Tu plan actual</div>
         <h4>RÍO PRO</h4>
         <div class="plan-card-price"><span>9,99 €</span><small>/ mes</small></div>
+        <div class="annual-note"></div>
         <ul class="plan-card-features">
           <li><b>Análisis manuales: ilimitados</b></li>
           <li><b>Créditos de IA: 200 al mes</b><br><small>1 captura = 1 crédito · 1 mano contada = 1 crédito</small></li>
@@ -1402,6 +1407,7 @@
       <li>✓ <b>200 créditos de IA al mes</b> (1 captura o 1 mano contada = 1 crédito)</li>
     </ul>
     <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
+    <div class="annual-note sub-part"></div>
     <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%; text-transform:uppercase; letter-spacing:0.03em;">Quiero RÍO PRO</button>
     <div class="pw-cancel sub-part">Cancela cuando quieras. Paga con el mismo email con el que entras en RÍO.</div>
     <div class="pw-packs sub-part">¿Necesitas más IA? Packs extra desde <b>2,99 €</b> (+100 créditos), pago único.</div>
@@ -1550,6 +1556,7 @@
 
     const subscribeFromPlanBtn = document.getElementById('subscribeFromPlanBtn');
     if (subscribeFromPlanBtn) subscribeFromPlanBtn.style.display = pro ? 'none' : 'inline-block';
+    document.querySelectorAll('#proPlanCard .annual-btn, #proPlanCard .annual-note').forEach(el => { el.style.display = pro ? 'none' : ''; });
 
     const photoBox = document.getElementById('photoUsageBox');
     if (photoBox){
@@ -3290,17 +3297,21 @@
   }
 
   // ---- Plan anual (aparece cuando configures su enlace de pago de Stripe) ----
-  const ANNUAL_PAYMENT_LINK = ''; // p. ej. 'https://buy.stripe.com/...' — el Payment Link del plan anual
-  const ANNUAL_PRICE_LABEL = '';  // p. ej. '39,99 €/año (2 meses gratis)'
+  const ANNUAL_PAYMENT_LINK = 'https://buy.stripe.com/7sY8wR3Vl3g0dOB7Ko9IQ06'; // RÍO PRO anual · 79,99 €/año
+  const ANNUAL_PRICE_LABEL = '79,99 €/año';
+  const ANNUAL_SAVING_LABEL = '6,67 €/mes · ahorras un 33 %';
   if (ANNUAL_PAYMENT_LINK){
     ['subscribeBtn', 'subscribeFromPlanBtn'].forEach(id => {
       const main = document.getElementById(id);
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'btn-secondary annual-btn';
-      b.textContent = `Plan anual: ${ANNUAL_PRICE_LABEL}`;
+      b.type = 'button'; b.className = 'btn-secondary annual-btn' + (id === 'subscribeBtn' ? ' sub-part' : '');
+      b.innerHTML = `📅 Plan anual: <b>${ANNUAL_PRICE_LABEL}</b><small>${ANNUAL_SAVING_LABEL}</small>`;
       b.addEventListener('click', () => openPayment(ANNUAL_PAYMENT_LINK));
       main.insertAdjacentElement('afterend', b);
     });
+    document.querySelectorAll('.annual-note').forEach(el => { el.textContent = `o ${ANNUAL_PRICE_LABEL} (${ANNUAL_SAVING_LABEL})`; });
+    // Si ya eres PRO, en Tu plan no se ofrece suscribirse otra vez.
+    if (isPro()) document.querySelectorAll('#proPlanCard .annual-btn, #proPlanCard .annual-note').forEach(el => { el.style.display = 'none'; });
   }
 
   // ---- ¿Consejo raro? Avisos de los usuarios ----
