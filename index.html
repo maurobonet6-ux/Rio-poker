@@ -712,7 +712,13 @@
   .entry-shot-sub { display: block; color: var(--cream-dim); font-size: 0.85rem; margin: 8px auto 14px; max-width: 360px; line-height: 1.4; }
   .entry-shot-btn { display: inline-block; background: var(--gold); color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.9rem; border-radius: 999px; padding: 11px 26px; }
   .entry-shot small { display: block; color: var(--cream-dim); font-size: 0.72rem; margin-top: 10px; }
-  .demo-card { margin: -6px 0 18px; padding: 14px; border-radius: 14px; border: 1px dashed var(--line); background: var(--panel-2); }
+  .demo-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px 22px; margin-bottom: 18px; }
+  .demo-panel > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 800; font-size: 0.98rem; }
+  .demo-panel > summary::-webkit-details-marker { display: none; }
+  .demo-panel .demo-open { flex: none; color: var(--gold); font-size: 0.9rem; }
+  .demo-panel .o-open, .demo-panel[open] .o-closed { display: none; }
+  .demo-panel[open] .o-open { display: inline; }
+  .demo-card { margin: 14px 0 4px; padding: 14px; border-radius: 14px; border: 1px dashed var(--line); background: var(--panel-2); }
   .demo-head { font-weight: 800; font-size: 0.9rem; margin-bottom: 10px; }
   .demo-flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .demo-flow small { display: block; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cream-dim); margin-bottom: 4px; }
@@ -885,6 +891,21 @@
     </div>
   </header>
 
+  <details class="demo-panel easy-only" id="demoPanel">
+    <summary><span>👀 ¿Primera vez? Mira cómo analiza RÍO una mano</span><span class="demo-open"><span class="o-closed">Ver ▾</span><span class="o-open">Cerrar ▴</span></span></summary>
+    <div class="demo-card" id="demoCard">
+      <div class="demo-flow">
+        <div><small>Tus cartas</small><span id="demoHole"></span></div>
+        <i>→</i>
+        <div><small>Mesa (flop)</small><span id="demoBoard"></span></div>
+      </div>
+      <div class="demo-sit">Estás en el <b>botón</b> contra la <b>ciega grande</b>. Hay <b>30</b> en el bote y te toca pagar <b>10</b>.</div>
+      <div class="demo-dec" id="demoDec">Calculando…</div>
+      <button type="button" class="btn-secondary" id="demoLoadBtn" style="width:100%;">Cargar mano de ejemplo</button>
+      <div class="hint" style="text-align:center; margin-top:6px;">No gasta tus análisis gratis.</div>
+    </div>
+  </details>
+
   <section class="panel">
     <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
     <div class="entry-q">¿Cómo quieres introducir tu mano?</div>
@@ -900,18 +921,6 @@
       <button type="button" class="quick-btn" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
     </div>
     <button type="button" class="entry-manual" id="manualBtn"><span class="em-ic">✍️</span><span class="em-txt"><b>Introducir manualmente</b><small>Elige tus cartas paso a paso · gratis</small></span><span class="em-go">Empezar ↓</span></button>
-    <div class="demo-card" id="demoCard" style="display:none;">
-      <div class="demo-head">👀 Así analiza RÍO una mano</div>
-      <div class="demo-flow">
-        <div><small>Tus cartas</small><span id="demoHole"></span></div>
-        <i>→</i>
-        <div><small>Mesa (flop)</small><span id="demoBoard"></span></div>
-      </div>
-      <div class="demo-sit">Estás en el <b>botón</b> contra la <b>ciega grande</b>. Hay <b>30</b> en el bote y te toca pagar <b>10</b>.</div>
-      <div class="demo-dec" id="demoDec">Calculando…</div>
-      <button type="button" class="btn-secondary" id="demoLoadBtn" style="width:100%;">Cargar mano de ejemplo</button>
-      <div class="hint" style="text-align:center; margin-top:6px;">No gasta tus análisis gratis.</div>
-    </div>
     <div class="shared-banner" id="sharedBanner" style="display:none;"></div>
     <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
     <div class="table-grid">
@@ -4254,19 +4263,21 @@
     btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
     btn.classList.add('pulse'); setTimeout(() => btn.classList.remove('pulse'), 2400);
   }
-  // La tarjeta solo aparece mientras no hayas analizado ninguna mano; la decisión se calcula de verdad.
-  if (!getHistory().length){
-    document.getElementById('demoCard').style.display = 'block';
-    document.getElementById('demoHole').innerHTML = DEMO.hole.map(c => cardHTML(c)).join('');
-    document.getElementById('demoBoard').innerHTML = DEMO.board.map(c => cardHTML(c)).join('');
+  // Panel del ejemplo (solo en modo Fácil): la decisión se calcula de verdad la primera vez que lo abres.
+  document.getElementById('demoHole').innerHTML = DEMO.hole.map(c => cardHTML(c)).join('');
+  document.getElementById('demoBoard').innerHTML = DEMO.board.map(c => cardHTML(c)).join('');
+  let demoDone = false;
+  document.getElementById('demoPanel').addEventListener('toggle', (e) => {
+    if (!e.target.open || demoDone) return;
+    demoDone = true;
     setTimeout(() => {
       const r = recommend({ heroCards: DEMO.hole, boardCards: DEMO.board, pot: DEMO.pot, toCall: DEMO.call, rivals: 1,
         pool: poolFromSet(topRange(40)), oop: false, street: 1, heroPos: DEMO.heroPos, iters: 2000 });
       const cls = { RAISE: 'ok', BET: 'ok', CALL: 'warn', CHECK: 'warn', FOLD: 'no' }[r.text];
       document.getElementById('demoDec').innerHTML = `<span class="decision-badge ${cls}">${decisionHTML(r.text)}</span>` +
         `Tienes proyecto de color al as: ganas ~<b>${Math.round(r.eq)}%</b> de las veces y solo necesitas <b>${Math.round(r.needed)}%</b>.`;
-    }, 600);
-  }
+    }, 50);
+  });
   document.getElementById('demoLoadBtn').addEventListener('click', loadDemo);
   const backToStart = () => { document.getElementById('resetBtn').click(); document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   document.getElementById('demoOwnBtn').addEventListener('click', backToStart);

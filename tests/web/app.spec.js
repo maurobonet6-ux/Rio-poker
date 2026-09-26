@@ -79,8 +79,10 @@ test('resultado: decisión, resumen, por qué, análisis completo y qué pasa si
 
 test('mano de ejemplo: se carga, se analiza y no gasta el análisis de prueba', async ({ page }) => {
   const { llamadas } = await abrir(page);
+  await expect(page.locator('#demoCard')).toBeHidden(); // el panel empieza cerrado
+  await page.locator('#demoPanel summary').click();
   await expect(page.locator('#demoCard')).toBeVisible();
-  await expect(page.locator('#demoDec .decision-badge')).toBeVisible();
+  await expect(page.locator('#demoDec .decision-badge')).toContainText('PAGA');
   await page.locator('#demoLoadBtn').click();
   await analizar(page);
   await expect(page.locator('#demoNext')).toBeVisible();
@@ -88,6 +90,13 @@ test('mano de ejemplo: se carga, se analiza y no gasta el análisis de prueba', 
   expect(llamadas).not.toContain('free-use');
   await page.locator('#demoOwnBtn').click();
   await expect(page.locator('#holeRow .cardslot.empty')).toHaveCount(2);
+});
+
+test('el ejemplo solo aparece en modo Fácil', async ({ page }) => {
+  await abrir(page);
+  await expect(page.locator('#demoPanel')).toBeVisible();
+  await page.locator('.mode-switch [data-mode="pro"]').click();
+  await expect(page.locator('#demoPanel')).toBeHidden();
 });
 
 test('sin cuenta: 1 análisis de prueba y después pide crear la cuenta gratis', async ({ page }) => {
