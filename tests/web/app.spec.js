@@ -10,6 +10,17 @@ test('la página carga sin errores y enseña cómo introducir la mano', async ({
   expect(errores).toEqual([]);
 });
 
+test('bienvenida: explica RÍO y deja elegir modo con dos botones iguales', async ({ page }) => {
+  await abrir(page, { bienvenida: true });
+  await expect(page.locator('#helpModal.show')).toBeVisible();
+  await expect(page.locator('.welcome-steps > div')).toHaveCount(3);
+  const [a, b] = await page.locator('.welcome-choice').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; }));
+  expect(a).toEqual(b);
+  await page.locator('.welcome-choice[data-welcome="pro"]').click();
+  await expect(page.locator('body')).toHaveClass(/mode-pro/);
+  await expect(page.locator('#helpModal.show')).toHaveCount(0);
+});
+
 test('elegir cartas: primero el valor, luego el palo, y las usadas se bloquean', async ({ page }) => {
   await abrir(page);
   await page.locator('#manualBtn').click();

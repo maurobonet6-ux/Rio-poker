@@ -4,18 +4,18 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..', '..');
 const ORIGIN = 'http://rio.test';
 
-// opts.pro: la cuenta es RÍO PRO · opts.logged: hay sesión iniciada
+// opts.pro: la cuenta es RÍO PRO · opts.logged: hay sesión iniciada · opts.bienvenida: primera visita
 // opts.api: respuestas a medida { 'analyze-table': {...} } · opts.storage: datos guardados (los textos se guardan tal cual)
 async function abrir(page, opts = {}){
   const llamadas = [];
-  await page.addInitScript(({ pro, logged, storage }) => {
+  await page.addInitScript(({ pro, logged, storage, bienvenida }) => {
     if (sessionStorage.getItem('__init')) return; // solo la primera carga, así las pruebas pueden recargar
     sessionStorage.setItem('__init', '1');
-    localStorage.setItem('rio_onboarded', 'true');
+    if (!bienvenida) localStorage.setItem('rio_onboarded', 'true');
     if (pro) localStorage.setItem('rio_pro', 'true');
     if (logged || pro) localStorage.setItem('rio_token', JSON.stringify('c'.repeat(64)));
     for (const [k, v] of Object.entries(storage || {})) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
-  }, { pro: !!opts.pro, logged: !!opts.logged, storage: opts.storage || {} });
+  }, { pro: !!opts.pro, logged: !!opts.logged, storage: opts.storage || {}, bienvenida: !!opts.bienvenida });
   await page.route('**/*', (route) => {
     const url = new URL(route.request().url());
     if (url.origin !== ORIGIN) return route.fulfill({ status: 204, body: '' }); // fuentes, analíticas…

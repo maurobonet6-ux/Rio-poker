@@ -765,6 +765,17 @@
     .sticky-analyze button { width: 100%; }
     body.has-sticky footer { padding-bottom: 80px; }
   }
+  .welcome-steps { display: grid; gap: 8px; margin: 0 0 14px; }
+  .welcome-steps > div { display: flex; align-items: center; gap: 12px; background: var(--panel-2); border-radius: 12px; padding: 10px 12px; }
+  .welcome-steps span { font-size: 1.4rem; flex: none; }
+  .welcome-steps p { margin: 0; font-size: 0.86rem; color: var(--cream-dim); line-height: 1.35; }
+  .welcome-steps b { color: var(--cream); }
+  .welcome-q { font-weight: 800; text-align: center; margin-bottom: 10px; color: var(--cream); font-size: 1.02rem; }
+  .welcome-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .welcome-choice { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 8px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); color: var(--cream); font: inherit; font-size: 1.5rem; cursor: pointer; }
+  .welcome-choice b { font-size: 0.95rem; }
+  .welcome-choice small { font-size: 0.72rem; color: var(--cream-dim); }
+  .welcome-choice:hover { border-color: var(--gold); background: var(--gold-soft); }
   .train-funnel { margin: 14px 0 12px; padding: 14px; border-radius: 12px; border: 1px solid var(--gold); background: var(--gold-soft); font-size: 0.9rem; }
   .chart-opts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
   .chart-opts .range-presets { margin: 0; }
@@ -3066,18 +3077,19 @@
   // ---- Bienvenida (primera visita) ----
   function openWelcome(){
     const body = openModal('¡Te damos la bienvenida a RÍO! 👋', `
-      <p style="margin-top:0;">Te ayudamos a decidir en cada calle: <b>pagar, subir o tirar</b>, y te explicamos por qué.</p>
-      <ol style="padding-left:20px; margin:0 0 16px;">
-        <li><b>Elige tus cartas</b> y las de la mesa.</li>
-        <li>Indica <b>tu posición</b>.</li>
-        <li>Escribe <b>el bote y lo que te toca pagar</b>, y pulsa <b>Analizar</b>.</li>
-      </ol>
-      <p class="hint" style="margin:-6px 0 14px;">Prueba <b>1 análisis sin registrarte</b> y consigue <b>${FREE_LIMIT} más</b> con una cuenta gratis (solo tu email). El entrenamiento, las tablas y el glosario son gratis siempre.</p>
-      <div style="display:grid; gap:8px;">
-        <button type="button" class="btn-primary" data-welcome="facil">🙂 Estoy empezando en el póker</button>
-        <button type="button" class="btn-secondary" data-welcome="pro">😎 Ya juego: quiero el modo Avanzado</button>
-        <button type="button" class="btn-secondary" data-welcome="train">🎯 Quiero practicar primero</button>
-      </div>`);
+      <p style="margin-top:0;">Tu entrenador de póker: le das una mano y te dice <b>qué hacer y por qué</b>.</p>
+      <div class="welcome-steps">
+        <div><span>🃏</span><p><b>Mete tu mano</b><br>Con una captura, contándola o a mano.</p></div>
+        <div><span>🎯</span><p><b>Te dice qué hacer</b><br>Pagar, subir o tirar, explicado fácil.</p></div>
+        <div><span>📈</span><p><b>Aprende de tus errores</b><br>Guarda tus manos y mira dónde fallas.</p></div>
+      </div>
+      <p class="hint" style="margin:0 0 16px; text-align:center;">1 análisis de prueba sin registrarte · ${FREE_LIMIT} más con tu cuenta gratis</p>
+      <div class="welcome-q">¿Ya juegas al póker?</div>
+      <div class="welcome-choices">
+        <button type="button" class="welcome-choice" data-welcome="facil">🙂<b>Estoy empezando</b><small>Modo Fácil</small></button>
+        <button type="button" class="welcome-choice" data-welcome="pro">😎<b>Ya juego</b><small>Modo Avanzado</small></button>
+      </div>
+      <button type="button" class="link-btn" data-welcome="train" style="display:block; margin:12px auto 0;">🎯 Prefiero practicar primero</button>`);
     body.querySelectorAll('[data-welcome]').forEach(b => b.addEventListener('click', () => {
       const w = b.dataset.welcome;
       if (w === 'train'){ openTrainer(); return; }
