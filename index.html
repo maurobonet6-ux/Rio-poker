@@ -443,6 +443,18 @@
   /* ---- Modo Fácil / Pro ---- */
   body:not(.mode-pro) .pro-only { display: none !important; }
   body.mode-pro .easy-only { display: none !important; }
+  /* Modo Fácil: lo opcional queda plegado hasta que lo pidas. */
+  body:not(.mode-pro):not(.easy-more) .easy-extra { display: none !important; }
+  .panel-num .n-short { display: none; }
+  body:not(.mode-pro):not(.easy-more) .panel-num .n-short { display: inline; }
+  body:not(.mode-pro):not(.easy-more) .panel-num .n-full { display: none; }
+  body.easy-more .more-nudge { display: none !important; }
+  .more-toggle { display: block; width: 100%; text-align: left; background: var(--panel); border: 1px dashed var(--line); color: var(--cream); border-radius: 14px; padding: 14px 16px; margin: 0 0 18px; font: inherit; font-size: 0.92rem; cursor: pointer; }
+  .more-toggle small { display: block; color: var(--cream-dim); font-size: 0.78rem; margin-top: 3px; }
+  .more-nudge { margin-top: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); font-size: 0.88rem; color: var(--cream-dim); }
+  .more-nudge b { color: var(--cream); }
+  .more-nudge .more-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .more-nudge .more-btns button { flex: 1; min-width: 140px; }
   body:not(.mode-pro) .stat-grid { grid-template-columns: 1fr 1fr; }
   .mode-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
   .mode-switch { display: flex; flex-shrink: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
@@ -785,7 +797,8 @@
     <div class="current-hand" id="currentHand">Elige tus dos cartas para empezar.</div>
   </section>
 
-  <section class="panel">
+  <button type="button" class="more-toggle easy-only" id="moreToggle"></button>
+  <section class="panel easy-extra" id="tablePanel">
     <div class="panel-head"><div class="panel-num">2</div><h2>La mesa</h2></div>
     <div class="inputs-row">
       <div class="field">
@@ -861,8 +874,8 @@
   </section>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num">3</div><h2>Las apuestas</h2></div>
-    <details class="seq-box" id="seqBox">
+    <div class="panel-head"><div class="panel-num"><span class="n-full">3</span><span class="n-short">2</span></div><h2>Las apuestas</h2></div>
+    <details class="seq-box easy-extra" id="seqBox">
       <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendado</span></summary>
       <div class="hint seq-intro">Apunta qué hizo cada uno en cada calle. Calculamos el bote y lo que te toca pagar, ajustamos el rango del rival según cómo apuesta y repasamos <b>todas tus decisiones</b>, no solo la última.</div>
       <div class="seq-blinds field">
@@ -877,15 +890,15 @@
         <button type="button" id="seqClear">Borrar secuencia</button>
       </div>
     </details>
-    <div class="or-line" id="orLine">…o escribe directamente el bote y lo que te toca pagar:</div>
+    <div class="or-line easy-extra" id="orLine">…o escribe directamente el bote y lo que te toca pagar:</div>
     <div class="inputs-row">
       <div class="field">
-        <label>Bote actual <button type="button" class="help" data-help="pot">?</button></label>
+        <label><span class="pro-only">Bote actual</span><span class="easy-only">Bote</span> <button type="button" class="help" data-help="pot">?</button></label>
         <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
         <div class="hint">Fichas o €, la unidad da igual</div>
       </div>
       <div class="field">
-        <label>Cantidad a igualar <button type="button" class="help" data-help="call">?</button></label>
+        <label><span class="pro-only">Cantidad a igualar</span><span class="easy-only">Tengo que pagar</span> <button type="button" class="help" data-help="call">?</button></label>
         <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
         <div class="hint">Lo que cuesta pagar ahora</div>
       </div>
@@ -900,7 +913,7 @@
         <div class="hint">Para el SPR efectivo</div>
       </div>
     </div>
-    <div class="street-pick">
+    <div class="street-pick easy-extra">
       <div class="zone-label">¿Qué decisión quieres analizar? <button type="button" class="help" data-help="street">?</button></div>
       <div class="street-btns" id="streetBtns"></div>
     </div>
@@ -913,7 +926,7 @@
   </section>
 
   <section class="panel result" id="resultPanel">
-    <div class="panel-head"><div class="panel-num">4</div><h2>Resultado</h2></div>
+    <div class="panel-head"><div class="panel-num"><span class="n-full">4</span><span class="n-short">3</span></div><h2>Resultado</h2></div>
     <div class="result-top">
       <div class="result-hand" id="resultHandName">—</div>
       <div class="decision-badge" id="decisionBadge">—</div>
@@ -971,6 +984,8 @@
 
     <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
     <div class="trial-nudge" id="trialNudge" style="display:none;">🎁 <b>¿Te ha servido?</b> Crea tu cuenta gratis (solo tu email) y tendrás <b>5 análisis más</b>. <button type="button" class="btn-primary" id="trialSignup">Crear cuenta gratis</button></div>
+    <div class="more-nudge easy-only" id="moreNudge">🎯 <b>¿Quieres un análisis más preciso?</b> Añade tu posición, cómo juega tu rival y lo que apostó cada uno.
+      <div class="more-btns"><button type="button" class="btn-secondary" id="moreNudgeAdd">Añadir detalles</button><button type="button" class="btn-primary" id="moreNudgePro">Activar modo Pro</button></div></div>
     <button class="btn-primary" id="shareBtn" style="width:100%; margin-top:14px;">📤 Compartir esta mano</button>
     <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:10px;">📋 Copiar resumen de la mano</button>
     <button type="button" class="link-btn" id="feedbackBtn">👎 ¿Te parece raro este consejo? Avísanos</button>
@@ -1814,6 +1829,28 @@
   document.querySelectorAll('.mode-switch button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
   setMode(storageGet('rio_mode', 'facil'));
 
+  // En Fácil, posiciones, rival, secuencia y calle quedan plegados: con cartas, bote
+  // y lo que te toca pagar ya se puede analizar (se usan valores por defecto).
+  function setEasyMore(on, remember){
+    document.body.classList.toggle('easy-more', on);
+    document.getElementById('moreToggle').innerHTML = on
+      ? '▲ Ocultar detalles'
+      : '⚙️ Más detalles (opcional)<small>Posición, cómo juega tu rival y secuencia de apuestas. No hace falta para analizar.</small>';
+    if (remember) { try { localStorage.setItem('rio_easy_more', on ? '1' : '0'); } catch (e) {} }
+  }
+  let easyMoreSaved = false;
+  try { easyMoreSaved = localStorage.getItem('rio_easy_more') === '1'; } catch (e) {}
+  setEasyMore(easyMoreSaved);
+  document.getElementById('moreToggle').addEventListener('click', () => setEasyMore(!document.body.classList.contains('easy-more'), true));
+  document.getElementById('moreNudgeAdd').addEventListener('click', () => {
+    setEasyMore(true, true);
+    document.getElementById('tablePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  document.getElementById('moreNudgePro').addEventListener('click', () => {
+    setMode('pro');
+    document.getElementById('tablePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
   const DECISION_ES = { RAISE:'SUBE', CALL:'PAGA', FOLD:'TIRA', CHECK:'PASA', BET:'APUESTA' };
   function decisionHTML(t){ return `<span class="easy-only">${DECISION_ES[t] || t}</span><span class="pro-only">${t}</span>`; }
 
@@ -2141,6 +2178,8 @@
     const has = seqHasActions();
     potEl.classList.toggle('auto', has); callEl.classList.toggle('auto', has);
     if (!has) return;
+    // Si hay secuencia (relato, captura, mano compartida…), que se vea también en Fácil.
+    if (!document.body.classList.contains('easy-more')) setEasyMore(true);
     const dp = decisionPoint();
     const st = replay(availableStreets() - 1, dp || undefined);
     potEl.value = Math.round(st.pot * 100) / 100;
