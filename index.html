@@ -641,8 +641,13 @@
   .entry-shot-sub { display: block; color: var(--cream-dim); font-size: 0.85rem; margin: 8px auto 14px; max-width: 360px; line-height: 1.4; }
   .entry-shot-btn { display: inline-block; background: var(--gold); color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.9rem; border-radius: 999px; padding: 11px 26px; }
   .entry-shot small { display: block; color: var(--cream-dim); font-size: 0.72rem; margin-top: 10px; }
-  .entry-manual { display: block; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid var(--line); color: var(--cream-dim); font: inherit; font-size: 0.85rem; padding: 12px 2px 4px; margin-bottom: 14px; cursor: pointer; }
-  .entry-manual b { display: block; color: var(--cream); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+  .entry-manual { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--panel-2); border: 1px solid rgba(245,242,236,0.28); color: var(--cream); font: inherit; border-radius: 14px; padding: 14px 14px; margin-bottom: 18px; cursor: pointer; }
+  .entry-manual:hover { border-color: var(--gold); }
+  .entry-manual .em-ic { font-size: 1.4rem; }
+  .entry-manual .em-txt { flex: 1; }
+  .entry-manual b { display: block; font-size: 0.98rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
+  .entry-manual small { display: block; color: var(--cream-dim); font-size: 0.78rem; margin-top: 2px; }
+  .entry-manual .em-go { flex: none; border: 1px solid var(--cream); border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 0.82rem; white-space: nowrap; }
   .or-line { font-size: 0.8rem; color: var(--cream-dim); margin: 0 0 10px; }
   body.tourney .tourney-show { display: block !important; }
 
@@ -793,7 +798,7 @@
       <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano<small>Díctala o escríbela como a un amigo</small><span class="quick-foot"><span class="pro-badge" id="storyProBadge">PRO</span> 1 crédito</span></button>
       <button type="button" class="quick-btn" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
     </div>
-    <button type="button" class="entry-manual" id="manualBtn"><b>Manual</b>Selecciona tus cartas abajo ↓</button>
+    <button type="button" class="entry-manual" id="manualBtn"><span class="em-ic">✍️</span><span class="em-txt"><b>Introducir manualmente</b><small>Elige tus cartas paso a paso · gratis</small></span><span class="em-go">Empezar ↓</span></button>
     <div class="shared-banner" id="sharedBanner" style="display:none;"></div>
     <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
     <div class="table-grid">
