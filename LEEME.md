@@ -111,3 +111,16 @@ Las carpetas `glosario/` y `tablas/`, `seo.css`, `sitemap.xml` y `robots.txt` se
     node scripts/build-seo.js
 
 Vuelve a ejecutarlo si cambias los textos del glosario o los rangos (están en ese mismo archivo) y sube los cambios. Cuando la web esté publicada, puedes dar de alta `https://rio-poker.vercel.app/sitemap.xml` en Google Search Console para que Google las encuentre antes.
+
+## Pruebas automáticas
+
+En `tests/` están las pruebas de RÍO:
+
+- `tests/unit/`: pruebas rápidas, sin navegador (packs de créditos, respuestas de la IA, funciones de `/api`, páginas del glosario y de las tablas).
+- `tests/web/`: abren la web en un navegador (ordenador y móvil) y hacen lo que haría un usuario: elegir cartas, analizar, la mano de ejemplo, compartir, el historial, la captura… El servidor (`/api`) se simula, así que no se toca Stripe ni la IA.
+
+GitHub las ejecuta solas en cada petición de cambio (`.github/workflows/pruebas.yml`): verás un ✅ o una ❌ en la petición. Para ejecutarlas en tu ordenador:
+
+    npm install
+    npx playwright install chromium
+    npm test

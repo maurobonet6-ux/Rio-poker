@@ -1,0 +1,33 @@
+# Ejecuta las pruebas de RÍO en cada petición de cambio (pull request) y en cada
+# cambio que llega a main. Si algo falla, la petición muestra una ❌ roja.
+name: Pruebas
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Instalar el navegador de pruebas
+        run: npx playwright install --with-deps chromium
+      - name: Pruebas rápidas (servidor y páginas)
+        run: npm run test:unit
+      - name: Pruebas de la web (ordenador y móvil)
+        run: npm run test:web
+      - name: Guardar el informe si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-pruebas
+          path: playwright-report/
+          retention-days: 7

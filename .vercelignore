@@ -1,0 +1,6 @@
+# Archivos del proyecto que no hace falta publicar en la web
+tests/
+scripts/
+playwright.config.js
+test-results/
+playwright-report/
