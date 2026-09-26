@@ -320,7 +320,7 @@
   .why-list li { background: var(--panel-2); border-radius: 12px; padding: 10px 12px; font-size: 0.9rem; line-height: 1.45; color: var(--cream-dim); }
   .why-list li b { color: var(--cream); }
   .what-if .hint { margin-top: 10px; }
-  .next-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .next-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
   .next-actions button { min-width: 0; width: 100%; padding: 11px 4px; font-size: 0.8rem; line-height: 1.25; box-shadow: none; }
   .what-if, .next-step { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
   .wi-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 10px; }
@@ -519,6 +519,23 @@
   body.easy-more .more-nudge { display: none !important; }
   body.mode-pro:not(.bets-full) .full-only { display: none !important; }
   .bets-mode { margin-bottom: 16px; }
+  body:not(.mode-pro) .steps-nav, body:not(.mode-pro) .steps-labels { display: none; }
+  body:not(.mode-pro) .quick-fill { grid-template-columns: 1fr; }
+  .step-lbl { display: block; font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream-dim); font-weight: 700; margin-bottom: 1px; font-family: 'Space Grotesk', sans-serif; }
+  body:not(.mode-pro) section.step-current { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  body:not(.mode-pro) section.step-done .panel-num { font-size: 0; background: var(--ok-soft); }
+  body:not(.mode-pro) section.step-done .panel-num::after { content: '✓'; font-size: 1rem; color: var(--ok); }
+  .step-guide { margin: -4px 0 14px; padding: 10px 12px; border-radius: 10px; background: var(--gold-soft); font-size: 0.86rem; color: var(--cream); line-height: 1.45; }
+  .step-guide .link-btn { margin: 4px 0 0; padding: 0; font-size: 0.86rem; }
+  .step-todo { text-align: center; font-size: 0.85rem; color: var(--cream-dim); margin-top: 10px; }
+  .step-todo b { color: var(--cream); }
+  .easy-pot { display: grid; gap: 14px; margin-bottom: 6px; }
+  .easy-bet-row { display: flex; gap: 8px; align-items: stretch; }
+  .easy-bet-row input { flex: 1; min-width: 0; }
+  .easy-bet-row button { flex: none; padding: 10px 12px; font-size: 0.8rem; white-space: nowrap; }
+  .easy-pot-sum { font-size: 0.88rem; color: var(--cream); }
+  .easy-pot-sum:empty { display: none; }
+  .easy-pot-sum small { color: var(--cream-dim); }
   .more-toggle { display: block; width: 100%; text-align: left; background: var(--panel-2); border: 1px dashed var(--line); color: var(--cream); border-radius: 14px; padding: 14px 16px; margin: 0; font: inherit; font-size: 0.92rem; cursor: pointer; }
   .more-toggle small { display: block; color: var(--cream-dim); font-size: 0.78rem; margin-top: 3px; }
   .more-nudge { margin-top: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); font-size: 0.88rem; color: var(--cream-dim); }
@@ -921,8 +938,8 @@
     </div>
   </details>
 
-  <section class="panel">
-    <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
+  <section class="panel" id="cardsPanel">
+    <div class="panel-head"><div class="panel-num">1</div><h2><small class="step-lbl easy-only">Paso 1 de 3</small>Tus cartas</h2></div>
     <div class="entry-q">¿Cómo quieres introducir tu mano?</div>
     <label class="entry-shot" for="screenshotInput" id="uploadBox">
       <span class="entry-shot-title">📸 Analiza desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span></span>
@@ -933,7 +950,7 @@
     </label>
     <div class="quick-fill">
       <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano<small>Díctala o escríbela como a un amigo</small><span class="quick-foot"><span class="pro-badge" id="storyProBadge">PRO</span> 1 crédito de IA</span></button>
-      <button type="button" class="quick-btn" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
+      <button type="button" class="quick-btn pro-only" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
     </div>
     <button type="button" class="entry-manual" id="manualBtn"><span class="em-ic">✍️</span><span class="em-txt"><b>Introducir manualmente</b><small>Elige tus cartas paso a paso · gratis</small></span><span class="em-go">Empezar ↓</span></button>
     <div class="shared-banner" id="sharedBanner" style="display:none;"></div>
@@ -957,7 +974,8 @@
   </section>
 
   <section class="panel" id="tablePanel">
-    <div class="panel-head"><div class="panel-num">2</div><h2>La mesa</h2></div>
+    <div class="panel-head"><div class="panel-num">2</div><h2><small class="step-lbl easy-only">Paso 2 de 3</small><span class="easy-only">¿Dónde estás sentado?</span><span class="pro-only">La mesa</span></h2></div>
+    <div class="step-guide easy-only" id="stepGuide2" style="display:none;">👉 <b>Ahora:</b> dinos en qué sitio de la mesa estáis tú y tu rival. Si no lo sabes, déjalo como está. <button type="button" class="link-btn" id="posOkBtn">Está bien así →</button></div>
     <div class="inputs-row">
       <div class="field">
         <label>Tu posición <button type="button" class="help" data-help="position">?</button></label>
@@ -981,23 +999,8 @@
           <option value="BB" selected>BB — ciega grande</option>
         </select>
       </div>
-      <div class="field easy-extra">
-        <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
-        <div class="stepper">
-          <button type="button" id="rivMinus">−</button>
-          <span id="rivVal">1</span>
-          <button type="button" id="rivPlus">+</button>
-        </div>
-      </div>
-      <div class="field easy-extra">
-        <label>Tipo de partida <button type="button" class="help" data-help="game">?</button></label>
-        <div class="toggle-group" id="gameType">
-          <button type="button" class="toggle-btn" data-game="cash">Cash<small>Fichas = dinero</small></button>
-          <button type="button" class="toggle-btn" data-game="torneo">Torneo<small>Si lo pierdes todo, fuera</small></button>
-        </div>
-      </div>
       <div class="field field-wide">
-        <div class="hint easy-extra" id="posInfoBox">
+        <div class="hint pro-only" id="posInfoBox">
           Cuanto más tarde hables, más información tienes: <b>BTN</b> es la mejor posición y <b>UTG</b> la peor.
           Si no sabes cuál es la tuya, deja <b>BTN</b> (tú) y <b>BB</b> (rival) — es la combinación más habitual.
         </div>
@@ -1032,11 +1035,27 @@
           </div>
         </div>
       </div>
+      <div class="field easy-extra">
+        <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
+        <div class="stepper">
+          <button type="button" id="rivMinus">−</button>
+          <span id="rivVal">1</span>
+          <button type="button" id="rivPlus">+</button>
+        </div>
+      </div>
+      <div class="field easy-extra">
+        <label>Tipo de partida <button type="button" class="help" data-help="game">?</button></label>
+        <div class="toggle-group" id="gameType">
+          <button type="button" class="toggle-btn" data-game="cash">Cash<small>Fichas = dinero</small></button>
+          <button type="button" class="toggle-btn" data-game="torneo">Torneo<small>Si lo pierdes todo, fuera</small></button>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="panel">
-    <div class="panel-head"><div class="panel-num">3</div><h2>Las apuestas</h2></div>
+  <section class="panel" id="betsPanel">
+    <div class="panel-head"><div class="panel-num">3</div><h2><small class="step-lbl easy-only">Paso 3 de 3</small><span class="easy-only">El bote</span><span class="pro-only">Las apuestas</span></h2></div>
+    <div class="step-guide easy-only" id="stepGuide3" style="display:none;">👉 <b>Ahora:</b> dinos cuánto había en el centro y cuánto ha apostado tu rival. Si nadie ha apostado, pulsa «Nadie ha apostado».</div>
     <div class="toggle-group bets-mode pro-only" id="betsMode">
       <button type="button" class="toggle-btn" data-bm="quick">💰 Solo el bote<small>Bote y lo que pagas</small></button>
       <button type="button" class="toggle-btn" data-bm="full">📝 Secuencia completa<small>Apuestas, stacks y SPR</small></button>
@@ -1057,14 +1076,29 @@
       </div>
     </details>
     <div class="or-line easy-extra full-only" id="orLine">…o escribe directamente el bote y lo que te toca pagar:</div>
-    <div class="inputs-row">
+    <div class="easy-pot easy-only" id="easyPot">
       <div class="field">
-        <label><span class="pro-only">Bote actual</span><span class="easy-only">Bote</span> <button type="button" class="help" data-help="pot">?</button></label>
+        <label>¿Cuánto había en el centro antes de la apuesta? <button type="button" class="help" data-help="pot">?</button></label>
+        <input type="number" id="potBeforeInput" min="0" step="any" placeholder="0" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>¿Cuánto ha apostado tu rival? <button type="button" class="help" data-help="call">?</button></label>
+        <div class="easy-bet-row">
+          <input type="number" id="betInput" min="0" step="any" placeholder="0" inputmode="decimal">
+          <button type="button" class="btn-secondary" id="noBetBtn">Nadie ha apostado</button>
+        </div>
+        <div class="hint">Lo que te cuesta pagar para seguir en la mano.</div>
+      </div>
+      <div class="easy-pot-sum" id="easyPotSum"></div>
+    </div>
+    <div class="inputs-row">
+      <div class="field pro-only">
+        <label>Bote actual <button type="button" class="help" data-help="pot">?</button></label>
         <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
         <div class="hint">Fichas o €, la unidad da igual</div>
       </div>
-      <div class="field">
-        <label><span class="pro-only">Cantidad a igualar</span><span class="easy-only">Tengo que pagar</span> <button type="button" class="help" data-help="call">?</button></label>
+      <div class="field pro-only">
+        <label>Cantidad a igualar <button type="button" class="help" data-help="call">?</button></label>
         <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
         <div class="hint">Lo que cuesta pagar ahora</div>
       </div>
@@ -1087,6 +1121,7 @@
       <button class="btn-primary" id="analyzeBtn">Analizar mano</button>
       <button class="btn-secondary" id="resetBtn">Reiniciar</button>
     </div>
+    <div class="step-todo easy-only" id="stepTodo"></div>
     <div class="usage-row" id="usageRow"></div>
     <button type="button" class="link-btn" id="trainLink">🎯 ¿Quieres practicar? Prueba el modo entrenamiento</button>
   </section>
@@ -1174,10 +1209,10 @@
       <div class="more-btns"><button type="button" class="btn-secondary" id="moreNudgeAdd">Añadir detalles</button><button type="button" class="btn-primary" id="moreNudgePro">Activar modo Avanzado</button></div></div>
     <div class="demo-next" id="demoNext" style="display:none;"><b>👉 Así funciona RÍO.</b> Ahora prueba con una mano tuya.
       <button type="button" class="btn-primary" id="demoOwnBtn" style="width:100%; margin-top:10px;">Ahora analiza tu propia mano →</button></div>
+    <button class="btn-primary" id="againBtn" style="width:100%; margin-top:14px;">🔄 Analizar otra mano</button>
     <div class="next-actions">
-      <button class="btn-primary" id="shareBtn">📤 Compartir</button>
+      <button class="btn-secondary" id="shareBtn">📤 Compartir</button>
       <button class="btn-secondary" id="copyBtn">📋 Copiar</button>
-      <button class="btn-secondary" id="againBtn">🔄 Otra mano</button>
     </div>
     </div>
     <button type="button" class="link-btn" id="feedbackBtn">👎 ¿Te parece raro este consejo? Avísanos</button>
@@ -1787,6 +1822,7 @@
     renderSeq(); syncFromSeq(); renderStreetBtns();
     resultPanel.classList.remove('show');
     updateSticky();
+    easyPotFromMain();
   }
 
   // Móvil: barra fija con "Analizar mano" cuando ya tienes tus cartas y el botón normal no se ve.
@@ -1802,6 +1838,69 @@
     new IntersectionObserver(es => { resultInView = es[0].isIntersecting; updateSticky(); }).observe(document.getElementById('resultPanel'));
   }
   document.getElementById('stickyAnalyzeBtn').addEventListener('click', () => document.getElementById('analyzeBtn').click());
+
+  // ---- Modo Fácil: bote en dos preguntas y pasos con guía ----
+  // Los campos de verdad siguen siendo potInput (bote, con la apuesta incluida) y callInput
+  // (lo que pagas); en Fácil se rellenan desde "lo que había" + "lo que ha apostado".
+  const potBeforeEl = document.getElementById('potBeforeInput'), betEl = document.getElementById('betInput');
+  const round2 = (n) => Math.round(n * 100) / 100;
+  function renderEasySum(){
+    const potEl = document.getElementById('potInput'), callEl = document.getElementById('callInput');
+    const sumEl = document.getElementById('easyPotSum');
+    if (potEl.value === '' && callEl.value === ''){ sumEl.innerHTML = ''; return; }
+    const pot = Number(potEl.value) || 0, call = Number(callEl.value) || 0;
+    const auto = seqHasActions() ? ' <small>(calculado con la secuencia de apuestas)</small>' : ' <small>(RÍO lo calcula solo)</small>';
+    sumEl.innerHTML = call > 0
+      ? `→ Bote <b>${fmtN(pot)}</b> · te toca pagar <b>${fmtN(call)}</b>${auto}`
+      : `→ Nadie ha apostado: bote <b>${fmtN(pot)}</b>, no te toca pagar nada${auto}`;
+  }
+  // bote/pagar → las dos preguntas (al cargar una captura, el ejemplo, una mano compartida…)
+  function easyPotFromMain(){
+    const potEl = document.getElementById('potInput'), callEl = document.getElementById('callInput');
+    const pot = Number(potEl.value) || 0, call = Number(callEl.value) || 0;
+    potBeforeEl.value = potEl.value === '' && callEl.value === '' ? '' : round2(Math.max(0, pot - call));
+    betEl.value = callEl.value === '' ? '' : round2(call);
+    const auto = seqHasActions();
+    potBeforeEl.readOnly = auto; betEl.readOnly = auto; document.getElementById('noBetBtn').disabled = auto;
+    renderEasySum(); updateSteps();
+  }
+  // las dos preguntas → bote/pagar
+  function mainFromEasy(){
+    const potEl = document.getElementById('potInput'), callEl = document.getElementById('callInput');
+    const before = Number(potBeforeEl.value) || 0, bet = Number(betEl.value) || 0;
+    potEl.value = potBeforeEl.value === '' && betEl.value === '' ? '' : round2(before + bet);
+    callEl.value = betEl.value === '' ? '' : round2(bet);
+    renderEasySum(); updateSteps();
+  }
+  potBeforeEl.addEventListener('input', mainFromEasy);
+  betEl.addEventListener('input', mainFromEasy);
+  document.getElementById('noBetBtn').addEventListener('click', () => { betEl.value = 0; mainFromEasy(); });
+  ['potInput', 'callInput'].forEach(id => document.getElementById(id).addEventListener('input', easyPotFromMain));
+
+  let posTouched = false;
+  function updateSteps(){
+    const s1 = !!(hole[0] && hole[1]);
+    const s3 = document.getElementById('callInput').value !== '' || seqHasActions();
+    const s2 = s1 && (posTouched || s3 || potBeforeEl.value !== '');
+    const cur = !s1 ? 1 : !s2 ? 2 : !s3 ? 3 : 0;
+    [['cardsPanel', s1, 1], ['tablePanel', s2, 2], ['betsPanel', s3, 3]].forEach(([id, done, n]) => {
+      const el = document.getElementById(id);
+      el.classList.toggle('step-done', done && cur !== n);
+      el.classList.toggle('step-current', cur === n);
+    });
+    document.getElementById('stepGuide2').style.display = cur === 2 ? '' : 'none';
+    document.getElementById('stepGuide3').style.display = cur === 3 ? '' : 'none';
+    document.getElementById('stepTodo').innerHTML = [
+      '✅ <b>¡Listo!</b> Pulsa <b>Analizar mano</b>.',
+      'Falta: <b>elige tus dos cartas</b>.',
+      'Falta: <b>dinos dónde estás sentado</b> (o pulsa «Está bien así»).',
+      'Falta: <b>di cuánto ha apostado tu rival</b> (o «Nadie ha apostado»).'][cur];
+  }
+  ['heroPosInput', 'villPosInput'].forEach(id => document.getElementById(id).addEventListener('change', () => { posTouched = true; updateSteps(); }));
+  document.getElementById('posOkBtn').addEventListener('click', () => {
+    posTouched = true; updateSteps();
+    document.getElementById('betsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   function updateCurrentHand(){
     const known = [...hole, ...board].filter(Boolean);
@@ -2473,7 +2572,7 @@
     const potEl = document.getElementById('potInput'), callEl = document.getElementById('callInput');
     const has = seqHasActions();
     potEl.classList.toggle('auto', has); callEl.classList.toggle('auto', has);
-    if (!has) return;
+    if (!has){ easyPotFromMain(); return; }
     // Si hay secuencia (relato, captura, mano compartida…), que se vea también en Fácil.
     if (!document.body.classList.contains('easy-more')) setEasyMore(true);
     if (!document.body.classList.contains('bets-full')) setBetsFull(true);
@@ -2481,6 +2580,7 @@
     const st = replay(availableStreets() - 1, dp || undefined);
     potEl.value = Math.round(st.pot * 100) / 100;
     callEl.value = Math.round(st.owed * 100) / 100;
+    easyPotFromMain();
   }
 
   // ---- Selector de calle a analizar ----
@@ -4465,6 +4565,7 @@
   });
 
   document.getElementById('resetBtn').addEventListener('click', () => {
+    posTouched = false;
     hole = [null,null]; board = [null,null,null,null,null];
     numRivals = 1; rivVal.textContent = '1';
     document.getElementById('potInput').value = '';
