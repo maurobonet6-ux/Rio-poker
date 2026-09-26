@@ -122,7 +122,7 @@ test('sin cuenta: 1 análisis de prueba y después pide crear la cuenta gratis',
   await page.locator('#analyzeBtn').click();
   await expect(page.locator('#paywall.show')).toBeVisible();
   await expect(page.locator('#paywallTitle')).toHaveText('Crea tu cuenta gratis');
-  await expect(page.locator('#paywall .paywall-price')).toBeHidden(); // sin precios: no parece un pago
+  await expect(page.locator('#paywall .paywall-price:visible')).toHaveCount(0); // sin precios: no parece un pago
 });
 
 test('secuencia de apuestas: repasa tus decisiones calle a calle', async ({ page }) => {
@@ -222,22 +222,24 @@ test('plan anual: 79,99 €/año, con el email de tu cuenta, y oculto si ya eres
   await abrir(page, { logged: true, storage: { rio_email: JSON.stringify('jugador@rio.test') } });
   await page.evaluate(() => { window.__abiertos = []; window.open = (u) => { window.__abiertos.push(u); }; });
   await page.evaluate(() => document.getElementById('navPlan').click());
-  const anual = page.locator('#proPlanCard .annual-btn');
+  // El plan anual es su propia tarjeta, no está dentro de la del mensual.
+  await expect(page.locator('#proPlanCard .annual-btn')).toHaveCount(0);
+  await expect(page.locator('#annualPlanCard')).toContainText('79,99 €');
+  const anual = page.locator('#annualPlanCard .annual-btn');
   await expect(anual).toContainText('79,99 €/año');
-  await expect(page.locator('#proPlanCard .annual-note')).toContainText('79,99 €/año');
   await anual.click();
   expect((await page.evaluate(() => window.__abiertos))[0]).toMatch(/^https:\/\/buy\.stripe\.com\/7sY8wR3Vl3g0dOB7Ko9IQ06\?prefilled_email=jugador%40rio\.test&client_reference_id=rio_/);
   const pro = await browser.newPage();
   await abrir(pro, { pro: true });
   await pro.evaluate(() => document.getElementById('navPlan').click());
-  await expect(pro.locator('#proPlanCard .annual-btn')).toBeHidden();
+  await expect(pro.locator('#annualPlanCard')).toBeHidden();
   await pro.close();
 });
 
 test('"Ya he pagado, comprobar" activa PRO si el servidor ya ve el pago', async ({ page }) => {
   let pagado = false;
   await abrir(page, { logged: true, storage: { rio_email: JSON.stringify('jugador@rio.test') } });
-  await page.route('**/api/check-pro', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ pro: pagado, email: 'jugador@rio.test' }) }));
+  await page.route('**/api/check-pro*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ pro: pagado, email: 'jugador@rio.test' }) }));
   await page.evaluate(() => document.getElementById('navPlan').click());
   const boton = page.locator('#proPlanCard .paid-check');
   await boton.click();
@@ -288,4 +290,14 @@ test('resultado: "Analizar otra mano" va antes que compartir y copiar', async ({
   const [otra, compartir] = await page.evaluate(() => ['#againBtn', '#shareBtn'].map(s => document.querySelector(s).getBoundingClientRect().top));
   expect(otra).toBeLessThan(compartir);
   await expect(page.locator('#againBtn')).toHaveClass(/btn-primary/);
+});
+
+test('pagar sin haber entrado: primero pide entrar o crear la cuenta', async ({ page }) => {
+  await abrir(page);
+  await page.evaluate(() => { window.__abiertos = []; window.open = (u) => { window.__abiertos.push(u); }; });
+  await page.evaluate(() => document.getElementById('navPlan').click());
+  await page.locator('#subscribeFromPlanBtn').click();
+  await expect(page.locator('#paywall.show')).toBeVisible();
+  await expect(page.locator('#paywallTitle')).toHaveText('Primero, entra en tu cuenta');
+  expect(await page.evaluate(() => window.__abiertos.length)).toBe(0); // no se abre Stripe sin cuenta
 });

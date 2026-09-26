@@ -413,8 +413,20 @@
   .pw-cancel { text-align: center; font-size: 0.82rem; color: var(--cream-dim); margin-top: 8px; }
   .paywall-fine { font-size: 0.72rem; color: var(--cream-dim); text-align: center; margin: 12px 0 0; }
 
-  .plan-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 4px 0 6px; }
-  @media (max-width: 480px) { .plan-cards { grid-template-columns: 1fr; } }
+  .plan-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 4px 0 6px; }
+  .plan-cards.no-annual { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 760px) { .plan-cards, .plan-cards.no-annual { grid-template-columns: 1fr; } }
+  .plan-card.annual { background: linear-gradient(165deg, rgba(212,175,55,0.14), var(--panel-2) 65%); border-color: rgba(212,175,55,0.35); }
+  .plan-card-badge.save { background: var(--ok); }
+  .plan-card-sub { font-size: 0.8rem; color: var(--ok); font-weight: 700; margin: -10px 0 14px; }
+  .pw-or { display: flex; align-items: center; gap: 10px; color: var(--cream-dim); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 18px 0 12px; }
+  .pw-or::before, .pw-or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .pw-annual { background: var(--panel-2); border: 1.5px solid rgba(212,175,55,0.35); border-radius: 14px; padding: 14px; }
+  .pw-annual h4 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.05rem; margin: 0 0 6px; }
+  .pw-annual .paywall-price { margin-bottom: 4px; }
+  .pw-annual .plan-card-sub { margin: 0 0 12px; }
+  .pw-annual .annual-btn { border-color: var(--cream); color: var(--cream); font-weight: 700; }
+  .plan-card.annual .plan-card-features { flex: none; }
   .plan-card {
     position: relative; background: var(--panel-2); border: 1.5px solid var(--line); border-radius: 18px;
     padding: 22px 18px 20px; display: flex; flex-direction: column;
@@ -811,11 +823,7 @@
   .story-btn { border-style: solid; border-color: rgba(232,40,63,0.45); background: linear-gradient(160deg, rgba(232,40,63,0.14), var(--panel-2) 70%); }
   #storyMic.active { border-color: var(--crimson); color: var(--crimson); }
 
-  .annual-btn { width: 100%; margin-top: 10px; color: var(--cream); }
-  .annual-btn b { color: var(--cream); }
-  .annual-btn small { display: block; margin-top: 3px; font-size: 0.74rem; color: var(--ok); font-weight: 700; }
-  .annual-note { font-size: 0.78rem; color: var(--cream-dim); margin: -10px 0 12px; }
-  .annual-note:empty { display: none; }
+  .annual-btn { width: 100%; margin-top: 14px; flex: none; }
   .inbox-item { border-bottom: 1px solid var(--line); padding: 10px 0; }
   .inbox-item pre { white-space: pre-wrap; word-break: break-word; font-size: 0.72rem; color: var(--cream-dim); background: var(--panel-2); padding: 8px; border-radius: 8px; margin: 0; }
 
@@ -1355,7 +1363,7 @@
 </div>
 
 <div class="overlay" id="planPanel">
-  <div class="picker paywall-card" style="max-width:640px;">
+  <div class="picker paywall-card" style="max-width:900px;">
     <div class="picker-head">
       <h3>Tu plan</h3>
       <button type="button" id="closePlanPanel" aria-label="Cerrar">&times;</button>
@@ -1378,7 +1386,6 @@
         <div class="plan-card-badge" id="proPlanBadge" style="display:none;">Tu plan actual</div>
         <h4>RÍO PRO</h4>
         <div class="plan-card-price"><span>9,99 €</span><small>/ mes</small></div>
-        <div class="annual-note"></div>
         <ul class="plan-card-features">
           <li><b>Análisis manuales: ilimitados</b></li>
           <li><b>Créditos de IA: 200 al mes</b><br><small>1 captura = 1 crédito · 1 mano contada = 1 crédito</small></li>
@@ -1399,6 +1406,21 @@
         <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:10px; display:none;">💳 Gestionar suscripción</button>
         <div class="hint" id="manageSubHint" style="display:none; margin-top:6px;">Cancelar, cambiar la tarjeta o descargar tus facturas.</div>
         <div id="manageSubMsg" class="restore-msg"></div>
+      </div>
+
+      <div class="plan-card annual" id="annualPlanCard">
+        <div class="plan-card-badge save">Ahorras un 33 %</div>
+        <h4>RÍO PRO anual</h4>
+        <div class="plan-card-price"><span>79,99 €</span><small>/ año</small></div>
+        <div class="plan-card-sub">Sale a 6,67 €/mes</div>
+        <ul class="plan-card-features">
+          <li><b>Todo lo de RÍO PRO</b></li>
+          <li>Análisis manuales ilimitados</li>
+          <li>200 créditos de IA al mes</li>
+          <li>Un solo pago al año, sin preocuparte</li>
+          <li>Cancela cuando quieras</li>
+        </ul>
+        <button type="button" class="btn-primary annual-btn">Quiero el plan anual · 79,99 €/año</button>
       </div>
     </div>
 
@@ -1444,9 +1466,15 @@
       <li>✓ <b>200 créditos de IA al mes</b> (1 captura o 1 mano contada = 1 crédito)</li>
     </ul>
     <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
-    <div class="annual-note sub-part"></div>
     <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%; text-transform:uppercase; letter-spacing:0.03em;">Quiero RÍO PRO</button>
     <div class="pw-cancel sub-part">Cancela cuando quieras. Paga con el mismo email con el que entras en RÍO.</div>
+    <div class="pw-or sub-part annual-part">o</div>
+    <div class="pw-annual sub-part annual-part">
+      <h4>RÍO PRO anual</h4>
+      <div class="paywall-price"><span>79,99&nbsp;€</span><small>/ año</small></div>
+      <div class="plan-card-sub">Sale a 6,67 €/mes · ahorras un 33 %</div>
+      <button type="button" class="btn-secondary annual-btn" style="margin-top:0;">Quiero el plan anual</button>
+    </div>
     <button type="button" class="link-btn paid-check sub-part" style="display:block; margin:8px auto 0;">Ya he pagado, comprobar</button>
     <div class="restore-msg paid-msg sub-part"></div>
     <div class="pw-packs sub-part">¿Necesitas más IA? Packs extra desde <b>2,99 €</b> (+100 créditos), pago único.</div>
@@ -1504,7 +1532,16 @@
   // Abre un enlace de pago de Stripe con el email de tu cuenta ya puesto y, además, un
   // identificador de tu cuenta (client_reference_id): así el servidor asocia el pago a tu
   // cuenta aunque pagues con otro email (por ejemplo, con Apple Pay). Ver lib/stripe.js.
+  let pendingPayment = null;
   function openPayment(link){
+    // Sin cuenta, el pago no se podría asociar a nadie: primero entrar o crear la cuenta gratis.
+    if (!storageGet('rio_token', '')){
+      pendingPayment = link;
+      openPaywall('login');
+      document.getElementById('paywallTitle').textContent = 'Primero, entra en tu cuenta';
+      document.getElementById('paywallCopy').innerHTML = 'Para que tu pago quede asociado a tu cuenta, entra o crea tu cuenta gratis (solo tu email y un código). Justo después podrás pagar.';
+      return;
+    }
     let url = link;
     try {
       const email = JSON.parse(localStorage.getItem('rio_email') || '""');
@@ -1599,7 +1636,11 @@
 
     const subscribeFromPlanBtn = document.getElementById('subscribeFromPlanBtn');
     if (subscribeFromPlanBtn) subscribeFromPlanBtn.style.display = pro ? 'none' : 'inline-block';
-    document.querySelectorAll('#proPlanCard .annual-btn, #proPlanCard .annual-note, #proPlanCard .paid-check, #proPlanCard .paid-msg').forEach(el => { el.style.display = pro ? 'none' : ''; });
+    const annualCard = document.getElementById('annualPlanCard');
+    if (annualCard) annualCard.style.display = (pro || !ANNUAL_PAYMENT_LINK) ? 'none' : '';
+    const planCards = document.querySelector('#planPanel .plan-cards');
+    if (planCards) planCards.classList.toggle('no-annual', pro || !ANNUAL_PAYMENT_LINK);
+    document.querySelectorAll('#proPlanCard .paid-check, #proPlanCard .paid-msg').forEach(el => { el.style.display = pro ? 'none' : ''; });
 
     const photoBox = document.getElementById('photoUsageBox');
     if (photoBox){
@@ -1692,9 +1733,9 @@
   // Pregunta a nuestro pequeño servidor (que a su vez pregunta a Stripe) si la
   // sesión guardada sigue teniendo una suscripción activa. Devuelve true/false,
   // o 'logout' si la sesión ya no es válida. Nunca lanza error.
-  async function verifyProSession(){
+  async function verifyProSession(deep){
     try {
-      const r = await fetch(API_ENDPOINT, { headers: authHeaders() });
+      const r = await fetch(API_ENDPOINT + (deep ? '?deep=1' : ''), { headers: authHeaders() });
       if (r.status === 401) return 'logout';
       const data = await r.json();
       if (!r.ok) return null;
@@ -1720,11 +1761,11 @@
   // a RÍO desde otra pestaña (por ejemplo, tras pagar en Stripe) y con el botón
   // "Ya he pagado, comprobar". Devuelve true, false o null (sin respuesta).
   var lastProCheck = 0; // "var": revalidateOnLoad() la usa antes de llegar a esta línea
-  async function recheckPro(force){
+  async function recheckPro(force, deep){
     if (!storageGet('rio_token', '')) return false;
     if (!force && Date.now() - lastProCheck < 15000) return null;
     lastProCheck = Date.now();
-    const pro = await verifyProSession();
+    const pro = await verifyProSession(deep);
     if (pro === null) return null; // sin respuesta del servidor: no tocamos nada
     if (pro === 'logout'){ logoutPro(); return false; }
     storageSet('rio_pro', pro);
@@ -3419,22 +3460,10 @@
   }
 
   // ---- Plan anual (aparece cuando configures su enlace de pago de Stripe) ----
-  const ANNUAL_PAYMENT_LINK = 'https://buy.stripe.com/7sY8wR3Vl3g0dOB7Ko9IQ06'; // RÍO PRO anual · 79,99 €/año
-  const ANNUAL_PRICE_LABEL = '79,99 €/año';
-  const ANNUAL_SAVING_LABEL = '6,67 €/mes · ahorras un 33 %';
-  if (ANNUAL_PAYMENT_LINK){
-    ['subscribeBtn', 'subscribeFromPlanBtn'].forEach(id => {
-      const main = document.getElementById(id);
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'btn-secondary annual-btn' + (id === 'subscribeBtn' ? ' sub-part' : '');
-      b.innerHTML = `📅 Plan anual: <b>${ANNUAL_PRICE_LABEL}</b><small>${ANNUAL_SAVING_LABEL}</small>`;
-      b.addEventListener('click', () => openPayment(ANNUAL_PAYMENT_LINK));
-      main.insertAdjacentElement('afterend', b);
-    });
-    document.querySelectorAll('.annual-note').forEach(el => { el.textContent = `o ${ANNUAL_PRICE_LABEL} (${ANNUAL_SAVING_LABEL})`; });
-    // Si ya eres PRO, en Tu plan no se ofrece suscribirse otra vez.
-    if (isPro()) document.querySelectorAll('#proPlanCard .annual-btn, #proPlanCard .annual-note').forEach(el => { el.style.display = 'none'; });
-  }
+  // (var: se usa también al pintar "Tu plan", que puede ejecutarse antes de llegar aquí)
+  var ANNUAL_PAYMENT_LINK = 'https://buy.stripe.com/7sY8wR3Vl3g0dOB7Ko9IQ06'; // RÍO PRO anual · 79,99 €/año
+  document.querySelectorAll('.annual-btn').forEach(b => b.addEventListener('click', () => openPayment(ANNUAL_PAYMENT_LINK)));
+  if (!ANNUAL_PAYMENT_LINK) document.querySelectorAll('.annual-part, #annualPlanCard').forEach(el => { el.style.display = 'none'; });
 
   // ---- ¿Consejo raro? Avisos de los usuarios ----
   function openFeedback(){
@@ -3710,7 +3739,7 @@
       }, 200);
     }
   }
-  function closePaywall(){ paywall.classList.remove('show'); pendingAnalyze = false; }
+  function closePaywall(){ paywall.classList.remove('show'); pendingAnalyze = false; pendingPayment = null; }
   document.getElementById('closePaywall').addEventListener('click', closePaywall);
   document.getElementById('seePlansLink').addEventListener('click', () => openPaywall('plans'));
   paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
@@ -3766,7 +3795,7 @@
     const msg = btn.nextElementSibling;
     if (!storageGet('rio_token', '')){ msg.className = 'restore-msg paid-msg'; msg.textContent = 'Primero entra con tu email (más abajo o en el menú).'; return; }
     btn.disabled = true; msg.className = 'restore-msg paid-msg'; msg.textContent = 'Comprobando tu pago…';
-    const pro = await recheckPro(true);
+    const pro = await recheckPro(true, true); // a fondo: también busca pagos cuyo aviso de Stripe no llegó
     btn.disabled = false;
     if (pro === true){
       msg.className = 'restore-msg paid-msg ok'; msg.textContent = '¡Listo! Ya eres RÍO PRO.';
@@ -4074,6 +4103,15 @@
         msg.textContent = data.pro ? '¡Suscripción activa! Desbloqueando RÍO PRO…' : '¡Cuenta lista! Ya puedes usar tus análisis gratis.';
         msg.className = 'restore-msg ok';
         updateUsageBadge(); renderHistory();
+        if (pendingPayment){
+          // Acaba de entrar para pagar: botón para seguir (abrir el pago necesita un toque del usuario).
+          const link = pendingPayment; pendingPayment = null;
+          msg.innerHTML = data.pro ? '¡Ya eres RÍO PRO!' : '¡Cuenta lista! <button type="button" class="btn-primary" id="goPayBtn" style="width:100%; margin-top:10px;">Continuar al pago →</button>';
+          const go = document.getElementById('goPayBtn');
+          if (go) go.addEventListener('click', () => { openPayment(link); closePaywall(); });
+          else setTimeout(closePaywall, 1200);
+          return;
+        }
         const resume = pendingAnalyze;
         setTimeout(() => { closePaywall(); if (resume) analyzeBtn.click(); }, 900);
       }
