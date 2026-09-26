@@ -11,6 +11,7 @@
 
 const { emailFromRequest, isPro } = require('../lib/auth');
 const { chargeUse } = require('../lib/quota');
+const { extractJson } = require('../lib/json');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -90,7 +91,7 @@ Reglas:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-5',
-        max_tokens: 500,
+        max_tokens: 800,
         // Leer la captura es una tarea sencilla: sin "pensar" es más rápido y más barato.
         thinking: { type: 'disabled' },
         messages: [{
@@ -111,11 +112,12 @@ Reglas:
     }
 
     const text = (data.content || []).map(b => b.text || '').join('').trim();
-    const clean = text.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
 
     let parsed;
-    try { parsed = JSON.parse(clean); }
-    catch (e) { await refundPhoto(); res.status(502).json({ error: 'No se pudo interpretar la respuesta del modelo' }); return; }
+    try { parsed = extractJson(text); }
+    catch (e) {
+      console.error('analyze-table: respuesta no válida', { stop_reason: data.stop_reason, text: text.slice(0, 2000) });
+      await refundPhoto(); res.status(502).json({ error: 'No se pudo interpretar la respuesta del modelo' }); return; }
 
     res.status(200).json(parsed);
   } catch (e) {
