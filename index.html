@@ -266,6 +266,18 @@
   .picker-head button { background: none; border: none; color: var(--cream-dim); font-size: 1.5rem; cursor: pointer; }
   .back-btn { background: none; border: none; color: var(--gold); font-weight: 600; cursor: pointer; font-family: 'Space Grotesk', sans-serif; padding: 0; margin-bottom: 4px; font-size: 0.9rem; }
 
+  .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .card-pick { height: 38px; border-radius: 10px; border: 1px solid var(--line); background: #F5F2EC; color: #141416; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .card-pick span { font-size: 1.1rem; }
+  .card-pick.crimson { color: var(--gold); }
+  .card-pick.current { outline: 3px solid var(--ok); outline-offset: -3px; }
+  .card-pick:disabled { background: var(--panel-2); color: rgba(245,242,236,0.18); cursor: not-allowed; }
+  .card-pick:not(:disabled):active { transform: scale(0.95); }
+  @media (max-height: 800px) { .card-pick { height: 33px; font-size: 0.95rem; } .card-grid { gap: 4px; } #overlay .picker { padding-top: 16px; } #overlay .picker-head { margin-bottom: 10px; } }
+  @media (max-height: 640px) { .card-pick { height: 29px; } }
+  /* Área de toque más grande para los botones de ayuda "?" sin cambiar cómo se ven. */
+  .help { position: relative; }
+  .help::after { content: ''; position: absolute; inset: -12px; }
   .rank-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .rank-btn {
     padding: 16px 0; border-radius: 12px; border: 1px solid var(--line); background: var(--panel-2);
@@ -704,6 +716,17 @@
   .train-verdict { font-weight: 800; font-size: 1.1rem; margin-top: 6px; }
   .train-verdict.ok { color: var(--ok); } .train-verdict.meh { color: var(--lavender); } .train-verdict.bad { color: var(--crimson); }
   .chart-grid button { cursor: default; }
+  .loss-list { display: grid; gap: 6px; }
+  .loss-row { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; align-items: center; padding: 9px 12px; border-radius: 10px; background: var(--panel-2); font-size: 0.86rem; }
+  .loss-row b { color: var(--crimson); } .loss-row small { grid-column: 1 / -1; color: var(--cream-dim); font-size: 0.72rem; }
+  .sticky-analyze { display: none; }
+  @media (max-width: 680px) {
+    .sticky-analyze.show { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(10,10,11,0.92);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-top: 1px solid var(--line); }
+    .sticky-analyze button { width: 100%; }
+    body.has-sticky footer { padding-bottom: 80px; }
+  }
   .train-funnel { margin: 14px 0 12px; padding: 14px; border-radius: 12px; border: 1px solid var(--gold); background: var(--gold-soft); font-size: 0.9rem; }
   .chart-opts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
   .chart-opts .range-presets { margin: 0; }
@@ -1090,6 +1113,8 @@
     <div class="hint" id="histNote" style="margin-top:10px; font-size:0.74rem; line-height:1.45;"></div>
   </section>
 
+  <div class="sticky-analyze" id="stickyAnalyze"><button type="button" class="btn-primary" id="stickyAnalyzeBtn">Analizar mano</button></div>
+
   <footer>
     Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.
     <div class="footer-links">
@@ -1131,7 +1156,7 @@
     <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span><span class="lbl">Glosario de póker</span></button>
 
     <div class="nav-section">Tu progreso</div>
-    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span><span class="lbl">Tus estadísticas</span></button>
+    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span><span class="lbl">Tu progreso</span></button>
 
     <div class="nav-section">Cuenta</div>
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span><span class="lbl">Entrar o crear cuenta</span></button>
@@ -1139,7 +1164,6 @@
     <button type="button" class="sidebar-link" id="navPlan"><span class="ic">💎</span><span class="lbl">Planes y precios</span></button>
     <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span><span class="lbl">Configuración</span></button>
     <button type="button" class="sidebar-link" id="navInstall"><span class="ic">📲</span><span class="lbl">Instalar en el móvil</span></button>
-    <button type="button" class="sidebar-link" id="navInbox" style="display:none;"><span class="ic">📥</span><span class="lbl">Avisos de usuarios</span><span class="admin-badge">ADMIN</span></button>
     <button type="button" class="sidebar-link logout" id="navLogout" style="display:none;"><span class="ic">🚪</span><span class="lbl">Cerrar sesión</span></button>
   </div>
 
@@ -1453,7 +1477,16 @@
     // "Gestionar suscripción" ya está en el botón de la tarjeta de cuenta.
     document.getElementById('navManage').style.display = 'none';
     document.querySelectorAll('.sidebar-link .pro-badge').forEach(el => { el.style.display = isPro() ? 'none' : ''; });
-    document.getElementById('navInbox').style.display = logged && storageGet('rio_admin', false) ? '' : 'none';
+    // El botón de administración solo se crea si el servidor ha confirmado que la cuenta es admin.
+    const admin = logged && storageGet('rio_admin', false);
+    let inboxBtn = document.getElementById('navInbox');
+    if (admin && !inboxBtn){
+      inboxBtn = document.createElement('button');
+      inboxBtn.type = 'button'; inboxBtn.className = 'sidebar-link'; inboxBtn.id = 'navInbox';
+      inboxBtn.innerHTML = '<span class="ic">📥</span><span class="lbl">Avisos de usuarios</span><span class="admin-badge">ADMIN</span>';
+      inboxBtn.addEventListener('click', () => openInbox());
+      document.getElementById('navLogout').insertAdjacentElement('beforebegin', inboxBtn);
+    } else if (!admin && inboxBtn) inboxBtn.remove();
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
     document.getElementById('sidebarAccount').textContent = logged ? storageGet('rio_email', '') : 'Sin cuenta · tus datos solo en este navegador';
@@ -1568,8 +1601,6 @@
       ? `Con ${heroPos} vs ${villPos}: vas fuera de posición — actúas antes que tu rival.`
       : `Con ${heroPos} vs ${villPos}: tienes posición — tu rival actúa antes que tú.`;
   }
-  let pickStep = 'rank';
-  let pickedRank = null;
 
   const holeRow = document.getElementById('holeRow');
   const flopRow = document.getElementById('flopRow');
@@ -1625,11 +1656,25 @@
     });
 
     updateCurrentHand();
+    updateSticky();
     renderBoardState();
     renderRangeUI();
     renderSeq(); syncFromSeq(); renderStreetBtns();
     resultPanel.classList.remove('show');
   }
+
+  // Móvil: barra fija con "Analizar mano" cuando ya tienes tus cartas y el botón normal no se ve.
+  let analyzeInView = false, resultInView = false;
+  function updateSticky(){
+    const show = !!(hole[0] && hole[1]) && !analyzeInView && !resultInView;
+    document.getElementById('stickyAnalyze').classList.toggle('show', show);
+    document.body.classList.toggle('has-sticky', show);
+  }
+  if ('IntersectionObserver' in window){
+    new IntersectionObserver(es => { analyzeInView = es[0].isIntersecting; updateSticky(); }).observe(document.getElementById('analyzeBtn'));
+    new IntersectionObserver(es => { resultInView = es[0].isIntersecting; updateSticky(); }).observe(document.getElementById('resultPanel'));
+  }
+  document.getElementById('stickyAnalyzeBtn').addEventListener('click', () => document.getElementById('analyzeBtn').click());
 
   function updateCurrentHand(){
     const known = [...hole, ...board].filter(Boolean);
@@ -1690,8 +1735,6 @@
 
   function openPicker(zone, idx){
     activeSlot = {zone, idx};
-    pickStep = 'rank';
-    pickedRank = null;
     document.getElementById('clearSlotBtn').style.display = (zone==='hole'?hole[idx]:board[idx]) ? 'block' : 'none';
     renderPickerStep();
     overlay.classList.add('show');
@@ -1706,42 +1749,27 @@
     if (activeSlot.zone === 'hole') return `Tu carta ${i + 1} de 2 · `;
     return i < 3 ? `Flop · carta ${i + 1} de 3 · ` : i === 3 ? 'Turn · ' : 'River · ';
   }
+  // Elegir carta en un solo toque: una fila por valor (A…2) y una columna por palo.
   function renderPickerStep(){
     pickerBody.innerHTML = '';
-    if (pickStep === 'rank'){
-      pickerTitle.textContent = slotLabel() + 'Elige el valor';
-      const grid = document.createElement('div');
-      grid.className = 'rank-grid';
-      for (const rank of RANKS){
-        const b = document.createElement('button');
-        b.type = 'button'; b.className = 'rank-btn'; b.textContent = RANK_LABEL(rank);
-        const available = SUITS.some(s => !isUsed(rank, s) || (activeSlot && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]).rank===rank && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]).suit===s));
-        b.disabled = !available;
-        b.addEventListener('click', () => { pickedRank = rank; pickStep = 'suit'; renderPickerStep(); });
-        grid.appendChild(b);
-      }
-      pickerBody.appendChild(grid);
-    } else {
-      pickerTitle.textContent = slotLabel() + RANK_LABEL(pickedRank) + ' — elige el palo';
-      const back = document.createElement('button');
-      back.type = 'button'; back.className = 'back-btn'; back.textContent = '← Cambiar valor';
-      back.addEventListener('click', () => { pickStep = 'rank'; renderPickerStep(); });
-      pickerBody.appendChild(back);
-      const grid = document.createElement('div');
-      grid.className = 'suit-grid';
-      for (const suit of SUITS){
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'suit-btn ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
-        b.innerHTML = `${SUIT_SYMBOL[suit]}<small>${SUIT_NAME[suit]}</small>`;
-        const current = activeSlot ? (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) : null;
-        const usedByOther = isUsed(pickedRank, suit) && !(current && current.rank===pickedRank && current.suit===suit);
-        b.disabled = usedByOther;
-        b.addEventListener('click', () => selectCard(pickedRank, suit));
-        grid.appendChild(b);
-      }
-      pickerBody.appendChild(grid);
+    pickerTitle.textContent = slotLabel() + 'Elige la carta';
+    const current = activeSlot ? (activeSlot.zone === 'hole' ? hole[activeSlot.idx] : board[activeSlot.idx]) : null;
+    const grid = document.createElement('div');
+    grid.className = 'card-grid';
+    for (const rank of RANKS) for (const suit of SUITS){
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'card-pick ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
+      b.dataset.card = RANK_LABEL(rank) + suit;
+      b.setAttribute('aria-label', RANK_LABEL(rank) + ' de ' + SUIT_NAME[suit]);
+      b.innerHTML = `${RANK_LABEL(rank)}<span>${SUIT_SYMBOL[suit]}</span>`;
+      const isCurrent = current && current.rank === rank && current.suit === suit;
+      if (isCurrent) b.classList.add('current');
+      b.disabled = isUsed(rank, suit) && !isCurrent;
+      b.addEventListener('click', () => selectCard(rank, suit));
+      grid.appendChild(b);
     }
+    pickerBody.appendChild(grid);
   }
 
   function selectCard(rank, suit){
@@ -2383,6 +2411,12 @@
         set = intersectTop(set, raises >= 2 ? 15 : villPos === 'BB' ? 60 : 30);
       }
     }
+    // Sin secuencia, antes del flop y con algo más que la ciega por pagar: el rival ha subido,
+    // así que no juega todo su rango, solo el de apertura (o el de resubida si la subida es grande).
+    if (!pre.length && analysisStreet() === 0){
+      const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
+      if (call > bbSize()) set = intersectTop(set, call > bbSize() * 5 ? 9 : Math.min(OPEN_PCT[villPos] || 30, 30));
+    }
     if (set.size === 0) set = new Set(villRange.set);
     let pool = poolFromSet(set);
     for (let s = 1; s < avail; s++){
@@ -2431,6 +2465,9 @@
   function reviewDecisions(){
     const avail = cardStreets(), rows = [];
     const oop = heroIsOOP();
+    const heroPos = document.getElementById('heroPosInput').value, villPos = document.getElementById('villPosInput').value;
+    const threeBet = replay(0).raises >= 2; // bote con resubida antes del flop
+    const bb = bbSize();
     for (let s = 0; s < avail; s++){
       for (let i = 0; i < seq[s].length; i++){
         const a = seq[s][i];
@@ -2442,7 +2479,18 @@
           heroPos: document.getElementById('heroPosInput').value, unraised: s === 0 && st.raises === 0, iters: 700 });
         const win = reco.eq, needed = reco.needed, rec = reco.text;
         const act = a.type === 'check' ? 'CHECK' : a.type === 'call' ? 'CALL' : a.type === 'fold' ? 'FOLD' : (toCall > 0 ? 'RAISE' : 'BET');
-        rows.push({ s, win, needed, toCall, pot: st.pot, rec, act, g: grade(rec, act) });
+        // EV perdido estimado (en ciegas grandes), solo donde RÍO sabe calcular las dos opciones:
+        // pagar o tirar, y apostar o pasar. Los errores al subir se cuentan sin cifra.
+        let loss = null;
+        const evCall = (win / 100) * st.pot - (1 - win / 100) * toCall;
+        if (toCall > 0 && (rec === 'CALL' || rec === 'RAISE') && act === 'FOLD') loss = Math.max(0, evCall);
+        else if (toCall > 0 && rec === 'FOLD' && act === 'CALL') loss = Math.max(0, -evCall);
+        else if (toCall === 0 && reco.bc && rec === 'BET' && act === 'CHECK') loss = Math.max(0, reco.bc.evBet - reco.bc.evCheck);
+        else if (toCall === 0 && reco.bc && rec === 'CHECK' && act === 'BET') loss = Math.max(0, reco.bc.evCheck - reco.bc.evBet);
+        else if (rec === act) loss = 0;
+        rows.push({ s, win, needed, toCall, pot: st.pot, rec, act, g: grade(rec, act),
+          pos: `${heroPos} vs ${villPos}`, pt: threeBet && s > 0 ? '3bet' : '', bc: s === 3 && toCall > 0 ? 1 : 0,
+          loss: loss === null ? null : Math.round(loss / bb * 10) / 10 });
       }
     }
     return rows;
@@ -2485,8 +2533,12 @@
       return { text: 'CHECK', eq, needed, bc };
     }
     let text = decide(eq, needed + (c.premium || 0), c.toCall, c.oop, c.rivals).text;
-    // Para subir hay que ganar a las manos que pagarían la subida, no a todo su rango.
-    if (text === 'RAISE' && c.street > 0){
+    // Antes del flop, pagar exige algo más de lo justo: las manos flojas rara vez aprovechan
+    // toda su equity (ligan poco y suelen jugar el resto de la mano en desventaja).
+    if (text === 'CALL' && c.street === 0 && eq < needed + 3 + (c.premium || 0)) text = 'FOLD';
+    // Para subir hay que ganar a las manos que pagarían la subida, no a todo su rango
+    // (también antes del flop: resubir con 7-2 porque el bote paga bien no tiene sentido).
+    if (text === 'RAISE'){
       const strong = withBluffs(c.pool || poolFromSet(topRange(100)), c.boardCards, 0.4, 0, c.heroCards);
       const r2 = runEquity(c.heroCards, c.boardCards, c.rivals, 700, strong);
       const vs = r2.win + r2.tie / 2;
@@ -2618,7 +2670,7 @@
   function saveReviews(rows){
     if (!rows.length) return;
     const all = storageGet('rio_reviews', {});
-    all[handSignature()] = { t: Date.now(), rows: rows.map(r => ({ s: r.s, rec: r.rec, act: r.act, g: r.g })) };
+    all[handSignature()] = { t: Date.now(), rows: rows.map(r => ({ s: r.s, rec: r.rec, act: r.act, g: r.g, pos: r.pos, pt: r.pt, bc: r.bc, loss: r.loss })) };
     const keys = Object.keys(all).sort((a, b) => all[b].t - all[a].t).slice(0, 100);
     storageSet('rio_reviews', Object.fromEntries(keys.map(k => [k, all[k]])));
   }
@@ -2629,31 +2681,81 @@
     'BET>CHECK': 'Apuestas cuando convenía pasar', 'RAISE>FOLD': 'Subes con manos para tirar'
   };
   function openStats(){
-    const hand = Object.values(storageGet('rio_reviews', {})).flatMap(x => x.rows);
+    const reviews = Object.values(storageGet('rio_reviews', {}));
+    const hand = reviews.flatMap(x => x.rows.map(r => ({ ...r, t: x.t })));
     const train = storageGet('rio_train_log', []);
+    const hist = getHistory();
     const all = [...hand, ...train];
-    if (!all.length){
-      openModal('Tus estadísticas', `<p>Aún no hay datos. Se llenan de dos formas:</p><ul><li>Analizando tus manos con la <b>secuencia de apuestas</b> apuntada.</li><li>Jugando al <b>modo entrenamiento</b>.</li></ul><button type="button" class="btn-primary" id="statsTrain" style="width:100%;">🎯 Empezar a entrenar</button>`)
+    if (!all.length && !hist.length){
+      openModal('Tu progreso', `<p>Aún no hay datos. Se llenan de dos formas:</p><ul><li>Analizando tus manos (mejor con la <b>secuencia de apuestas</b> apuntada: así vemos qué hiciste tú).</li><li>Jugando al <b>modo entrenamiento</b>.</li></ul><button type="button" class="btn-primary" id="statsTrain" style="width:100%;">🎯 Empezar a entrenar</button>`)
         .querySelector('#statsTrain').addEventListener('click', openTrainer);
       return;
     }
     const pct = (arr, g) => arr.length ? Math.round(arr.filter(r => r.g === g).length / arr.length * 100) : 0;
+    const fmt1 = (v) => (Math.round(v * 10) / 10).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+    // --- Tu progreso: manos analizadas, EV medio y qué te recomienda RÍO ---
+    const evBB = hist.filter(h => typeof h.ev === 'number' && h.evU === 'BB').map(h => h.ev);
+    const evAvg = evBB.length ? evBB.reduce((a, b) => a + b, 0) / evBB.length : null;
+    const dec = { CALL: 0, RAISE: 0, FOLD: 0, CHECK: 0 };
+    hist.forEach(h => { const k = h.decision === 'BET' ? 'RAISE' : h.decision; if (k in dec) dec[k]++; });
+    const decTotal = Object.values(dec).reduce((a, b) => a + b, 0) || 1;
+    const decRow = (k, label) => `<div class="final-row"><span>${label}</span><div class="bar"><i style="width:${Math.max(dec[k] ? 2 : 0, dec[k] / decTotal * 100)}%"></i></div><b>${Math.round(dec[k] / decTotal * 100)}%</b></div>`;
+
+    // --- Dónde pierdes más EV (estimado): agrupado por enfrentamiento, calle, bote con resubida y pagar en el river ---
+    const errs = hand.filter(r => r.g !== 'ok');
+    const withLoss = errs.filter(r => typeof r.loss === 'number' && r.loss > 0);
+    const groups = {};
+    const add = (key, r) => { const g = groups[key] || (groups[key] = { loss: 0, n: 0 }); g.loss += r.loss; g.n++; };
+    withLoss.forEach(r => {
+      if (r.pos) add(r.pos, r);
+      add('En el ' + STREET_NAMES[r.s].toLowerCase(), r);
+      if (r.pt === '3bet') add('En botes con resubida (3-bet)', r);
+      if (r.bc) add('Pagando (o no) apuestas en el river', r);
+    });
+    const topGroups = Object.entries(groups).sort((a, b) => b[1].loss - a[1].loss).slice(0, 5);
+    const totalLoss = withLoss.reduce((a, r) => a + r.loss, 0);
+    const raiseErrs = errs.filter(r => r.rec === 'RAISE' || r.act === 'RAISE').length;
+
+    // --- Errores más repetidos ---
     const leaks = {};
     all.filter(r => r.g !== 'ok').forEach(r => { const k = r.act + '>' + r.rec; leaks[k] = (leaks[k] || 0) + (r.g === 'bad' ? 2 : 1); });
     const topLeaks = Object.entries(leaks).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+    // --- Evolución: % de decisiones bien jugadas, últimas 4 semanas ---
+    const WEEK = 7 * 24 * 3600 * 1000, now = Date.now();
+    const weeks = [3, 2, 1, 0].map(w => {
+      const rs = hand.filter(r => r.t && now - r.t >= w * WEEK && now - r.t < (w + 1) * WEEK);
+      return [w === 0 ? 'Esta semana' : w === 1 ? 'Semana pasada' : `Hace ${w} semanas`, rs.length, pct(rs, 'ok')];
+    });
+
     const byStreet = STREET_NAMES.map((n, s) => { const rs = all.filter(r => r.s === s); return [n, rs.length, pct(rs, 'ok')]; });
-    openModal('Tus estadísticas', `
+    const bars = (rows) => `<div class="finals">${rows.map(([n, c, p]) => `<div class="final-row"><span>${n} <small style="color:var(--cream-dim)">(${c})</small></span><div class="bar"><i style="width:${c ? Math.max(2, p) : 0}%"></i></div><b>${c ? p + '%' : '—'}</b></div>`).join('')}</div>`;
+
+    openModal('Tu progreso', `
       <div class="stat-grid" style="margin-top:0; grid-template-columns:repeat(3,1fr);">
-        <div class="stat no-help"><b>${all.length}</b><span>Decisiones</span></div>
-        <div class="stat no-help"><b style="color:var(--ok)">${pct(all, 'ok')}%</b><span>Bien</span></div>
-        <div class="stat no-help"><b style="color:var(--crimson)">${pct(all, 'bad')}%</b><span>Mejorables</span></div>
+        <div class="stat no-help"><b>${hist.length}</b><span>Manos analizadas</span></div>
+        <div class="stat no-help"><b style="color:${evAvg === null ? 'var(--cream)' : evAvg >= 0 ? 'var(--ok)' : 'var(--crimson)'}">${evAvg === null ? '—' : (evAvg >= 0 ? '+' : '') + fmt1(evAvg) + ' BB'}</b><span>EV medio</span></div>
+        <div class="stat no-help"><b style="color:var(--ok)">${pct(all, 'ok')}%</b><span>Decisiones bien jugadas</span></div>
       </div>
+      ${evAvg === null && hist.length ? '<p class="hint" style="margin:6px 0 0;">El EV medio en ciegas grandes aparece cuando apuntas la secuencia de apuestas.</p>' : ''}
+      ${hist.length ? `<div class="sub-title">Lo que te recomienda RÍO</div><div class="finals">${decRow('CALL', 'Pagar')}${decRow('RAISE', 'Subir / apostar')}${decRow('FOLD', 'Tirar')}${decRow('CHECK', 'Pasar')}</div>` : ''}
+
+      <div class="sub-title">🔎 Dónde pierdes más EV <small style="color:var(--cream-dim); font-weight:500;">(estimado)</small></div>
+      ${topGroups.length ? `<p style="margin:0 0 8px;">En total, unas <b style="color:var(--crimson)">−${fmt1(totalLoss)} BB</b> en ${withLoss.length} decisiones mejorables.</p>
+        <div class="loss-list">${topGroups.map(([k, g]) => `<div class="loss-row"><span>${k}</span><b>−${fmt1(g.loss)} BB</b><small>${g.n} ${g.n === 1 ? 'vez' : 'veces'}</small></div>`).join('')}</div>`
+        : '<p style="margin:0;">Aún no hay errores de pagar, tirar, apostar o pasar con la secuencia apuntada. 👏</p>'}
+      ${raiseErrs ? `<p class="hint" style="margin:8px 0 0;">Además, <b>${raiseErrs}</b> ${raiseErrs === 1 ? 'decisión' : 'decisiones'} de subir mejorable${raiseErrs === 1 ? '' : 's'} (el EV al subir no se puede estimar bien, así que solo las contamos).</p>` : ''}
+
+      <div class="sub-title">Tus errores más repetidos</div>
+      ${topLeaks.length ? `<ol style="margin:0; padding-left:20px;">${topLeaks.map(([k]) => `<li>${LEAKS[k] || k.replace('>', ' en vez de ')}</li>`).join('')}</ol>` : '<p style="margin:0;">¡Ninguno por ahora! 👏</p>'}
+
+      <div class="sub-title">Tu evolución (% bien jugadas)</div>
+      ${bars(weeks)}
       <div class="sub-title">Por calle (% bien jugadas)</div>
-      <div class="finals">${byStreet.map(([n, c, p]) => `<div class="final-row"><span>${n} <small style="color:var(--cream-dim)">(${c})</small></span><div class="bar"><i style="width:${c ? Math.max(2, p) : 0}%"></i></div><b>${c ? p + '%' : '—'}</b></div>`).join('')}</div>
-      <div class="sub-title">Tus fugas más repetidas</div>
-      ${topLeaks.length ? `<ol style="margin:0; padding-left:20px;">${topLeaks.map(([k]) => `<li>${LEAKS[k] || k.replace('>', ' en vez de ')}</li>`).join('')}</ol>` : '<p>¡Ninguna por ahora! 👏</p>'}
+      ${bars(byStreet)}
       ${train.length ? `<div class="sub-title">Entrenamiento</div><p style="margin:0;">${train.length} manos · ${pct(train, 'ok')}% acertadas</p>` : ''}
-      <p class="hint" style="margin-top:14px;">Se guardan en este navegador.</p>`);
+      <p class="hint" style="margin-top:14px;">El EV perdido es una estimación: depende de las manos que suponemos a tu rival. Solo cuenta las manos con la secuencia apuntada.</p>`);
   }
 
   // ---- Modo entrenamiento ----
@@ -3122,7 +3224,6 @@
         </div>`).join('') : '<p>Aún no hay avisos.</p>';
     } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar los avisos.')}</p>`; }
   }
-  document.getElementById('navInbox').addEventListener('click', openInbox);
 
   // ---- Compartir una mano por enlace ----
   // Toda la mano va dentro del propio enlace (#m=…), así no hace falta guardar
@@ -3798,7 +3899,7 @@
       const posPhrase = oop
         ? `Vas fuera de posición (${heroPos} vs ${villPos}): actúas antes que tu rival, así que juegas con menos información`
         : `Tienes posición (${heroPos} vs ${villPos}): tu rival actúa primero, así que ves lo que hace antes de decidir`;
-      const vsRange = res.usedRange ? ` contra un rango ${rangeText}` : '';
+      const vsRange = res.usedRange ? (villActed ? ` contra su ${rangeText}` : ` contra un rango ${rangeText}`) : '';
       const edge = (win - needed).toFixed(1);
       let proText;
       const evLine = bluff ? ` Apostar 2/3 del bote: el rival se retira ~<b>${Math.round(bluff.f * 100)}%</b>, cuando paga ganas ~<b>${Math.round(bluff.eqCall * 100)}%</b> · EV apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1)}</b> vs pasar <b>${bluff.evCheck.toFixed(1)}</b>.` : '';
