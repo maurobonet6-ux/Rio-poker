@@ -269,15 +269,6 @@
   .picker-head button { background: none; border: none; color: var(--cream-dim); font-size: 1.5rem; cursor: pointer; }
   .back-btn { background: none; border: none; color: var(--gold); font-weight: 600; cursor: pointer; font-family: 'Space Grotesk', sans-serif; padding: 0; margin-bottom: 4px; font-size: 0.9rem; }
 
-  .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-  .card-pick { height: 38px; border-radius: 10px; border: 1px solid var(--line); background: #F5F2EC; color: #141416; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
-  .card-pick span { font-size: 1.1rem; }
-  .card-pick.crimson { color: var(--gold); }
-  .card-pick.current { outline: 3px solid var(--ok); outline-offset: -3px; }
-  .card-pick:disabled { background: var(--panel-2); color: rgba(245,242,236,0.18); cursor: not-allowed; }
-  .card-pick:not(:disabled):active { transform: scale(0.95); }
-  @media (max-height: 800px) { .card-pick { height: 33px; font-size: 0.95rem; } .card-grid { gap: 4px; } #overlay .picker { padding-top: 16px; } #overlay .picker-head { margin-bottom: 10px; } }
-  @media (max-height: 640px) { .card-pick { height: 29px; } }
   /* Área de toque más grande para los botones de ayuda "?" sin cambiar cómo se ven. */
   .help { position: relative; }
   .help::after { content: ''; position: absolute; inset: -12px; }
@@ -1675,6 +1666,9 @@
       : `Con ${heroPos} vs ${villPos}: tienes posición — tu rival actúa antes que tú.`;
   }
 
+  let pickStep = 'rank';
+  let pickedRank = null;
+
   const holeRow = document.getElementById('holeRow');
   const flopRow = document.getElementById('flopRow');
   const turnRow = document.getElementById('turnRow');
@@ -1809,6 +1803,8 @@
 
   function openPicker(zone, idx){
     activeSlot = {zone, idx};
+    pickStep = 'rank';
+    pickedRank = null;
     document.getElementById('clearSlotBtn').style.display = (zone==='hole'?hole[idx]:board[idx]) ? 'block' : 'none';
     renderPickerStep();
     overlay.classList.add('show');
@@ -1823,27 +1819,42 @@
     if (activeSlot.zone === 'hole') return `Tu carta ${i + 1} de 2 · `;
     return i < 3 ? `Flop · carta ${i + 1} de 3 · ` : i === 3 ? 'Turn · ' : 'River · ';
   }
-  // Elegir carta en un solo toque: una fila por valor (A…2) y una columna por palo.
   function renderPickerStep(){
     pickerBody.innerHTML = '';
-    pickerTitle.textContent = slotLabel() + 'Elige la carta';
-    const current = activeSlot ? (activeSlot.zone === 'hole' ? hole[activeSlot.idx] : board[activeSlot.idx]) : null;
-    const grid = document.createElement('div');
-    grid.className = 'card-grid';
-    for (const rank of RANKS) for (const suit of SUITS){
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'card-pick ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
-      b.dataset.card = RANK_LABEL(rank) + suit;
-      b.setAttribute('aria-label', RANK_LABEL(rank) + ' de ' + SUIT_NAME[suit]);
-      b.innerHTML = `${RANK_LABEL(rank)}<span>${SUIT_SYMBOL[suit]}</span>`;
-      const isCurrent = current && current.rank === rank && current.suit === suit;
-      if (isCurrent) b.classList.add('current');
-      b.disabled = isUsed(rank, suit) && !isCurrent;
-      b.addEventListener('click', () => selectCard(rank, suit));
-      grid.appendChild(b);
+    if (pickStep === 'rank'){
+      pickerTitle.textContent = slotLabel() + 'Elige el valor';
+      const grid = document.createElement('div');
+      grid.className = 'rank-grid';
+      for (const rank of RANKS){
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'rank-btn'; b.textContent = RANK_LABEL(rank);
+        const available = SUITS.some(s => !isUsed(rank, s) || (activeSlot && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]).rank===rank && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]).suit===s));
+        b.disabled = !available;
+        b.addEventListener('click', () => { pickedRank = rank; pickStep = 'suit'; renderPickerStep(); });
+        grid.appendChild(b);
+      }
+      pickerBody.appendChild(grid);
+    } else {
+      pickerTitle.textContent = slotLabel() + RANK_LABEL(pickedRank) + ' — elige el palo';
+      const back = document.createElement('button');
+      back.type = 'button'; back.className = 'back-btn'; back.textContent = '← Cambiar valor';
+      back.addEventListener('click', () => { pickStep = 'rank'; renderPickerStep(); });
+      pickerBody.appendChild(back);
+      const grid = document.createElement('div');
+      grid.className = 'suit-grid';
+      for (const suit of SUITS){
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'suit-btn ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
+        b.innerHTML = `${SUIT_SYMBOL[suit]}<small>${SUIT_NAME[suit]}</small>`;
+        const current = activeSlot ? (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) : null;
+        const usedByOther = isUsed(pickedRank, suit) && !(current && current.rank===pickedRank && current.suit===suit);
+        b.disabled = usedByOther;
+        b.addEventListener('click', () => selectCard(pickedRank, suit));
+        grid.appendChild(b);
+      }
+      pickerBody.appendChild(grid);
     }
-    pickerBody.appendChild(grid);
   }
 
   function selectCard(rank, suit){
@@ -4224,7 +4235,7 @@
   });
 
   // ---- Mano de ejemplo: para probar RÍO sin saber aún cómo meter una mano ----
-  const DEMO = { hole: [{ rank: 12, suit: 's' }, { rank: 11, suit: 's' }], board: [{ rank: 10, suit: 's' }, { rank: 9, suit: 'd' }, { rank: 3, suit: 's' }],
+  const DEMO = { hole: [{ rank: 14, suit: 's' }, { rank: 5, suit: 's' }], board: [{ rank: 13, suit: 's' }, { rank: 8, suit: 'd' }, { rank: 3, suit: 's' }],
     heroPos: 'BTN', villPos: 'BB', pot: 30, call: 10 };
   const sameCard = (a, b) => !!a && !!b && a.rank === b.rank && a.suit === b.suit;
   function isDemoHand(){
@@ -4253,7 +4264,7 @@
         pool: poolFromSet(topRange(40)), oop: false, street: 1, heroPos: DEMO.heroPos, iters: 2000 });
       const cls = { RAISE: 'ok', BET: 'ok', CALL: 'warn', CHECK: 'warn', FOLD: 'no' }[r.text];
       document.getElementById('demoDec').innerHTML = `<span class="decision-badge ${cls}">${decisionHTML(r.text)}</span>` +
-        `Tienes proyecto de color y de escalera: ganas ~<b>${Math.round(r.eq)}%</b> de las veces y solo necesitas <b>${Math.round(r.needed)}%</b>.`;
+        `Tienes proyecto de color al as: ganas ~<b>${Math.round(r.eq)}%</b> de las veces y solo necesitas <b>${Math.round(r.needed)}%</b>.`;
     }, 600);
   }
   document.getElementById('demoLoadBtn').addEventListener('click', loadDemo);

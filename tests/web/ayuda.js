@@ -37,10 +37,11 @@ async function abrir(page, opts = {}){
 }
 
 const PALO = { s: 'Picas', h: 'Corazones', d: 'Diamantes', c: 'Tréboles' };
-// carta('As') → pulsa el as de picas en la ventana de cartas (ya abierta).
+// carta('As') → en la ventana de cartas (ya abierta) elige el valor (A) y luego el palo (picas).
 async function carta(page, c){
   const valor = c[0] === 'T' ? '10' : c[0];
-  await page.locator(`.card-pick[aria-label="${valor} de ${PALO[c[1]]}"]`).click();
+  await page.locator('.rank-btn', { hasText: new RegExp('^' + valor + '$') }).click();
+  await page.locator('.suit-btn', { hasText: PALO[c[1]] }).click();
   await page.waitForTimeout(350);
 }
 // Pone tus dos cartas y, si se indican, las comunitarias.

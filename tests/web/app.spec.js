@@ -10,14 +10,17 @@ test('la página carga sin errores y enseña cómo introducir la mano', async ({
   expect(errores).toEqual([]);
 });
 
-test('elegir cartas: 52 cartas en un toque y las usadas se bloquean', async ({ page }) => {
+test('elegir cartas: primero el valor, luego el palo, y las usadas se bloquean', async ({ page }) => {
   await abrir(page);
   await page.locator('#manualBtn').click();
   await expect(page.locator('#pickerTitle')).toContainText('Tu carta 1 de 2');
-  await expect(page.locator('.card-pick')).toHaveCount(52);
-  await carta(page, 'As');
+  await expect(page.locator('.rank-btn')).toHaveCount(13);
+  await page.locator('.rank-btn', { hasText: /^A$/ }).click();
+  await expect(page.locator('.suit-btn')).toHaveCount(4);
+  await page.locator('.suit-btn', { hasText: 'Picas' }).click();
   await expect(page.locator('#pickerTitle')).toContainText('Tu carta 2 de 2');
-  await expect(page.locator('.card-pick[aria-label="A de Picas"]')).toBeDisabled();
+  await page.locator('.rank-btn', { hasText: /^A$/ }).click();
+  await expect(page.locator('.suit-btn', { hasText: 'Picas' })).toBeDisabled();
 });
 
 test('comunitarias: se ve en qué calle estás y no hace falta poner las 5', async ({ page }) => {
