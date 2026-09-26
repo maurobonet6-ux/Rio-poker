@@ -338,10 +338,19 @@
   .usage-row .pro-tag { color: var(--gold); font-weight: 700; }
   .usage-row .low { color: var(--crimson); font-weight: 700; }
 
-  .history-item {
-    display: flex; justify-content: space-between; align-items: center; gap: 10px;
-    padding: 12px 4px; border-bottom: 1px solid var(--line); font-size: 0.88rem;
+  .history-item, .hist-head {
+    display: grid; grid-template-columns: minmax(0, 1.6fr) auto minmax(0, 0.9fr) minmax(0, 0.8fr); align-items: center; gap: 8px;
+    padding: 12px 4px; border-bottom: 1px solid var(--line); font-size: 0.86rem;
   }
+  .hist-head { padding: 4px 4px 8px; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cream-dim); }
+  .history-item .h-ev { font-weight: 700; text-align: right; white-space: nowrap; }
+  .history-item .h-ev.pos { color: var(--ok); } .history-item .h-ev.neg { color: var(--crimson); }
+  .history-item .h-you { text-align: center; font-size: 0.78rem; color: var(--cream-dim); }
+  .hist-head span:nth-child(3) { text-align: right; } .hist-head span:nth-child(4) { text-align: center; }
+  .hist-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .hist-filters select { flex: 1 1 140px; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--cream); font: inherit; font-size: 0.82rem; }
+  .hf-err { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--cream); }
+  body:not(.is-pro) .pro-hist { display: none !important; }
   .history-item:last-child { border-bottom: none; }
   .history-item .h-hand { font-weight: 700; color: var(--cream); }
   .history-item .h-meta { color: var(--cream-dim); font-size: 0.76rem; margin-top: 2px; }
@@ -361,6 +370,8 @@
   .paywall-price small { color: var(--cream-dim); font-size: 0.85rem; }
   .pw-pitch { font-size: 0.95rem; color: var(--cream-dim); margin: 0 0 12px; }
   .pw-pitch b { display: block; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.5rem; color: var(--gold); }
+  .pw-packs { text-align: center; font-size: 0.78rem; color: var(--cream-dim); margin-top: 6px; }
+  .pw-packs b { color: var(--cream); }
   .pw-cancel { text-align: center; font-size: 0.82rem; color: var(--cream-dim); margin-top: 8px; }
   .paywall-fine { font-size: 0.72rem; color: var(--cream-dim); text-align: center; margin: 12px 0 0; }
 
@@ -753,6 +764,12 @@
   .trial-nudge .btn-primary { display: block; width: 100%; min-width: 0; margin-top: 10px; padding: 12px; font-size: 0.95rem; }
   .share-wa { display: block; text-align: center; text-decoration: none; background: #25D366; box-shadow: none; }
 
+  .plan-packs { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .plan-packs-title { font-weight: 700; font-size: 0.86rem; margin-bottom: 8px; }
+  .plan-pack { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; font-size: 0.86rem; color: var(--cream-dim); }
+  .plan-pack b { color: var(--cream); }
+  .plan-pack button { flex: none; padding: 7px 14px; font-size: 0.78rem; text-transform: uppercase; }
+  .pack-best { color: var(--gold); font-size: 0.72rem; font-weight: 700; }
   .packs { display: grid; gap: 10px; margin: 6px 0 4px; }
   .pack { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 12px; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); color: var(--cream); cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
   .pack:hover { border-color: var(--gold); }
@@ -1058,7 +1075,15 @@
 
   <section class="panel" id="historyPanel" style="display:none;">
     <div class="panel-head"><div class="panel-num">📜</div><h2>Historial de manos</h2></div>
+    <div class="hist-filters pro-hist" id="histFilters">
+      <select id="hfStreet" aria-label="Calle"><option value="">Todas las calles</option><option value="0">Preflop</option><option value="1">Flop</option><option value="2">Turn</option><option value="3">River</option></select>
+      <select id="hfDec" aria-label="Decisión"><option value="">Todas las decisiones</option><option value="CALL">Pagar</option><option value="RAISE">Subir</option><option value="BET">Apostar</option><option value="CHECK">Pasar</option><option value="FOLD">Tirar</option></select>
+      <select id="hfEv" aria-label="EV"><option value="">+EV y −EV</option><option value="pos">Solo +EV</option><option value="neg">Solo −EV</option></select>
+      <label class="hf-err"><input type="checkbox" id="hfErr"> Solo mis errores</label>
+    </div>
+    <div class="hist-head"><span>Mano</span><span>RÍO dice</span><span><span class="easy-only">Ganancia</span><span class="pro-only">EV</span></span><span>Tu jugada</span></div>
     <div id="historyList"></div>
+    <div class="hint" id="histNote" style="margin-top:10px; font-size:0.74rem; line-height:1.45;"></div>
   </section>
 
   <footer>
@@ -1115,7 +1140,7 @@
 
   <div class="sidebar-legal">
     <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a><br>
-    <span class="age-badge">+18</span> RÍO v1.3
+    <span class="age-badge">+18</span> RÍO <span class="app-version"></span>
   </div>
 </nav>
 
@@ -1174,7 +1199,7 @@
       <button class="btn-secondary" id="clearHistoryBtn" style="width:100%;">Borrar historial de manos</button>
     </div>
 
-    <p class="paywall-fine">RÍO v1.2 · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
+    <p class="paywall-fine">RÍO <span class="app-version"></span> · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
   </div>
 </div>
 
@@ -1211,7 +1236,11 @@
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Quiero RÍO PRO · 9,99 €/mes</button>
-        <button class="btn-secondary" id="buyCreditsSettingsBtn" style="width:100%; margin-top:10px; display:none;">Comprar más créditos</button>
+        <div class="plan-packs">
+          <div class="plan-packs-title">¿Necesitas más IA? Packs de créditos</div>
+          <div id="planPackList"></div>
+          <div class="hint" id="planPacksHint">Pago único · no caducan · se suman solos a tu cuenta.</div>
+        </div>
         <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:10px; display:none;">💳 Gestionar suscripción</button>
         <div class="hint" id="manageSubHint" style="display:none; margin-top:6px;">Cancelar, cambiar la tarjeta o descargar tus facturas.</div>
         <div id="manageSubMsg" class="restore-msg"></div>
@@ -1262,6 +1291,7 @@
     <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
     <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%; text-transform:uppercase; letter-spacing:0.03em;">Quiero RÍO PRO</button>
     <div class="pw-cancel sub-part">Cancela cuando quieras.</div>
+    <div class="pw-packs sub-part">¿Necesitas más IA? Packs extra desde <b>2,99 €</b> (+100 créditos), pago único.</div>
     <div class="restore-box" id="restoreBox">
       <div class="free-note login-only">💾 <b>Guarda tus manos y conserva tu progreso en cualquier dispositivo.</b><br>✅ Crear tu cuenta es <b>gratis</b>. No te pedimos tarjeta ni ningún pago.</div>
       <div class="settings-label login-label sub-part">🔑 ¿Ya tienes cuenta? Entra</div>
@@ -1309,6 +1339,8 @@
   const FREE_LIMIT = 5;
   const MONTHLY_CREDITS = 200;           // créditos de IA incluidos en PRO cada mes (igual que lib/quota.js)
   const PHOTOS_INCLUDED = MONTHLY_CREDITS;
+  const APP_VERSION = 'v1.4'; // única versión de la app: se muestra en el menú y en Tu plan
+  document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; });
   const PRO_PRICE_LABEL = '9,99 €';
   const PAYMENT_LINK = 'https://buy.stripe.com/7sYaEZ8bB2bW8uh7Ko9IQ02'; // RÍO PRO · 9,99 €/mes
   const CREDIT_PACK_LINK = 'https://buy.stripe.com/dRmfZjbnN2bWfWJ4yc9IQ01'; // pack antiguo (50 créditos · 2,99 €)
@@ -1397,14 +1429,13 @@
     if (subscribeFromPlanBtn) subscribeFromPlanBtn.style.display = pro ? 'none' : 'inline-block';
 
     const photoBox = document.getElementById('photoUsageBox');
-    const buyBtn = document.getElementById('buyCreditsSettingsBtn');
     if (photoBox){
       const left = Math.max(0, photoUsage.limit - photoUsage.used);
       photoBox.textContent = pro
         ? `Te quedan ${left} de ${photoUsage.limit} créditos este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} créditos comprados` : ''}`
         : `Incluye ${MONTHLY_CREDITS} créditos de IA al mes: 1 captura o 1 mano contada = 1 crédito.`;
     }
-    if (buyBtn) buyBtn.style.display = pro ? 'inline-block' : 'none';
+    renderPlanPacks(pro);
     updateAccountUI();
   }
 
@@ -1468,11 +1499,12 @@
     const nameInput = document.getElementById('profileNameInput');
     if (nameInput) nameInput.value = p.name;
   }
+  const HISTORY_MAX = 200;
   function getHistory(){ return storageGet('rio_history', []); }
   function pushHistory(entry){
     if (!storageGet('rio_save_history', true)) return;
     const h = getHistory(); h.unshift(entry);
-    storageSet('rio_history', h.slice(0, 10));
+    storageSet('rio_history', h.slice(0, HISTORY_MAX));
   }
 
   // Pregunta a nuestro pequeño servidor (que a su vez pregunta a Stripe) si la
@@ -2985,10 +3017,10 @@
     try {
       if (remote){
         const local = collectData();
-        const hk = (h) => [h.hand, h.when, h.equity, h.decision].join('|');
+        const hk = (h) => [h.hand, h.t || h.when, h.equity, h.decision].join('|');
         const seen = new Set();
         const hist = [...(local.rio_history || []), ...(remote.rio_history || [])].filter(h => h && !seen.has(hk(h)) && seen.add(hk(h)));
-        storageSet('rio_history', hist.slice(0, 10));
+        storageSet('rio_history', hist.sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, HISTORY_MAX));
         const rv = { ...(remote.rio_reviews || {}) };
         Object.entries(local.rio_reviews || {}).forEach(([k, v]) => { if (!rv[k] || rv[k].t < v.t) rv[k] = v; });
         storageSet('rio_reviews', rv);
@@ -3209,22 +3241,41 @@
     const hist = getHistory();
     if (!hist.length){ historyPanel.style.display = 'none'; return; }
     historyPanel.style.display = 'block';
+    const pro = isPro();
+    document.body.classList.toggle('is-pro', pro);
     historyList.innerHTML = '';
-    const visible = isPro() ? hist : hist.slice(0,1);
+    const fs = document.getElementById('hfStreet').value, fd = document.getElementById('hfDec').value;
+    const fe = document.getElementById('hfEv').value, ferr = document.getElementById('hfErr').checked;
+    let visible = pro ? hist : hist.slice(0, 1);
+    if (pro) visible = visible.filter(h =>
+      (fs === '' || String(h.st) === fs) && (fd === '' || h.decision === fd) &&
+      (fe === '' || (typeof h.ev === 'number' && (fe === 'pos' ? h.ev >= 0 : h.ev < 0))) &&
+      (!ferr || h.g === 'bad' || h.g === 'meh'));
+    const YOU = { ok: '✅', meh: '≈', bad: '❌' };
     visible.forEach(h => {
       const row = document.createElement('div');
       row.className = 'history-item';
-      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${h.equity}% de ganar · ${h.rivals} rival(es) · ${h.when}</div></div><span class="history-tag ${h.cls}">${decisionHTML(h.decision)}</span>`;
+      const street = typeof h.st === 'number' ? STREET_NAMES[h.st] + ' · ' : '';
+      const ev = typeof h.ev === 'number'
+        ? `<span class="h-ev ${h.ev >= 0 ? 'pos' : 'neg'}">${h.ev >= 0 ? '+' : ''}${String(h.ev).replace('.', ',')} ${h.evU || ''}</span>`
+        : '<span class="h-ev">—</span>';
+      const you = h.g ? `<span class="h-you" title="Hiciste ${DECISION_ES[h.act] || h.act}">${YOU[h.g]}<br>${decisionHTML(h.act)}</span>` : '<span class="h-you">—</span>';
+      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${street}${h.equity}% de ganar · ${h.when}</div></div><span class="history-tag ${h.cls}">${decisionHTML(h.decision)}</span>${ev}${you}`;
       historyList.appendChild(row);
     });
-    if (!isPro() && hist.length > 1){
+    if (pro && !visible.length) historyList.innerHTML = '<div class="history-locked">Ninguna mano con esos filtros.</div>';
+    document.getElementById('histNote').innerHTML = pro
+      ? '<b>EV</b>: lo que ganas o pierdes de media si pagas (o si apuestas, cuando no había nada que pagar). <b>Tu jugada</b>: ✅ hiciste lo recomendado · ≈ aceptable · ❌ error; solo aparece si apuntaste lo que hiciste en la secuencia de apuestas.'
+      : '';
+    if (!pro && hist.length > 1){
       const lock = document.createElement('div');
       lock.className = 'history-locked';
-      lock.innerHTML = `+${hist.length-1} manos más guardadas. <a id="unlockHistoryLink">Desbloquea el historial completo con RÍO PRO →</a>`;
+      lock.innerHTML = `+${hist.length-1} manos más guardadas. <a id="unlockHistoryLink">Desbloquea el historial completo con filtros y tus errores con RÍO PRO →</a>`;
       historyList.appendChild(lock);
       document.getElementById('unlockHistoryLink').addEventListener('click', () => openPaywall('plans'));
     }
   }
+  ['hfStreet', 'hfDec', 'hfEv', 'hfErr'].forEach(id => document.getElementById(id).addEventListener('change', renderHistory));
 
   function openPaywall(mode){
     if (mode === 'login'){
@@ -3360,7 +3411,20 @@
   document.getElementById('navGlossary').addEventListener('click', () => { closeSidebar(); openGlossary(); });
   document.getElementById('manageSubBtn').addEventListener('click', openBillingPortal);
   document.getElementById('navSettings').addEventListener('click', () => { closeSidebar(); openSettings(); });
-  document.getElementById('buyCreditsSettingsBtn').addEventListener('click', () => { closeSettings(); closePlanPanel(); openCreditsModal(false); });
+  // Packs con su precio a la vista en Tu plan (solo se pueden comprar con PRO).
+  function renderPlanPacks(pro){
+    const box = document.getElementById('planPackList');
+    if (!box) return;
+    const packs = activePacks();
+    box.innerHTML = packs.map((pk, i) => `<div class="plan-pack">
+        <span><b>+${pk.credits.toLocaleString('es-ES')} créditos</b> — ${pk.price}${pk.best ? ' <span class="pack-best">⭐ popular</span>' : ''}</span>
+        ${pro ? `<button type="button" class="btn-secondary" data-plan-pack="${i}">Comprar</button>` : ''}
+      </div>`).join('');
+    document.getElementById('planPacksHint').textContent = pro
+      ? 'Pago único · no caducan · se suman solos a tu cuenta.'
+      : 'Solo para suscriptores PRO · pago único · no caducan.';
+    box.querySelectorAll('[data-plan-pack]').forEach(b => b.addEventListener('click', () => window.open(packs[Number(b.dataset.planPack)].link, '_blank')));
+  }
   document.getElementById('closeSettings').addEventListener('click', closeSettings);
   settingsPanel.addEventListener('click', (e)=>{ if (e.target === settingsPanel) closeSettings(); });
 
@@ -3862,9 +3926,13 @@
       analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
       resultPanel.scrollIntoView({behavior:'smooth', block:'start'});
 
+      // Tu jugada en esa mano (solo si apuntaste lo que hiciste en la secuencia): la peor nota.
+      const worst = reviewRows.reduce((w, r) => (!w || ['ok', 'meh', 'bad'].indexOf(r.g) > ['ok', 'meh', 'bad'].indexOf(w.g)) ? r : w, null);
       pushHistory({
         hand: handLabel, equity: win.toFixed(1), rivals: numRivals,
-        decision: text, cls: cls,
+        decision: text, cls: cls, t: Date.now(), st: aStreet,
+        ev: evShown === null ? null : Math.round((inBB ? evShown / bbSize() : evShown) * 10) / 10, evU: inBB ? 'BB' : unitLabel,
+        g: worst ? worst.g : null, act: worst ? worst.act : null,
         when: new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})
       });
       updateUsageBadge();
