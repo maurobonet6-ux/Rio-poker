@@ -45,7 +45,7 @@ Este proyecto tiene estas partes:
    | `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` | Guardar sesiones, fotos usadas y créditos | upstash.com → crea una base de datos Redis → pestaña "REST API" |
    | `GMAIL_USER` | Cuenta de Gmail que envía el código de inicio de sesión, ej: `riopoker.app@gmail.com` | Crea una cuenta de Gmail para la app |
    | `GMAIL_APP_PASSWORD` | Contraseña de aplicación de esa cuenta (16 letras) | Ver abajo |
-   | `CREDIT_PACKS` | Reconocer los packs de créditos: `priceId:créditos` separados por comas, p. ej. `price_AAA:100,price_BBB:300,price_CCC:1000` | Stripe → Catálogo de productos → cada pack → Price ID (`price_...`) |
+   | `CREDIT_PACKS` | (Opcional) Reconocer los packs por su Price ID: `priceId:créditos`, p. ej. `price_AAA:100`. Si no se pone, se reconocen por importe: 2,99 € → 100, 6,99 € → 300, 17,99 € → 1.000 (`CREDIT_PACK_AMOUNTS` para cambiarlo) | Stripe → Catálogo de productos → cada pack → Price ID (`price_...`) |
    | `CREDIT_PACK_PRICE_ID` y `CREDITS_PER_PACK` | (Antiguo) el pack de 50 créditos; se sigue reconociendo | — |
    | `ADMIN_EMAILS` | (Opcional) emails con PRO gratis, separados por comas | — |
 
@@ -87,7 +87,7 @@ Este proyecto tiene estas partes:
 
 12. **Precios (PRO 9,99 € con 200 créditos/mes y packs de créditos)**
     - En Stripe crea el precio mensual de 9,99 € de RÍO PRO y su Payment Link; pégalo en `PAYMENT_LINK` en `index.html`.
-    - Crea los packs (pago único): 100 créditos · 2,99 €, 300 · 6,99 €, 1.000 · 17,99 €, con un Payment Link cada uno. Pega los enlaces en `CREDIT_PACKS_UI` (`index.html`) y sus Price ID en la variable `CREDIT_PACKS` de Vercel.
+    - Crea los packs (pago único): 100 créditos · 2,99 €, 300 · 6,99 €, 1.000 · 17,99 €, con un Payment Link cada uno. Pega los enlaces en `CREDIT_PACKS_UI` (`index.html`). Los créditos se reconocen por el importe pagado (ver `lib/packs.js`); si cambias los precios, pon `CREDIT_PACK_AMOUNTS` en Vercel.
     - Los créditos incluidos al mes están en `MONTHLY_CREDITS` (`lib/quota.js` e `index.html`).
 
 ## Cómo funciona la verificación

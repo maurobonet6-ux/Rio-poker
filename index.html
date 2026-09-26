@@ -1206,14 +1206,14 @@
   const MONTHLY_CREDITS = 200;           // créditos de IA incluidos en PRO cada mes (igual que lib/quota.js)
   const PHOTOS_INCLUDED = MONTHLY_CREDITS;
   const PRO_PRICE_LABEL = '9,99 €';
-  const PAYMENT_LINK = 'https://buy.stripe.com/00wfZj2Rh17SaCp1m09IQ00'; // tu Payment Link real de Stripe
+  const PAYMENT_LINK = 'https://buy.stripe.com/7sYaEZ8bB2bW8uh7Ko9IQ02'; // RÍO PRO · 9,99 €/mes
   const CREDIT_PACK_LINK = 'https://buy.stripe.com/dRmfZjbnN2bWfWJ4yc9IQ01'; // pack antiguo (50 créditos · 2,99 €)
   // Packs de créditos (pago único). Pega aquí el Payment Link de cada uno; los
   // que no tengan enlace no se muestran. Sin ninguno, se ofrece el pack antiguo.
   const CREDIT_PACKS_UI = [
-    { credits: 100,  price: '2,99 €',  unit: '3 cént. por crédito',   link: '' },
-    { credits: 300,  price: '6,99 €',  unit: '2,3 cént. por crédito', link: '', best: true },
-    { credits: 1000, price: '17,99 €', unit: '1,8 cént. por crédito', link: '' }
+    { credits: 100,  price: '2,99 €',  unit: '3 cént. por crédito',   link: 'https://buy.stripe.com/8x2aEZbnN17SaCp5Cg9IQ03' },
+    { credits: 300,  price: '6,99 €',  unit: '2,3 cént. por crédito', link: 'https://buy.stripe.com/aFa8wR8bB9Eoh0Nd4I9IQ04', best: true },
+    { credits: 1000, price: '17,99 €', unit: '1,8 cént. por crédito', link: 'https://buy.stripe.com/eVq6oJ1Nd7wg25Tc0E9IQ05' }
   ];
   function activePacks(){
     const packs = CREDIT_PACKS_UI.filter(pk => pk.link);

@@ -11,12 +11,12 @@
 // checkout.session.completed.
 
 const { redisCmd } = require('../lib/redis');
-const { creditPacks, creditsForItems } = require('../lib/packs');
+const { creditsForItems } = require('../lib/packs');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Método no permitido' }); return; }
   const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey || !Object.keys(creditPacks()).length) { res.status(500).json({ error: 'Falta STRIPE_SECRET_KEY o CREDIT_PACKS' }); return; }
+  if (!stripeKey) { res.status(500).json({ error: 'Falta STRIPE_SECRET_KEY' }); return; }
 
   const eventId = req.body && req.body.id;
   if (!eventId || !/^evt_[A-Za-z0-9]+$/.test(eventId)) { res.status(400).json({ error: 'Evento no válido' }); return; }

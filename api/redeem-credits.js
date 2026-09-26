@@ -9,7 +9,7 @@
 const { findCustomers } = require('../lib/stripe');
 const { emailFromRequest, isPro } = require('../lib/auth');
 const { redisCmd } = require('../lib/redis');
-const { creditPacks, creditsForItems } = require('../lib/packs');
+const { creditsForItems } = require('../lib/packs');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,7 +19,6 @@ module.exports = async (req, res) => {
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) { res.status(500).json({ error: 'STRIPE_SECRET_KEY no configurada' }); return; }
-  if (!Object.keys(creditPacks()).length) { res.status(500).json({ error: 'CREDIT_PACKS no configurada' }); return; }
 
   try {
     const email = await emailFromRequest(req);
