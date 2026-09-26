@@ -6,7 +6,7 @@
 //   STRIPE_SECRET_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN,
 //   CREDIT_PACKS (ver lib/packs.js) y/o el pack antiguo CREDIT_PACK_PRICE_ID
 
-const { findCustomers } = require('../lib/stripe');
+const { customersFor } = require('../lib/stripe');
 const { emailFromRequest, isPro } = require('../lib/auth');
 const { redisCmd } = require('../lib/redis');
 const { creditsForItems } = require('../lib/packs');
@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
     const pro = await isPro(email, stripeKey);
     if (!pro) { res.status(402).json({ error: 'Necesitas ser suscriptor PRO para comprar créditos.' }); return; }
 
-    const customers = await findCustomers(email, stripeKey);
+    const customers = await customersFor(email, stripeKey);
     let added = 0;
 
     for (const customer of customers) {

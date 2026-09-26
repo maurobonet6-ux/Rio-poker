@@ -1,6 +1,7 @@
 // Función serverless de Vercel. Stripe la avisa cuando alguien termina un pago
 // y, si ha comprado un pack de créditos de IA, se los suma solo, sin
-// tener que pulsar "Ya las compré".
+// tener que pulsar "Ya las compré". Además asocia el cliente de Stripe a la
+// cuenta de RÍO que pagó (client_reference_id), por si pagó con otro email.
 //
 // No nos fiamos del contenido que llega: solo cogemos el id del evento y se lo
 // volvemos a pedir a Stripe con nuestra clave secreta. Así nadie puede
@@ -12,6 +13,7 @@
 
 const { redisCmd } = require('../lib/redis');
 const { creditsForItems } = require('../lib/packs');
+const { accountFromRef, linkCustomer } = require('../lib/stripe');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Método no permitido' }); return; }
@@ -32,10 +34,15 @@ module.exports = async (req, res) => {
     )).json();
     if (!session || session.payment_status !== 'paid') { res.status(200).json({ ignored: true }); return; }
 
+    // La cuenta de RÍO que pagó (va en el enlace de pago), aunque el email del pago sea otro.
+    const account = accountFromRef(session.client_reference_id);
+    if (account && session.customer) await linkCustomer(account, session.customer);
+
     const items = (session.line_items && session.line_items.data) || [];
     const credits = creditsForItems(items);
-    const email = String((session.customer_details && session.customer_details.email) || session.customer_email || '').trim().toLowerCase();
-    if (!credits || !email) { res.status(200).json({ ignored: true }); return; }
+    const payEmail = String((session.customer_details && session.customer_details.email) || session.customer_email || '').trim().toLowerCase();
+    const email = account || payEmail;
+    if (!credits || !email) { res.status(200).json({ ok: true, linked: !!account }); return; }
 
     // Mismo registro que /api/redeem-credits: cada compra se suma una sola vez.
     const isNew = await redisCmd(['SADD', `rio:redeemed:${email}`, session.id]);
