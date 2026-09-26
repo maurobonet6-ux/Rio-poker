@@ -751,7 +751,7 @@
       <span id="lblPreflop">Preflop</span>
       <span id="lblFlop">Flop</span>
       <span id="lblTurn">Turn</span>
-      <span id="lblRiver">Río</span>
+      <span id="lblRiver">River</span>
     </div>
   </header>
 
@@ -777,7 +777,7 @@
         <div class="board-groups">
           <div><div class="card-row" id="flopRow"></div><div class="grp-tag" id="tagFlop">Flop</div></div>
           <div><div class="card-row" id="turnRow"></div><div class="grp-tag" id="tagTurn">Turn</div></div>
-          <div><div class="card-row" id="riverRow"></div><div class="grp-tag" id="tagRiver">Río</div></div>
+          <div><div class="card-row" id="riverRow"></div><div class="grp-tag" id="tagRiver">River</div></div>
         </div>
         <div class="board-hint" id="boardHint"></div>
       </div>
@@ -1533,12 +1533,12 @@
   function renderBoardState(){
     const n = board.filter(Boolean).length;
     const flopN = board.slice(0, 3).filter(Boolean).length;
-    const cs = cardStreets(); // 1 preflop … 4 río
-    document.getElementById('streetNow').textContent = ['Preflop', 'Flop', 'Turn', 'Río'][cs - 1];
+    const cs = cardStreets(); // 1 preflop … 4 river
+    document.getElementById('streetNow').textContent = ['Preflop', 'Flop', 'Turn', 'River'][cs - 1];
     const groups = [
       { el: 'tagFlop', name: 'Flop', done: flopN === 3, street: 2 },
       { el: 'tagTurn', name: 'Turn', done: !!board[3], street: 3 },
-      { el: 'tagRiver', name: 'Río', done: !!board[4], street: 4 }];
+      { el: 'tagRiver', name: 'River', done: !!board[4], street: 4 }];
     const divs = document.querySelectorAll('.board-groups > div');
     groups.forEach((g, i) => {
       const tag = document.getElementById(g.el);
@@ -1551,9 +1551,9 @@
     let hint;
     if (n === 0) hint = 'Pon <b>solo las cartas que ya han salido</b>. ¿Estás antes del flop? Déjalas vacías.';
     else if (flopN < 3) hint = `El flop son 3 cartas: ${flopN === 2 ? 'falta 1' : 'faltan ' + (3 - flopN)}.`;
-    else if (cs === 2) hint = '<b>Estás en el flop.</b> No hace falta poner el turn ni el río: añádelos solo si ya han salido.';
-    else if (cs === 3) hint = '<b>Estás en el turn.</b> Añade el río solo si ya ha salido.';
-    else hint = '<b>Estás en el río</b>: la mesa está completa.';
+    else if (cs === 2) hint = '<b>Estás en el flop.</b> No hace falta poner el turn ni el river: añádelos solo si ya han salido.';
+    else if (cs === 3) hint = '<b>Estás en el turn.</b> Añade el river solo si ya ha salido.';
+    else hint = '<b>Estás en el river</b>: la mesa está completa.';
     document.getElementById('boardHint').innerHTML = hint;
   }
 
@@ -1583,7 +1583,7 @@
     if (!activeSlot) return '';
     const i = activeSlot.idx;
     if (activeSlot.zone === 'hole') return `Tu carta ${i + 1} de 2 · `;
-    return i < 3 ? `Flop · carta ${i + 1} de 3 · ` : i === 3 ? 'Turn · ' : 'Río · ';
+    return i < 3 ? `Flop · carta ${i + 1} de 3 · ` : i === 3 ? 'Turn · ' : 'River · ';
   }
   function renderPickerStep(){
     pickerBody.innerHTML = '';
@@ -1632,7 +1632,7 @@
     render(slot);
     const nxt = nextEmptySlot(slot.zone, slot.idx);
     // Solo avanza automáticamente dentro de tu mano o dentro del flop.
-    // Al pasar de la mano a las comunitarias, o del flop al turn y al río, hace falta
+    // Al pasar de la mano a las comunitarias, o del flop al turn y al river, hace falta
     // pinchar tú: así queda claro que no hacen falta las 5 comunitarias.
     const sameGroup = slot.zone === 'hole' || (slot.idx < 2);
     if (nxt && nxt.zone === slot.zone && sameGroup && (nxt.zone === 'hole' || nxt.idx < 3)){
@@ -2377,7 +2377,7 @@
   document.querySelectorAll('#gameType [data-game]').forEach(b => b.addEventListener('click', () => setGame(b.dataset.game)));
   setGame(storageGet('rio_game', 'cash'));
 
-  // Las etiquetas Preflop/Flop/Turn/Río de la cabecera también eligen la calle.
+  // Las etiquetas Preflop/Flop/Turn/River de la cabecera también eligen la calle.
   ['Preflop','Flop','Turn','River'].forEach((n, i) => ['dot' + n, 'lbl' + n].forEach(id => {
     const el = document.getElementById(id);
     el.style.cursor = 'pointer';
