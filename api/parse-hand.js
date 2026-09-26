@@ -3,7 +3,7 @@
 // convierta en cartas, posiciones y secuencia de apuestas.
 //
 // Solo para suscriptores PRO. Cada relato gasta un uso del mismo cupo que las
-// fotos (150 al mes + créditos extra, ver lib/quota.js).
+// fotos: 1 crédito de IA (200 al mes incluidos + créditos extra, ver lib/quota.js).
 //
 // Variables de entorno necesarias en Vercel:
 //   ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
   try {
     const charge = await chargeUse(email);
     if (!charge.ok) {
-      res.status(403).json({ error: 'LIMIT_REACHED', message: 'Has usado tus 150 usos incluidos este mes. Compra más créditos para seguir.' });
+      res.status(403).json({ error: 'LIMIT_REACHED', message: 'Has gastado tus créditos de este mes. Compra un pack de créditos para seguir.' });
       return;
     }
     refund = charge.refund;

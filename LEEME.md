@@ -5,16 +5,16 @@ Este proyecto tiene estas partes:
 - `api/account.js` + `vercel.json` — agrupan en una sola función las operaciones de cuenta (`lib/routes/`): el plan gratuito de Vercel permite como máximo 12 funciones
 - `lib/routes/send-code.js` y `lib/routes/verify-code.js` — inicio de sesión: envían un código de 6 dígitos al email del suscriptor y lo comprueban
 - `lib/routes/check-pro.js` — le pregunta a Stripe si el usuario con sesión iniciada tiene suscripción activa
-- `api/analyze-table.js` — lee una captura de la mesa con Claude (solo PRO, 150 fotos/mes + créditos extra)
-- `api/parse-hand.js` — "Cuéntame tu mano": convierte el relato de una mano (escrito o dictado) en cartas, posiciones y apuestas con Claude (solo PRO, gasta del mismo cupo que las fotos)
+- `api/analyze-table.js` — lee una captura de la mesa con Claude (solo PRO, gasta 1 crédito de IA)
+- `api/parse-hand.js` — "Cuéntame tu mano": convierte el relato de una mano (escrito o dictado) en cartas, posiciones y apuestas con Claude (solo PRO, gasta 1 crédito de IA)
 - `lib/routes/free-use.js` — cuenta los 5 análisis gratis de cada cuenta gratuita (en el servidor, no en el navegador)
 - `api/user-data.js` — guarda en la cuenta el historial, las estadísticas y los ajustes
-- `api/stripe-webhook.js` — suma solos los créditos de fotos extra al comprarlos
+- `api/stripe-webhook.js` — suma solos los créditos de los packs al comprarlos
 - `api/feedback.js` — avisos de "¿consejo raro?" (los ADMIN_EMAILS los leen desde el menú)
 - `legal.html` — aviso legal, privacidad, cookies, condiciones y juego responsable
 - `og-image.png` — imagen que se ve al compartir la web en WhatsApp, redes, etc.
-- `lib/routes/photo-usage.js` — cuántas fotos lleva gastadas el usuario este mes
-- `api/redeem-credits.js` — suma los créditos de fotos extra comprados en Stripe
+- `lib/routes/photo-usage.js` — créditos de IA gastados este mes y créditos comprados
+- `api/redeem-credits.js` — suma los créditos de los packs comprados en Stripe
 - `api/billing-portal.js` — abre el portal de Stripe para que el suscriptor cancele o cambie la tarjeta
 - `lib/routes/logout.js` — cierra la sesión
 - `manifest.webmanifest`, `sw.js` e `icons/` — permiten instalar RÍO en el móvil como una app
@@ -45,8 +45,8 @@ Este proyecto tiene estas partes:
    | `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` | Guardar sesiones, fotos usadas y créditos | upstash.com → crea una base de datos Redis → pestaña "REST API" |
    | `GMAIL_USER` | Cuenta de Gmail que envía el código de inicio de sesión, ej: `riopoker.app@gmail.com` | Crea una cuenta de Gmail para la app |
    | `GMAIL_APP_PASSWORD` | Contraseña de aplicación de esa cuenta (16 letras) | Ver abajo |
-   | `CREDIT_PACK_PRICE_ID` | Reconocer la compra del paquete de fotos extra | Stripe → Catálogo de productos → el paquete → Price ID (`price_...`) |
-   | `CREDITS_PER_PACK` | (Opcional) fotos por paquete, por defecto 50 | — |
+   | `CREDIT_PACKS` | Reconocer los packs de créditos: `priceId:créditos` separados por comas, p. ej. `price_AAA:100,price_BBB:300,price_CCC:1000` | Stripe → Catálogo de productos → cada pack → Price ID (`price_...`) |
+   | `CREDIT_PACK_PRICE_ID` y `CREDITS_PER_PACK` | (Antiguo) el pack de 50 créditos; se sigue reconociendo | — |
    | `ADMIN_EMAILS` | (Opcional) emails con PRO gratis, separados por comas | — |
 
    - Guarda y ve a Deployments → vuelve a desplegar (Redeploy) para que las variables se apliquen.
@@ -73,7 +73,7 @@ Este proyecto tiene estas partes:
 8. **Activa las estadísticas de visitas**
    - En Vercel → tu proyecto → pestaña **Analytics** → **Enable**. Son gratis y no usan cookies.
 
-9. **Créditos de fotos automáticos** (opcional, recomendado)
+9. **Créditos automáticos al comprar packs** (opcional, recomendado)
    - Stripe → Desarrolladores → **Webhooks** → Añadir endpoint.
    - URL: `https://TU-WEB/api/stripe-webhook` · Evento: `checkout.session.completed`.
    - No hace falta copiar ningún "signing secret": la función vuelve a pedir el evento a Stripe con tu clave.
@@ -84,6 +84,11 @@ Este proyecto tiene estas partes:
 
 11. **Imagen al compartir**
     - En `index.html`, las etiquetas `og:image` y `twitter:image` apuntan a `https://rio-poker.vercel.app/og-image.png`. Si tu web tiene otra dirección, cámbiala ahí.
+
+12. **Precios (PRO 9,99 € con 200 créditos/mes y packs de créditos)**
+    - En Stripe crea el precio mensual de 9,99 € de RÍO PRO y su Payment Link; pégalo en `PAYMENT_LINK` en `index.html`.
+    - Crea los packs (pago único): 100 créditos · 2,99 €, 300 · 6,99 €, 1.000 · 17,99 €, con un Payment Link cada uno. Pega los enlaces en `CREDIT_PACKS_UI` (`index.html`) y sus Price ID en la variable `CREDIT_PACKS` de Vercel.
+    - Los créditos incluidos al mes están en `MONTHLY_CREDITS` (`lib/quota.js` e `index.html`).
 
 ## Cómo funciona la verificación
 
