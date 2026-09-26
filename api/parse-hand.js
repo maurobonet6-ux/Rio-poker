@@ -10,6 +10,7 @@
 
 const { emailFromRequest, isPro } = require('../lib/auth');
 const { chargeUse } = require('../lib/quota');
+const { extractJson } = require('../lib/json');
 
 const MAX_TEXT = 3000;
 
@@ -90,7 +91,7 @@ module.exports = async (req, res) => {
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
         model: 'claude-sonnet-5',
-        max_tokens: 1500,
+        max_tokens: 2000,
         // Pasar un relato a datos es una tarea directa: sin "pensar" es más rápido y más barato.
         thinking: { type: 'disabled' },
         system: PROMPT,
@@ -104,10 +105,12 @@ module.exports = async (req, res) => {
       return;
     }
     const out = (data.content || []).map(b => b.text || '').join('').trim();
-    const clean = out.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
     let parsed;
-    try { parsed = JSON.parse(clean); }
-    catch (e) { await refund(); res.status(502).json({ error: 'No se pudo entender el relato. Prueba a contarlo con más detalle.' }); return; }
+    try { parsed = extractJson(out); }
+    catch (e) {
+      // Queda en los Logs de Vercel para poder ver qué respondió la IA.
+      console.error('parse-hand: respuesta no válida', { stop_reason: data.stop_reason, out: out.slice(0, 2000) });
+      await refund(); res.status(502).json({ error: 'No se pudo entender el relato. Prueba a contarlo con más detalle.' }); return; }
     res.status(200).json(parsed);
   } catch (e) {
     await refund();
