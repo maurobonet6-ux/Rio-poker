@@ -2642,8 +2642,9 @@
     if (VALID_POS.includes(d.villPos) && d.villPos !== d.heroPos) document.getElementById('villPosInput').value = d.villPos;
     if (Number(d.bigBlind) > 0) document.getElementById('bbInput').value = Number(d.bigBlind);
     if (Number(d.rivals) >= 1){ numRivals = Math.min(9, Math.round(Number(d.rivals))); rivVal.textContent = numRivals; }
-    if (Number(d.heroStack) > 0) document.getElementById('stackInput').value = Number(d.heroStack);
-    if (Number(d.villStack) > 0) document.getElementById('villStackInput').value = Number(d.villStack);
+    document.getElementById('stackInput').value = Number(d.heroStack) > 0 ? Number(d.heroStack) : '';
+    document.getElementById('villStackInput').value = Number(d.villStack) > 0 ? Number(d.villStack) : '';
+    if (!(Number(d.rivals) >= 1)){ numRivals = 1; rivVal.textContent = numRivals; }
     if (d.tournament === true) setGame('torneo'); else if (d.tournament === false) setGame('cash');
     const ST = { preflop: 0, flop: 1, turn: 2, river: 3 };
     const newSeq = [[], [], [], []];
@@ -2972,28 +2973,58 @@
     if (!rank || !SUITS.includes(suit)) return null;
     return { rank, suit };
   }
+  // Una captura es una mano nueva: primero se vacía la anterior y luego se
+  // rellena solo lo que la IA ha visto. Devuelve lo que no ha podido leer.
   function applyScreenshotData(data){
     seq = [[], [], [], []]; seqStreet = 0; seqActor = null; seqPending = null; selStreet = null;
-    if (data.hand){
-      data.hand.trim().split(/\s+/).slice(0,2).forEach((t,i) => {
-        const c = parseCardToken(t); if (c) hole[i] = c;
-      });
-    }
-    if (data.board){
-      data.board.trim().split(/\s+/).slice(0,5).forEach((t,i) => {
-        const c = parseCardToken(t); if (c) board[i] = c;
-      });
-    }
-    if (data.pot != null && !isNaN(data.pot)) document.getElementById('potInput').value = data.pot;
-    if (data.call != null && !isNaN(data.call)) document.getElementById('callInput').value = data.call;
-    if (data.heroStack != null && !isNaN(data.heroStack)) document.getElementById('stackInput').value = data.heroStack;
-    if (data.villStack != null && !isNaN(data.villStack)) document.getElementById('villStackInput').value = data.villStack;
+    hole = [null, null]; board = [null, null, null, null, null];
+    ['potInput', 'callInput', 'stackInput', 'villStackInput'].forEach(id => { document.getElementById(id).value = ''; });
+    numRivals = 1; rivVal.textContent = numRivals;
+    const used = new Set();
+    const cardsOf = (str, n) => String(str || '').trim().split(/\s+/).map(parseCardToken)
+      .filter(c => c && !used.has(cardKey(c)) && used.add(cardKey(c))).slice(0, n);
+    cardsOf(data.hand, 2).forEach((c, i) => { hole[i] = c; });
+    cardsOf(data.board, 5).forEach((c, i) => { board[i] = c; });
+    const num = (v) => v != null && v !== '' && !isNaN(v) && Number(v) >= 0;
+    if (num(data.pot)) document.getElementById('potInput').value = Number(data.pot);
+    if (num(data.call)) document.getElementById('callInput').value = Number(data.call);
+    if (num(data.heroStack)) document.getElementById('stackInput').value = Number(data.heroStack);
+    if (num(data.villStack)) document.getElementById('villStackInput').value = Number(data.villStack);
     if (VALID_POS.includes(data.heroPos)) document.getElementById('heroPosInput').value = data.heroPos;
-    if (VALID_POS.includes(data.villPos)) document.getElementById('villPosInput').value = data.villPos;
-    if (data.numRivals){ numRivals = Math.max(1, Math.min(9, data.numRivals)); rivVal.textContent = numRivals; }
+    if (VALID_POS.includes(data.villPos) && data.villPos !== data.heroPos) document.getElementById('villPosInput').value = data.villPos;
+    if (data.numRivals){ numRivals = Math.max(1, Math.min(9, Number(data.numRivals) || 1)); rivVal.textContent = numRivals; }
     updateOrderHint();
     render();
+    const missing = [];
+    if (!hole[0] || !hole[1]) missing.push('tus cartas');
+    if (!num(data.pot)) missing.push('el bote');
+    if (!num(data.call)) missing.push('lo que te toca pagar');
+    if (!VALID_POS.includes(data.heroPos)) missing.push('tu posición');
+    return missing;
   }
+  // Reduce la captura en el propio móvil antes de enviarla: las de móvil pesan
+  // varios MB (Vercel rechaza envíos de más de ~4,5 MB) y a veces vienen en
+  // formatos que la IA no acepta (HEIC). La IA trabaja con un máximo de ~1568 px
+  // de lado, así que reducir a ese tamaño no pierde detalle.
+  async function shrinkImage(file){
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error('Este formato de imagen no es compatible. Prueba con una captura de pantalla normal (PNG o JPG).'));
+        i.src = url;
+      });
+      const MAX = 1568;
+      const scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      return { data: canvas.toDataURL('image/jpeg', 0.88).split(',')[1], mediaType: 'image/jpeg' };
+    } finally { URL.revokeObjectURL(url); }
+  }
+
   document.getElementById('screenshotInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     e.target.value = '';
@@ -3004,22 +3035,16 @@
     statusEl.style.color = 'var(--cream-dim)';
     statusEl.textContent = 'Leyendo la imagen…';
     try{
-      const dataUrl = await new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.onerror = () => reject(new Error('No se pudo leer el archivo'));
-        r.readAsDataURL(file);
-      });
+      const small = await shrinkImage(file);
       statusEl.textContent = 'Analizando la mesa…';
       const resp = await fetch('/api/analyze-table', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({
-          image: dataUrl.split(',')[1],
-          mediaType: file.type || 'image/png'
-        })
+        body: JSON.stringify({ image: small.data, mediaType: small.mediaType })
       });
-      const data = await resp.json();
+      let data = {};
+      try { data = await resp.json(); } catch(e){}
+      if (resp.status === 413) throw new Error('La imagen es demasiado grande. Prueba con una captura de pantalla en vez de una foto.');
       if (resp.status === 401){ logoutPro(); updateUsageBadge(); statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Inicia sesión con tu email de RÍO PRO para usar esta función.'; openPaywall('login'); return; }
       if (resp.status === 402){ statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Esta función es solo para suscriptores de RÍO PRO.'; openPaywall(); return; }
       if (resp.status === 403 && data.error === 'LIMIT_REACHED'){
@@ -3028,14 +3053,17 @@
         openCreditsModal();
         return;
       }
-      if (!resp.ok || data.error) throw new Error(data.error || 'No se pudo analizar la captura');
-      applyScreenshotData(data);
+      if (!resp.ok || data.error) throw new Error(data.error || `No se pudo analizar la captura (error ${resp.status}).`);
+      const missing = applyScreenshotData(data);
       statusEl.style.color = 'var(--ok)';
+      const missText = missing.length ? ` No he podido leer: <b>${missing.join(', ')}</b>. Revísalo y complétalo a mano.` : '';
       if (hole[0] && hole[1]){
-        statusEl.textContent = '✅ Datos detectados — calculando…';
-        analyzeBtn.click();
+        statusEl.innerHTML = '✅ Mano nueva leída de la captura.' + missText + (missing.length ? '' : ' Calculando…');
+        if (!missing.length) analyzeBtn.click();
       } else {
-        statusEl.textContent = '✅ Datos detectados, pero no vi tu mano con claridad — elígela a mano.';
+        const others = missing.filter(m => m !== 'tus cartas');
+        statusEl.innerHTML = '⚠️ Mano nueva leída de la captura, pero no vi tus cartas con claridad: elígelas a mano.' +
+          (others.length ? ` Tampoco he podido leer: <b>${others.join(', ')}</b>.` : '');
       }
     } catch(err){
       statusEl.style.color = 'var(--crimson)';
