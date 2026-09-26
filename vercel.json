@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/api/send-code", "destination": "/api/account?action=send-code" },
+    { "source": "/api/verify-code", "destination": "/api/account?action=verify-code" },
+    { "source": "/api/logout", "destination": "/api/account?action=logout" },
+    { "source": "/api/check-pro", "destination": "/api/account?action=check-pro" },
+    { "source": "/api/free-use", "destination": "/api/account?action=free-use" },
+    { "source": "/api/photo-usage", "destination": "/api/account?action=photo-usage" }
+  ]
+}

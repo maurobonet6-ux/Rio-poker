@@ -2,20 +2,21 @@
 
 Este proyecto tiene estas partes:
 - `index.html` — tu página (la herramienta de poker)
-- `api/send-code.js` y `api/verify-code.js` — inicio de sesión: envían un código de 6 dígitos al email del suscriptor y lo comprueban
-- `api/check-pro.js` — le pregunta a Stripe si el usuario con sesión iniciada tiene suscripción activa
+- `api/account.js` + `vercel.json` — agrupan en una sola función las operaciones de cuenta (`lib/routes/`): el plan gratuito de Vercel permite como máximo 12 funciones
+- `lib/routes/send-code.js` y `lib/routes/verify-code.js` — inicio de sesión: envían un código de 6 dígitos al email del suscriptor y lo comprueban
+- `lib/routes/check-pro.js` — le pregunta a Stripe si el usuario con sesión iniciada tiene suscripción activa
 - `api/analyze-table.js` — lee una captura de la mesa con Claude (solo PRO, 150 fotos/mes + créditos extra)
 - `api/parse-hand.js` — "Cuéntame tu mano": convierte el relato de una mano (escrito o dictado) en cartas, posiciones y apuestas con Claude (solo PRO, gasta del mismo cupo que las fotos)
-- `api/free-use.js` — cuenta los 5 análisis gratis de cada cuenta gratuita (en el servidor, no en el navegador)
+- `lib/routes/free-use.js` — cuenta los 5 análisis gratis de cada cuenta gratuita (en el servidor, no en el navegador)
 - `api/user-data.js` — guarda en la cuenta el historial, las estadísticas y los ajustes
 - `api/stripe-webhook.js` — suma solos los créditos de fotos extra al comprarlos
 - `api/feedback.js` — avisos de "¿consejo raro?" (los ADMIN_EMAILS los leen desde el menú)
 - `legal.html` — aviso legal, privacidad, cookies, condiciones y juego responsable
 - `og-image.png` — imagen que se ve al compartir la web en WhatsApp, redes, etc.
-- `api/photo-usage.js` — cuántas fotos lleva gastadas el usuario este mes
+- `lib/routes/photo-usage.js` — cuántas fotos lleva gastadas el usuario este mes
 - `api/redeem-credits.js` — suma los créditos de fotos extra comprados en Stripe
 - `api/billing-portal.js` — abre el portal de Stripe para que el suscriptor cancele o cambie la tarjeta
-- `api/logout.js` — cierra la sesión
+- `lib/routes/logout.js` — cierra la sesión
 - `manifest.webmanifest`, `sw.js` e `icons/` — permiten instalar RÍO en el móvil como una app
 - `lib/` — código compartido (Stripe, Redis, sesiones, cupo de usos de IA y envío de emails)
 - `package.json` — la librería `nodemailer` para enviar emails con Gmail (Vercel la instala sola)
