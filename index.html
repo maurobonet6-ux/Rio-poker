@@ -1354,6 +1354,8 @@
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Quiero RÍO PRO · 9,99 €/mes</button>
+        <button type="button" class="link-btn paid-check" style="display:block; margin:10px auto 0;">Ya he pagado, comprobar</button>
+        <div class="restore-msg paid-msg"></div>
         <div class="plan-packs">
           <div class="plan-packs-title">¿Necesitas más IA? Packs de créditos</div>
           <div id="planPackList"></div>
@@ -1410,6 +1412,8 @@
     <div class="annual-note sub-part"></div>
     <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%; text-transform:uppercase; letter-spacing:0.03em;">Quiero RÍO PRO</button>
     <div class="pw-cancel sub-part">Cancela cuando quieras. Paga con el mismo email con el que entras en RÍO.</div>
+    <button type="button" class="link-btn paid-check sub-part" style="display:block; margin:8px auto 0;">Ya he pagado, comprobar</button>
+    <div class="restore-msg paid-msg sub-part"></div>
     <div class="pw-packs sub-part">¿Necesitas más IA? Packs extra desde <b>2,99 €</b> (+100 créditos), pago único.</div>
     <div class="restore-box" id="restoreBox">
       <div class="free-note login-only">💾 <b>Guarda tus manos y conserva tu progreso en cualquier dispositivo.</b><br>✅ Crear tu cuenta es <b>gratis</b>. No te pedimos tarjeta ni ningún pago.</div>
@@ -1462,13 +1466,17 @@
   document.querySelectorAll('.app-version').forEach(el => { el.textContent = APP_VERSION; });
   const PRO_PRICE_LABEL = '9,99 €';
   const PAYMENT_LINK = 'https://buy.stripe.com/7sYaEZ8bB2bW8uh7Ko9IQ02'; // RÍO PRO · 9,99 €/mes
-  // Abre un enlace de pago de Stripe con el email de tu cuenta ya puesto: RÍO reconoce PRO
-  // y los packs por ese email, así que si pagas con otro no se activaría.
+  // Abre un enlace de pago de Stripe con el email de tu cuenta ya puesto y, además, un
+  // identificador de tu cuenta (client_reference_id): así el servidor asocia el pago a tu
+  // cuenta aunque pagues con otro email (por ejemplo, con Apple Pay). Ver lib/stripe.js.
   function openPayment(link){
     let url = link;
     try {
       const email = JSON.parse(localStorage.getItem('rio_email') || '""');
-      if (email) url += (link.includes('?') ? '&' : '?') + 'prefilled_email=' + encodeURIComponent(email);
+      if (email){
+        const ref = 'rio_' + btoa(unescape(encodeURIComponent(email))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        url += (link.includes('?') ? '&' : '?') + 'prefilled_email=' + encodeURIComponent(email) + '&client_reference_id=' + ref;
+      }
     } catch (e) {}
     window.open(url, '_blank');
   }
@@ -1556,7 +1564,7 @@
 
     const subscribeFromPlanBtn = document.getElementById('subscribeFromPlanBtn');
     if (subscribeFromPlanBtn) subscribeFromPlanBtn.style.display = pro ? 'none' : 'inline-block';
-    document.querySelectorAll('#proPlanCard .annual-btn, #proPlanCard .annual-note').forEach(el => { el.style.display = pro ? 'none' : ''; });
+    document.querySelectorAll('#proPlanCard .annual-btn, #proPlanCard .annual-note, #proPlanCard .paid-check, #proPlanCard .paid-msg').forEach(el => { el.style.display = pro ? 'none' : ''; });
 
     const photoBox = document.getElementById('photoUsageBox');
     if (photoBox){
@@ -1670,15 +1678,29 @@
       if (isPro()) logoutPro();
       return;
     }
-    verifyProSession().then(pro => {
-      if (pro === null) return; // sin respuesta del servidor: no tocamos nada
-      if (pro === 'logout') logoutPro();
-      else storageSet('rio_pro', pro);
-      refreshFreeLeft(); pullSync(); updateAccountUI();
-      if (typeof updateUsageBadge === 'function') updateUsageBadge();
-      refreshPhotoUsage();
-    });
+    recheckPro(true);
   })();
+
+  // Vuelve a preguntar al servidor si eres PRO. Se usa al abrir la página, al volver
+  // a RÍO desde otra pestaña (por ejemplo, tras pagar en Stripe) y con el botón
+  // "Ya he pagado, comprobar". Devuelve true, false o null (sin respuesta).
+  var lastProCheck = 0; // "var": revalidateOnLoad() la usa antes de llegar a esta línea
+  async function recheckPro(force){
+    if (!storageGet('rio_token', '')) return false;
+    if (!force && Date.now() - lastProCheck < 15000) return null;
+    lastProCheck = Date.now();
+    const pro = await verifyProSession();
+    if (pro === null) return null; // sin respuesta del servidor: no tocamos nada
+    if (pro === 'logout'){ logoutPro(); return false; }
+    storageSet('rio_pro', pro);
+    refreshFreeLeft(); pullSync(); updateAccountUI();
+    if (typeof updateUsageBadge === 'function') updateUsageBadge();
+    refreshPhotoUsage();
+    return pro;
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !isPro()) recheckPro(false);
+  });
 
   let hole = [null, null];
   let board = [null, null, null, null, null];
@@ -3640,6 +3662,20 @@
     }
   });
   document.getElementById('subscribeBtn').addEventListener('click', () => openPayment(PAYMENT_LINK));
+  document.querySelectorAll('.paid-check').forEach(btn => btn.addEventListener('click', async () => {
+    const msg = btn.nextElementSibling;
+    if (!storageGet('rio_token', '')){ msg.className = 'restore-msg paid-msg'; msg.textContent = 'Primero entra con tu email (más abajo o en el menú).'; return; }
+    btn.disabled = true; msg.className = 'restore-msg paid-msg'; msg.textContent = 'Comprobando tu pago…';
+    const pro = await recheckPro(true);
+    btn.disabled = false;
+    if (pro === true){
+      msg.className = 'restore-msg paid-msg ok'; msg.textContent = '¡Listo! Ya eres RÍO PRO.';
+      setTimeout(() => { closePaywall(); closePlanPanel(); }, 1200);
+    } else {
+      msg.textContent = pro === null ? 'No hemos podido comprobarlo. Inténtalo en un momento.'
+        : 'Aún no vemos tu pago. Si acabas de pagar, espera un minuto. Si pagaste con otro email, escríbenos a riopokerapp@gmail.com y lo activamos.';
+    }
+  }));
   document.getElementById('subscribeFromPlanBtn').addEventListener('click', () => openPayment(PAYMENT_LINK));
 
   // ---- Panel de Plan ----

@@ -212,7 +212,10 @@ test('pagar: el enlace de Stripe lleva el email de tu cuenta', async ({ page }) 
   await page.evaluate(() => document.getElementById('navPlan').click());
   await page.locator('#subscribeFromPlanBtn').click();
   const urls = await page.evaluate(() => window.__abiertos);
-  expect(urls[0]).toMatch(/^https:\/\/buy\.stripe\.com\/.+\?prefilled_email=jugador%40rio\.test$/);
+  expect(urls[0]).toMatch(/^https:\/\/buy\.stripe\.com\/.+\?prefilled_email=jugador%40rio\.test&client_reference_id=rio_[\w-]+$/);
+  // El identificador de la cuenta es el email en base64url (lo lee lib/stripe.js).
+  const ref = urls[0].split('client_reference_id=')[1];
+  expect(Buffer.from(ref.slice(4), 'base64url').toString()).toBe('jugador@rio.test');
 });
 
 test('plan anual: 79,99 €/año, con el email de tu cuenta, y oculto si ya eres PRO', async ({ page, browser }) => {
@@ -223,10 +226,24 @@ test('plan anual: 79,99 €/año, con el email de tu cuenta, y oculto si ya eres
   await expect(anual).toContainText('79,99 €/año');
   await expect(page.locator('#proPlanCard .annual-note')).toContainText('79,99 €/año');
   await anual.click();
-  expect((await page.evaluate(() => window.__abiertos))[0]).toBe('https://buy.stripe.com/7sY8wR3Vl3g0dOB7Ko9IQ06?prefilled_email=jugador%40rio.test');
+  expect((await page.evaluate(() => window.__abiertos))[0]).toMatch(/^https:\/\/buy\.stripe\.com\/7sY8wR3Vl3g0dOB7Ko9IQ06\?prefilled_email=jugador%40rio\.test&client_reference_id=rio_/);
   const pro = await browser.newPage();
   await abrir(pro, { pro: true });
   await pro.evaluate(() => document.getElementById('navPlan').click());
   await expect(pro.locator('#proPlanCard .annual-btn')).toBeHidden();
   await pro.close();
+});
+
+test('"Ya he pagado, comprobar" activa PRO si el servidor ya ve el pago', async ({ page }) => {
+  let pagado = false;
+  await abrir(page, { logged: true, storage: { rio_email: JSON.stringify('jugador@rio.test') } });
+  await page.route('**/api/check-pro', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ pro: pagado, email: 'jugador@rio.test' }) }));
+  await page.evaluate(() => document.getElementById('navPlan').click());
+  const boton = page.locator('#proPlanCard .paid-check');
+  await boton.click();
+  await expect(page.locator('#proPlanCard .paid-msg')).toContainText('Aún no vemos tu pago');
+  pagado = true;
+  await boton.click();
+  await expect(page.locator('#proPlanCard .paid-msg')).toContainText('Ya eres RÍO PRO');
+  expect(await page.evaluate(() => localStorage.getItem('rio_pro'))).toBe('true');
 });

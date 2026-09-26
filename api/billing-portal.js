@@ -4,7 +4,7 @@
 // Requisito: activar el portal en Stripe → Configuración → Facturación →
 // Portal de clientes (una sola vez).
 
-const { findCustomers } = require('../lib/stripe');
+const { customersFor } = require('../lib/stripe');
 const { emailFromRequest } = require('../lib/auth');
 
 module.exports = async (req, res) => {
@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
     const email = await emailFromRequest(req);
     if (!email) { res.status(401).json({ error: 'Inicia sesión para gestionar tu suscripción.' }); return; }
 
-    const customers = await findCustomers(email, stripeKey);
+    const customers = await customersFor(email, stripeKey);
     if (customers.length === 0) {
       res.status(404).json({ error: 'No hay ninguna suscripción de Stripe con este email.' });
       return;
