@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
   try {
     const charge = await chargeUse(email);
     if (!charge.ok) {
-      res.status(403).json({ error: 'LIMIT_REACHED', message: 'Has gastado tus créditos de este mes. Compra un pack de créditos para seguir.' });
+      res.status(403).json({ error: 'LIMIT_REACHED', message: 'Te has quedado sin créditos de IA. Los de RÍO PRO se renuevan cada mes; si no quieres esperar, compra un pack. Los análisis manuales siguen siendo ilimitados.' });
       return;
     }
     refund = charge.refund;

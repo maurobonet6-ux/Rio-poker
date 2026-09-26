@@ -116,6 +116,8 @@
     content: ''; position: absolute; inset: 0; background: var(--gold);
     animation: pulse-slide 1.6s ease-in-out infinite;
   }
+  @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(232,40,63,0.7); } 100% { box-shadow: 0 0 0 16px rgba(232,40,63,0); } }
+  .pulse { animation: pulse-ring 0.8s ease-out 3; }
   @keyframes pulse-slide { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
   .steps-labels { display: flex; justify-content: space-between; margin-top: 8px; }
   .steps-labels span { font-size: 0.7rem; color: var(--cream-dim); font-weight: 600; }
@@ -208,6 +210,7 @@
     font-family: 'Space Grotesk', sans-serif;
   }
   .field input:focus, .cardslot:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .hint { font-size: 0.76rem; color: var(--cream-dim); line-height: 1.45; }
   .field .hint { font-size: 0.76rem; color: var(--cream-dim); margin-top: 6px; }
 
   .actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
@@ -266,15 +269,6 @@
   .picker-head button { background: none; border: none; color: var(--cream-dim); font-size: 1.5rem; cursor: pointer; }
   .back-btn { background: none; border: none; color: var(--gold); font-weight: 600; cursor: pointer; font-family: 'Space Grotesk', sans-serif; padding: 0; margin-bottom: 4px; font-size: 0.9rem; }
 
-  .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-  .card-pick { height: 38px; border-radius: 10px; border: 1px solid var(--line); background: #F5F2EC; color: #141416; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
-  .card-pick span { font-size: 1.1rem; }
-  .card-pick.crimson { color: var(--gold); }
-  .card-pick.current { outline: 3px solid var(--ok); outline-offset: -3px; }
-  .card-pick:disabled { background: var(--panel-2); color: rgba(245,242,236,0.18); cursor: not-allowed; }
-  .card-pick:not(:disabled):active { transform: scale(0.95); }
-  @media (max-height: 800px) { .card-pick { height: 33px; font-size: 0.95rem; } .card-grid { gap: 4px; } #overlay .picker { padding-top: 16px; } #overlay .picker-head { margin-bottom: 10px; } }
-  @media (max-height: 640px) { .card-pick { height: 29px; } }
   /* Área de toque más grande para los botones de ayuda "?" sin cambiar cómo se ven. */
   .help { position: relative; }
   .help::after { content: ''; position: absolute; inset: -12px; }
@@ -312,11 +306,31 @@
   .advice b { color: var(--cream); }
 
   .key-line { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
-  .key-line .kchip { flex: 1 1 0; min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: 0.72rem; color: var(--cream-dim); line-height: 1.25; }
-  .key-line .kchip:first-child { flex-grow: 1.7; }
+  .key-line .kchip { flex: 1 1 calc(33% - 8px); min-width: 90px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: 0.72rem; color: var(--cream-dim); line-height: 1.25; }
   .key-line .kchip b { display: block; font-size: 1.15rem; color: var(--cream); font-family: 'Bricolage Grotesque', sans-serif; }
   .key-line .kchip.pos b { color: var(--ok); }
   .key-line .kchip.neg b { color: var(--crimson); }
+  .verdict { text-align: center; margin: 4px 0 6px; }
+  .verdict .decision-badge { display: inline-block; font-size: 1.9rem; padding: 12px 34px; letter-spacing: 0.04em; }
+  .verdict-line { margin-top: 12px; font-size: 1.05rem; color: var(--cream); }
+  .verdict-line b { color: var(--cream); }
+  .verdict .result-hand { font-size: 1.05rem; margin-top: 8px; }
+  .verdict .result-hand small { font-size: 0.76rem; }
+  .why-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .why-list li { background: var(--panel-2); border-radius: 12px; padding: 10px 12px; font-size: 0.9rem; line-height: 1.45; color: var(--cream-dim); }
+  .why-list li b { color: var(--cream); }
+  .what-if .hint { margin-top: 10px; }
+  .next-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .next-actions button { min-width: 0; width: 100%; padding: 11px 4px; font-size: 0.8rem; line-height: 1.25; box-shadow: none; }
+  .what-if, .next-step { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .wi-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 10px; }
+  .wi-scale { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--cream-dim); margin-bottom: 6px; }
+  .wi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .wi-cell { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 4px; text-align: center; font-size: 0.7rem; color: var(--cream-dim); line-height: 1.3; }
+  .wi-cell.cur { border-color: var(--gold); }
+  .wi-cell b { display: block; font-size: 0.82rem; margin-top: 4px; }
+  .wi-cell b.ok { color: var(--ok); } .wi-cell b.warn { color: var(--lavender); } .wi-cell b.no { color: var(--crimson); }
+  .demo-next { margin-top: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--gold); background: var(--gold-soft); font-size: 0.9rem; }
   .why-title { margin: 16px 0 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); }
   .full-analysis { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 6px; }
   .full-analysis > summary { cursor: pointer; list-style: none; padding: 12px 0; font-weight: 700; font-size: 0.92rem; color: var(--cream); }
@@ -325,8 +339,8 @@
   .next-dec { margin-top: 18px; padding: 16px; border-radius: 14px; background: var(--panel-2); border: 1px solid rgba(155,140,255,0.35); }
   .next-dec .nd-kicker { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--lavender); }
   .next-dec .nd-q { font-weight: 700; font-size: 1rem; margin: 4px 0 12px; }
-  .street-track { display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap; margin-top: 18px; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cream-dim); }
-  .street-track span { padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); }
+  .street-track { display: flex; align-items: center; justify-content: center; gap: 3px; flex-wrap: wrap; margin-top: 4px; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cream-dim); }
+  .street-track span { padding: 4px 7px; border-radius: 999px; border: 1px solid var(--line); }
   .street-track span.done { color: var(--cream); }
   .street-track span.cur { background: var(--gold); border-color: var(--gold); color: #fff; }
   .street-track i { font-style: normal; opacity: 0.5; }
@@ -360,8 +374,19 @@
   .history-item .h-ev.pos { color: var(--ok); } .history-item .h-ev.neg { color: var(--crimson); }
   .history-item .h-you { text-align: center; font-size: 0.78rem; color: var(--cream-dim); }
   .hist-head span:nth-child(3) { text-align: right; } .hist-head span:nth-child(4) { text-align: center; }
+  .hist-patterns { margin-bottom: 14px; border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; background: var(--panel-2); }
+  .hist-patterns > summary { cursor: pointer; padding: 12px 0; font-weight: 700; font-size: 0.9rem; }
+  .hist-patterns[open] { padding-bottom: 12px; }
+  .pat-top { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .pat-top div { background: var(--panel); border-radius: 10px; padding: 8px 10px; }
+  .pat-top b { display: block; font-size: 1.2rem; font-family: 'Bricolage Grotesque', sans-serif; }
+  .pat-top span { font-size: 0.72rem; color: var(--cream-dim); }
+  .pat-row { display: grid; grid-template-columns: 1.2fr repeat(5, 1fr); gap: 4px; font-size: 0.78rem; padding: 6px 0; border-bottom: 1px solid var(--line); text-align: center; color: var(--cream-dim); }
+  .pat-row span:first-child { text-align: left; }
+  .pat-row b { color: var(--cream); }
+  .pat-h { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; }
   .hist-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-  .hist-filters select { flex: 1 1 140px; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--cream); font: inherit; font-size: 0.82rem; }
+  .hist-filters select { flex: 1 1 120px; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--cream); font: inherit; font-size: 0.82rem; }
   .hf-err { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--cream); }
   body:not(.is-pro) .pro-hist { display: none !important; }
   .history-item:last-child { border-bottom: none; }
@@ -491,13 +516,10 @@
   body.mode-pro .easy-only { display: none !important; }
   /* Modo Fácil: lo opcional queda plegado hasta que lo pidas. */
   body:not(.mode-pro):not(.easy-more) .easy-extra { display: none !important; }
-  .panel-num .n-short { display: none; }
-  body:not(.mode-pro):not(.easy-more) .panel-num .n-short { display: inline; }
-  body:not(.mode-pro):not(.easy-more) .panel-num .n-full { display: none; }
   body.easy-more .more-nudge { display: none !important; }
   body.mode-pro:not(.bets-full) .full-only { display: none !important; }
   .bets-mode { margin-bottom: 16px; }
-  .more-toggle { display: block; width: 100%; text-align: left; background: var(--panel); border: 1px dashed var(--line); color: var(--cream); border-radius: 14px; padding: 14px 16px; margin: 0 0 18px; font: inherit; font-size: 0.92rem; cursor: pointer; }
+  .more-toggle { display: block; width: 100%; text-align: left; background: var(--panel-2); border: 1px dashed var(--line); color: var(--cream); border-radius: 14px; padding: 14px 16px; margin: 0; font: inherit; font-size: 0.92rem; cursor: pointer; }
   .more-toggle small { display: block; color: var(--cream-dim); font-size: 0.78rem; margin-top: 3px; }
   .more-nudge { margin-top: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); font-size: 0.88rem; color: var(--cream-dim); }
   .more-nudge b { color: var(--cream); }
@@ -690,6 +712,22 @@
   .entry-shot-sub { display: block; color: var(--cream-dim); font-size: 0.85rem; margin: 8px auto 14px; max-width: 360px; line-height: 1.4; }
   .entry-shot-btn { display: inline-block; background: var(--gold); color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.9rem; border-radius: 999px; padding: 11px 26px; }
   .entry-shot small { display: block; color: var(--cream-dim); font-size: 0.72rem; margin-top: 10px; }
+  .demo-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px 22px; margin-bottom: 18px; }
+  .demo-panel > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 800; font-size: 0.98rem; }
+  .demo-panel > summary::-webkit-details-marker { display: none; }
+  .demo-panel .demo-open { flex: none; color: var(--gold); font-size: 0.9rem; }
+  .demo-panel .o-open, .demo-panel[open] .o-closed { display: none; }
+  .demo-panel[open] .o-open { display: inline; }
+  .demo-card { margin: 14px 0 4px; padding: 14px; border-radius: 14px; border: 1px dashed var(--line); background: var(--panel-2); }
+  .demo-head { font-weight: 800; font-size: 0.9rem; margin-bottom: 10px; }
+  .demo-flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .demo-flow small { display: block; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cream-dim); margin-bottom: 4px; }
+  .demo-flow i { font-style: normal; color: var(--gold); font-weight: 800; }
+  .demo-flow .mini-card { display: inline-flex; margin-right: 3px; width: 34px; height: 46px; font-size: 0.85rem; }
+  .demo-sit { font-size: 0.86rem; color: var(--cream-dim); margin: 10px 0 8px; }
+  .demo-sit b { color: var(--cream); }
+  .demo-dec { font-size: 0.88rem; color: var(--cream-dim); margin-bottom: 12px; line-height: 1.45; }
+  .demo-dec .decision-badge { font-size: 0.85rem; padding: 4px 12px; margin-right: 6px; }
   .entry-manual { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--panel-2); border: 1px solid rgba(245,242,236,0.28); color: var(--cream); font: inherit; border-radius: 14px; padding: 14px 14px; margin-bottom: 18px; cursor: pointer; }
   .entry-manual:hover { border-color: var(--gold); }
   .entry-manual .em-ic { font-size: 1.4rem; }
@@ -727,6 +765,17 @@
     .sticky-analyze button { width: 100%; }
     body.has-sticky footer { padding-bottom: 80px; }
   }
+  .welcome-steps { display: grid; gap: 8px; margin: 0 0 14px; }
+  .welcome-steps > div { display: flex; align-items: center; gap: 12px; background: var(--panel-2); border-radius: 12px; padding: 10px 12px; }
+  .welcome-steps span { font-size: 1.4rem; flex: none; }
+  .welcome-steps p { margin: 0; font-size: 0.86rem; color: var(--cream-dim); line-height: 1.35; }
+  .welcome-steps b { color: var(--cream); }
+  .welcome-q { font-weight: 800; text-align: center; margin-bottom: 10px; color: var(--cream); font-size: 1.02rem; }
+  .welcome-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .welcome-choice { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 8px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); color: var(--cream); font: inherit; font-size: 1.5rem; cursor: pointer; }
+  .welcome-choice b { font-size: 0.95rem; }
+  .welcome-choice small { font-size: 0.72rem; color: var(--cream-dim); }
+  .welcome-choice:hover { border-color: var(--gold); background: var(--gold-soft); }
   .train-funnel { margin: 14px 0 12px; padding: 14px; border-radius: 12px; border: 1px solid var(--gold); background: var(--gold-soft); font-size: 0.9rem; }
   .chart-opts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
   .chart-opts .range-presets { margin: 0; }
@@ -835,7 +884,7 @@
     <div class="mode-row">
       <div class="mode-switch" role="group" aria-label="Modo de la calculadora">
         <button type="button" data-mode="facil">Fácil</button>
-        <button type="button" data-mode="pro">Pro</button>
+        <button type="button" data-mode="pro">Avanzado</button>
       </div>
       <div class="mode-note" id="modeNote"></div>
     </div>
@@ -853,6 +902,21 @@
     </div>
   </header>
 
+  <details class="demo-panel easy-only" id="demoPanel">
+    <summary><span>👀 ¿Primera vez? Mira cómo analiza RÍO una mano</span><span class="demo-open"><span class="o-closed">Ver ▾</span><span class="o-open">Cerrar ▴</span></span></summary>
+    <div class="demo-card" id="demoCard">
+      <div class="demo-flow">
+        <div><small>Tus cartas</small><span id="demoHole"></span></div>
+        <i>→</i>
+        <div><small>Mesa (flop)</small><span id="demoBoard"></span></div>
+      </div>
+      <div class="demo-sit">Estás en el <b>botón</b> contra la <b>ciega grande</b>. Hay <b>30</b> en el bote y te toca pagar <b>10</b>.</div>
+      <div class="demo-dec" id="demoDec">Calculando…</div>
+      <button type="button" class="btn-secondary" id="demoLoadBtn" style="width:100%;">Cargar mano de ejemplo</button>
+      <div class="hint" style="text-align:center; margin-top:6px;">No gasta tus análisis gratis.</div>
+    </div>
+  </details>
+
   <section class="panel">
     <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
     <div class="entry-q">¿Cómo quieres introducir tu mano?</div>
@@ -860,11 +924,11 @@
       <span class="entry-shot-title">📸 Analiza desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span></span>
       <span class="entry-shot-sub">Sube una captura y RÍO detectará cartas, board, bote, apuestas y posiciones.</span>
       <span class="entry-shot-btn">Subir captura</span>
-      <small id="uploadSub">1 crédito IA</small>
+      <small id="uploadSub">1 crédito de IA</small>
       <input type="file" id="screenshotInput" accept="image/*" hidden>
     </label>
     <div class="quick-fill">
-      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano<small>Díctala o escríbela como a un amigo</small><span class="quick-foot"><span class="pro-badge" id="storyProBadge">PRO</span> 1 crédito</span></button>
+      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano<small>Díctala o escríbela como a un amigo</small><span class="quick-foot"><span class="pro-badge" id="storyProBadge">PRO</span> 1 crédito de IA</span></button>
       <button type="button" class="quick-btn" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
     </div>
     <button type="button" class="entry-manual" id="manualBtn"><span class="em-ic">✍️</span><span class="em-txt"><b>Introducir manualmente</b><small>Elige tus cartas paso a paso · gratis</small></span><span class="em-go">Empezar ↓</span></button>
@@ -888,8 +952,7 @@
     <div class="current-hand" id="currentHand">Elige tus dos cartas para empezar.</div>
   </section>
 
-  <button type="button" class="more-toggle easy-only" id="moreToggle"></button>
-  <section class="panel easy-extra" id="tablePanel">
+  <section class="panel" id="tablePanel">
     <div class="panel-head"><div class="panel-num">2</div><h2>La mesa</h2></div>
     <div class="inputs-row">
       <div class="field">
@@ -914,7 +977,7 @@
           <option value="BB" selected>BB — ciega grande</option>
         </select>
       </div>
-      <div class="field">
+      <div class="field easy-extra">
         <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
         <div class="stepper">
           <button type="button" id="rivMinus">−</button>
@@ -922,7 +985,7 @@
           <button type="button" id="rivPlus">+</button>
         </div>
       </div>
-      <div class="field">
+      <div class="field easy-extra">
         <label>Tipo de partida <button type="button" class="help" data-help="game">?</button></label>
         <div class="toggle-group" id="gameType">
           <button type="button" class="toggle-btn" data-game="cash">Cash<small>Fichas = dinero</small></button>
@@ -930,13 +993,14 @@
         </div>
       </div>
       <div class="field field-wide">
-        <div class="hint" id="posInfoBox">
+        <div class="hint easy-extra" id="posInfoBox">
           Cuanto más tarde hables, más información tienes: <b>BTN</b> es la mejor posición y <b>UTG</b> la peor.
           Si no sabes cuál es la tuya, deja <b>BTN</b> (tú) y <b>BB</b> (rival) — es la combinación más habitual.
         </div>
         <div class="hint" id="orderHint">Afecta al margen de seguridad del consejo, no al cálculo de equity</div>
       </div>
-      <div class="field field-wide">
+      <div class="field field-wide easy-only"><button type="button" class="more-toggle" id="moreToggle"></button></div>
+      <div class="field field-wide easy-extra">
         <label><span class="easy-only">¿Cómo juega tu rival?</span><span class="pro-only">Rango del rival</span> <button type="button" class="help" data-help="range">?</button></label>
         <div class="range-chips easy-only" id="rangeChips">
           <button type="button" class="toggle-btn" data-range="40" data-unknown="1">No lo sé<small>Usamos un rival medio</small></button>
@@ -968,10 +1032,10 @@
   </section>
 
   <section class="panel">
-    <div class="panel-head"><div class="panel-num"><span class="n-full">3</span><span class="n-short">2</span></div><h2>Las apuestas</h2></div>
+    <div class="panel-head"><div class="panel-num">3</div><h2>Las apuestas</h2></div>
     <div class="toggle-group bets-mode pro-only" id="betsMode">
-      <button type="button" class="toggle-btn" data-bm="quick">⚡ Rápido<small>Bote y lo que pagas</small></button>
-      <button type="button" class="toggle-btn" data-bm="full">📝 Completo<small>Secuencia, stacks y SPR</small></button>
+      <button type="button" class="toggle-btn" data-bm="quick">💰 Solo el bote<small>Bote y lo que pagas</small></button>
+      <button type="button" class="toggle-btn" data-bm="full">📝 Secuencia completa<small>Apuestas, stacks y SPR</small></button>
     </div>
     <details class="seq-box easy-extra full-only" id="seqBox">
       <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendada</span></summary>
@@ -1024,23 +1088,25 @@
   </section>
 
   <section class="panel result" id="resultPanel">
-    <div class="panel-head"><div class="panel-num"><span class="n-full">4</span><span class="n-short">3</span></div><h2>Resultado</h2></div>
-    <div class="result-top">
-      <div class="result-hand" id="resultHandName">—</div>
+    <div class="panel-head"><div class="panel-num">4</div><h2>Resultado</h2></div>
+    <div class="verdict">
       <div class="decision-badge" id="decisionBadge">—</div>
+      <div class="verdict-line" id="verdictLine"></div>
+      <div class="result-hand" id="resultHandName">—</div>
     </div>
     <div class="key-line" id="keyLine"></div>
-    <div class="why-title">¿Por qué?</div>
-    <div class="advice" id="adviceBox"></div>
+    <div class="why-title" id="whyTitle">¿Por qué?</div>
+    <ul class="why-list" id="whyList"></ul>
     <div class="plan" id="planBox"></div>
 
+    <details class="full-analysis" id="fullAnalysis">
+      <summary>Ver análisis completo ↓</summary>
+      <div class="sub-title" style="margin-top:4px;">Explicación detallada</div>
+      <div class="advice" id="adviceBox"></div>
     <div id="timelineWrap" style="display:none;">
       <div class="sub-title">Tus decisiones calle a calle</div>
       <div id="timeline"></div>
     </div>
-
-    <details class="full-analysis" id="fullAnalysis">
-      <summary>Ver análisis completo ↓</summary>
     <div class="easy-only">
       <div class="dots" id="oddsDots" aria-hidden="true"></div>
       <div class="dots-legend"><span class="w">Ganas</span><span class="t">Empatas</span><span class="l">Pierdes</span></div>
@@ -1055,10 +1121,10 @@
       <div class="stat" data-help="equity"><b id="statEquity">—</b><span>Prob. de ganar</span></div>
       <div class="stat pro-only" data-help="tie"><b id="statTie">—</b><span>Prob. de empate</span></div>
       <div class="stat" data-help="lose"><b id="statLose">—</b><span>Prob. de perder</span></div>
-      <div class="stat" data-help="needed"><b id="statNeeded">—</b><span class="easy-only">Necesitas ganar</span><span class="pro-only">Odds del bote</span></div>
+      <div class="stat" data-help="needed"><b id="statNeeded">—</b><span class="easy-only">Necesitas ganar</span><span class="pro-only">Pot odds</span></div>
       <div class="stat" data-help="outs"><b id="statOuts">—</b><span class="easy-only">Cartas que te ayudan</span><span class="pro-only">Outs</span></div>
       <div class="stat pro-only" data-help="ratio"><b id="statRatio">—</b><span>Ratio del bote</span></div>
-      <div class="stat pro-only" data-help="ev"><b id="statEV">—</b><span>EV de igualar</span></div>
+      <div class="stat pro-only" data-help="ev"><b id="statEV">—</b><span>EV de pagar</span></div>
       <div class="stat pro-only" data-help="spr"><b id="statSPR">—</b><span>SPR</span></div>
       <div class="stat pro-only" data-help="range"><b id="statRange">—</b><span>Rango rival</span></div>
     </div>
@@ -1070,9 +1136,19 @@
       <div class="sub-title"><span class="easy-only">¿Con qué jugada puedes acabar?</span><span class="pro-only">Distribución de tu mano final</span></div>
       <div class="finals" id="finalsBox"></div>
     </div>
-
     </details>
 
+    <div class="what-if" id="whatIf" style="display:none;">
+      <div class="wi-title">¿Qué pasa si tu rival juega distinto?</div>
+      <div class="wi-scale"><span>Más tight</span><span>Más suelto</span></div>
+      <div class="wi-row" id="whatIfRow"></div>
+      <div class="hint" id="whatIfNote"></div>
+    </div>
+
+    <div class="next-step">
+      <div class="wi-title">Siguiente paso</div>
+    <div class="street-track" id="streetTrack"></div>
+    <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
     <div class="reraise-box" id="reraiseBox">
       <div class="next-dec">
         <div class="nd-kicker">RÍO también analiza la siguiente decisión</div>
@@ -1089,19 +1165,26 @@
         <div class="reraise-result" id="reraiseResult"></div>
       </div>
     </div>
-
-    <div class="street-track" id="streetTrack"></div>
-    <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
     <div class="trial-nudge" id="trialNudge" style="display:none;">🎁 <b>¿Te ha servido?</b> Crea tu cuenta gratis (solo tu email) y tendrás <b>5 análisis más</b>. <button type="button" class="btn-primary" id="trialSignup">Crear cuenta gratis</button></div>
-    <div class="more-nudge easy-only" id="moreNudge">🎯 <b>¿Quieres un análisis más preciso?</b> Añade tu posición, cómo juega tu rival y lo que apostó cada uno.
-      <div class="more-btns"><button type="button" class="btn-secondary" id="moreNudgeAdd">Añadir detalles</button><button type="button" class="btn-primary" id="moreNudgePro">Activar modo Pro</button></div></div>
-    <button class="btn-primary" id="shareBtn" style="width:100%; margin-top:14px;">📤 Compartir esta mano</button>
-    <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:10px;">📋 Copiar resumen de la mano</button>
+    <div class="more-nudge easy-only" id="moreNudge">🎯 <b>¿Quieres un análisis más preciso?</b> Dinos cómo juega tu rival y lo que apostó cada uno.
+      <div class="more-btns"><button type="button" class="btn-secondary" id="moreNudgeAdd">Añadir detalles</button><button type="button" class="btn-primary" id="moreNudgePro">Activar modo Avanzado</button></div></div>
+    <div class="demo-next" id="demoNext" style="display:none;"><b>👉 Así funciona RÍO.</b> Ahora prueba con una mano tuya.
+      <button type="button" class="btn-primary" id="demoOwnBtn" style="width:100%; margin-top:10px;">Ahora analiza tu propia mano →</button></div>
+    <div class="next-actions">
+      <button class="btn-primary" id="shareBtn">📤 Compartir</button>
+      <button class="btn-secondary" id="copyBtn">📋 Copiar</button>
+      <button class="btn-secondary" id="againBtn">🔄 Otra mano</button>
+    </div>
+    </div>
     <button type="button" class="link-btn" id="feedbackBtn">👎 ¿Te parece raro este consejo? Avísanos</button>
   </section>
 
   <section class="panel" id="historyPanel" style="display:none;">
     <div class="panel-head"><div class="panel-num">📜</div><h2>Historial de manos</h2></div>
+    <details class="hist-patterns pro-hist" id="histPatterns" open>
+      <summary>📊 Tus patrones</summary>
+      <div id="histPatternsBody"></div>
+    </details>
     <div class="hist-filters pro-hist" id="histFilters">
       <select id="hfStreet" aria-label="Calle"><option value="">Todas las calles</option><option value="0">Preflop</option><option value="1">Flop</option><option value="2">Turn</option><option value="3">River</option></select>
       <select id="hfDec" aria-label="Decisión"><option value="">Todas las decisiones</option><option value="CALL">Pagar</option><option value="RAISE">Subir</option><option value="BET">Apostar</option><option value="CHECK">Pasar</option><option value="FOLD">Tirar</option></select>
@@ -1156,7 +1239,7 @@
     <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span><span class="lbl">Glosario de póker</span></button>
 
     <div class="nav-section">Tu progreso</div>
-    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span><span class="lbl">Tu progreso</span></button>
+    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span><span class="lbl">Estadísticas y errores</span></button>
 
     <div class="nav-section">Cuenta</div>
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span><span class="lbl">Entrar o crear cuenta</span></button>
@@ -1242,26 +1325,27 @@
     <div class="plan-cards">
       <div class="plan-card" id="freePlanCard">
         <div class="plan-card-badge" id="freePlanBadge" style="display:none;">Tu plan actual</div>
-        <h4>Free</h4>
-        <div class="plan-card-price"><span>0€</span></div>
+        <h4>Gratis</h4>
+        <div class="plan-card-price"><span>0 €</span></div>
         <ul class="plan-card-features">
-          <li><b>Análisis manuales: 1 de prueba + 5 con cuenta</b></li>
-          <li><b>Funciones IA: no incluidas</b></li>
-          <li>Entrenamiento y tablas de manos</li>
-          <li>1 mano guardada en el historial</li>
+          <li><b>Análisis manuales: 1 de prueba + 5 con tu cuenta gratis</b></li>
+          <li>Entrenamiento, tablas de manos y glosario</li>
+          <li>Tu progreso y estadísticas</li>
+          <li>Historial: solo tu última mano</li>
         </ul>
       </div>
 
       <div class="plan-card pro" id="proPlanCard">
         <div class="plan-card-badge" id="proPlanBadge" style="display:none;">Tu plan actual</div>
         <h4>RÍO PRO</h4>
-        <div class="plan-card-price"><span>9,99€</span><small>/ mes</small></div>
+        <div class="plan-card-price"><span>9,99 €</span><small>/ mes</small></div>
         <ul class="plan-card-features">
           <li><b>Análisis manuales: ilimitados</b></li>
-          <li><b>Funciones IA: 200 usos/mes</b><br><small>1 captura = 1 crédito · 1 mano contada = 1 crédito</small></li>
-          <li>Historial completo y estadísticas en tu cuenta</li>
-          <li>Importar historiales de PokerStars y GGPoker</li>
-          <li>Cuéntame tu mano: díctala y la rellenamos</li>
+          <li><b>Créditos de IA: 200 al mes</b><br><small>1 captura = 1 crédito · 1 mano contada = 1 crédito</small></li>
+          <li>Lee tus capturas: cartas, bote, apuestas y posiciones</li>
+          <li>Cuéntame tu mano: díctala o escríbela y la rellenamos</li>
+          <li>Importa manos de PokerStars y GGPoker</li>
+          <li>Historial de 200 manos con filtros y tus patrones</li>
         </ul>
         <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
         <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Quiero RÍO PRO · 9,99 €/mes</button>
@@ -1307,15 +1391,15 @@
       <h3 id="paywallTitle">Has agotado tus análisis gratis</h3>
       <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
     </div>
-    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>.</p>
+    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratis</b>.</p>
     <div class="pw-pitch sub-part"><b>RÍO PRO</b>Aprende de tus manos sin límite.</div>
     <ul class="paywall-features sub-part">
-      <li>✓ Análisis manuales ilimitados</li>
-      <li>✓ 200 usos de IA al mes</li>
-      <li>✓ Analiza capturas automáticamente</li>
-      <li>✓ Cuéntale la mano por voz</li>
-      <li>✓ Importa manos de PokerStars y GGPoker</li>
-      <li>✓ Historial + estadísticas</li>
+      <li>✓ <b>Análisis manuales ilimitados</b> (sin PRO: 5 con tu cuenta gratis)</li>
+      <li>✓ <b>Sube una captura</b> y RÍO lee cartas, bote, apuestas y posiciones</li>
+      <li>✓ <b>Cuéntale la mano</b> por voz o por escrito y la rellenamos</li>
+      <li>✓ <b>Importa manos</b> de PokerStars y GGPoker</li>
+      <li>✓ <b>Historial de 200 manos</b> con filtros, tus errores y tus patrones</li>
+      <li>✓ <b>200 créditos de IA al mes</b> (1 captura o 1 mano contada = 1 crédito)</li>
     </ul>
     <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
     <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%; text-transform:uppercase; letter-spacing:0.03em;">Quiero RÍO PRO</button>
@@ -1331,7 +1415,7 @@
       <div id="restoreMsg" class="restore-msg"></div>
       <p class="paywall-fine">Al crear tu cuenta aceptas la <a href="/legal.html#privacidad" target="_blank">política de privacidad</a>. Debes ser mayor de 18 años.</p>
     </div>
-    <p class="paywall-fine sub-part">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Cancela cuando quieras desde "Gestionar suscripción".</p>
+    <p class="paywall-fine sub-part">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Puedes cancelar desde «Gestionar suscripción».</p>
     <button type="button" class="link-btn login-only see-plans" id="seePlansLink">¿Quieres RÍO PRO? Ver planes (opcional)</button>
   </div>
 </div>
@@ -1442,7 +1526,7 @@
           <div class="usage-text">Te quedan <b>${left} de ${FREE_LIMIT}</b> análisis gratis</div>${bar(FREE_LIMIT - left, FREE_LIMIT)}`;
       } else {
         sidebarFootEl.innerHTML = `<div class="plan-line"><span class="pro-pill free">SIN CUENTA</span></div>
-          <div class="usage-text">${storageGet('rio_anon_used', false) ? 'Ya usaste tu análisis de prueba. Crea tu cuenta gratis para 5 más.' : 'Tienes <b>1 análisis de prueba</b>; con cuenta gratis, 5 más.'}</div>`;
+          <div class="usage-text">${storageGet('rio_anon_used', false) ? `Ya usaste tu análisis de prueba. Crea tu cuenta gratis y tendrás ${FREE_LIMIT} más.` : `Tienes <b>1 análisis de prueba</b>; con tu cuenta gratis, ${FREE_LIMIT} más.`}</div>`;
       }
     }
     const freeBadge = document.getElementById('freePlanBadge');
@@ -1462,7 +1546,7 @@
       const left = Math.max(0, photoUsage.limit - photoUsage.used);
       photoBox.textContent = pro
         ? `Te quedan ${left} de ${photoUsage.limit} créditos este mes${photoUsage.extra > 0 ? ` · +${photoUsage.extra} créditos comprados` : ''}`
-        : `Incluye ${MONTHLY_CREDITS} créditos de IA al mes: 1 captura o 1 mano contada = 1 crédito.`;
+        : '';
     }
     renderPlanPacks(pro);
     updateAccountUI();
@@ -1602,6 +1686,9 @@
       : `Con ${heroPos} vs ${villPos}: tienes posición — tu rival actúa antes que tú.`;
   }
 
+  let pickStep = 'rank';
+  let pickedRank = null;
+
   const holeRow = document.getElementById('holeRow');
   const flopRow = document.getElementById('flopRow');
   const turnRow = document.getElementById('turnRow');
@@ -1656,17 +1743,18 @@
     });
 
     updateCurrentHand();
-    updateSticky();
     renderBoardState();
     renderRangeUI();
     renderSeq(); syncFromSeq(); renderStreetBtns();
     resultPanel.classList.remove('show');
+    updateSticky();
   }
 
   // Móvil: barra fija con "Analizar mano" cuando ya tienes tus cartas y el botón normal no se ve.
   let analyzeInView = false, resultInView = false;
   function updateSticky(){
-    const show = !!(hole[0] && hole[1]) && !analyzeInView && !resultInView;
+    // Solo antes de analizar: con el resultado a la vista ya no hace falta.
+    const show = !!(hole[0] && hole[1]) && !analyzeInView && !resultInView && !resultPanel.classList.contains('show');
     document.getElementById('stickyAnalyze').classList.toggle('show', show);
     document.body.classList.toggle('has-sticky', show);
   }
@@ -1735,6 +1823,8 @@
 
   function openPicker(zone, idx){
     activeSlot = {zone, idx};
+    pickStep = 'rank';
+    pickedRank = null;
     document.getElementById('clearSlotBtn').style.display = (zone==='hole'?hole[idx]:board[idx]) ? 'block' : 'none';
     renderPickerStep();
     overlay.classList.add('show');
@@ -1749,27 +1839,42 @@
     if (activeSlot.zone === 'hole') return `Tu carta ${i + 1} de 2 · `;
     return i < 3 ? `Flop · carta ${i + 1} de 3 · ` : i === 3 ? 'Turn · ' : 'River · ';
   }
-  // Elegir carta en un solo toque: una fila por valor (A…2) y una columna por palo.
   function renderPickerStep(){
     pickerBody.innerHTML = '';
-    pickerTitle.textContent = slotLabel() + 'Elige la carta';
-    const current = activeSlot ? (activeSlot.zone === 'hole' ? hole[activeSlot.idx] : board[activeSlot.idx]) : null;
-    const grid = document.createElement('div');
-    grid.className = 'card-grid';
-    for (const rank of RANKS) for (const suit of SUITS){
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'card-pick ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
-      b.dataset.card = RANK_LABEL(rank) + suit;
-      b.setAttribute('aria-label', RANK_LABEL(rank) + ' de ' + SUIT_NAME[suit]);
-      b.innerHTML = `${RANK_LABEL(rank)}<span>${SUIT_SYMBOL[suit]}</span>`;
-      const isCurrent = current && current.rank === rank && current.suit === suit;
-      if (isCurrent) b.classList.add('current');
-      b.disabled = isUsed(rank, suit) && !isCurrent;
-      b.addEventListener('click', () => selectCard(rank, suit));
-      grid.appendChild(b);
+    if (pickStep === 'rank'){
+      pickerTitle.textContent = slotLabel() + 'Elige el valor';
+      const grid = document.createElement('div');
+      grid.className = 'rank-grid';
+      for (const rank of RANKS){
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'rank-btn'; b.textContent = RANK_LABEL(rank);
+        const available = SUITS.some(s => !isUsed(rank, s) || (activeSlot && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]).rank===rank && (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]).suit===s));
+        b.disabled = !available;
+        b.addEventListener('click', () => { pickedRank = rank; pickStep = 'suit'; renderPickerStep(); });
+        grid.appendChild(b);
+      }
+      pickerBody.appendChild(grid);
+    } else {
+      pickerTitle.textContent = slotLabel() + RANK_LABEL(pickedRank) + ' — elige el palo';
+      const back = document.createElement('button');
+      back.type = 'button'; back.className = 'back-btn'; back.textContent = '← Cambiar valor';
+      back.addEventListener('click', () => { pickStep = 'rank'; renderPickerStep(); });
+      pickerBody.appendChild(back);
+      const grid = document.createElement('div');
+      grid.className = 'suit-grid';
+      for (const suit of SUITS){
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'suit-btn ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
+        b.innerHTML = `${SUIT_SYMBOL[suit]}<small>${SUIT_NAME[suit]}</small>`;
+        const current = activeSlot ? (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) : null;
+        const usedByOther = isUsed(pickedRank, suit) && !(current && current.rank===pickedRank && current.suit===suit);
+        b.disabled = usedByOther;
+        b.addEventListener('click', () => selectCard(pickedRank, suit));
+        grid.appendChild(b);
+      }
+      pickerBody.appendChild(grid);
     }
-    pickerBody.appendChild(grid);
   }
 
   function selectCard(rank, suit){
@@ -1957,7 +2062,7 @@
     storageSet('rio_mode', pro ? 'pro' : 'facil');
     document.querySelectorAll('.mode-switch button').forEach(b => b.classList.toggle('active', b.dataset.mode === (pro ? 'pro' : 'facil')));
     document.getElementById('modeNote').innerHTML = pro
-      ? '<b>Modo Pro:</b> rango del rival, stacks, EV, SPR y todas las estadísticas.'
+      ? '<b>Modo Avanzado:</b> rango del rival, stacks, EV, SPR y todas las estadísticas.'
       : '<b>Modo Fácil:</b> te lo explicamos en palabras sencillas. Toca los <b>?</b> para aprender cada término.';
   }
   document.querySelectorAll('.mode-switch button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
@@ -1968,8 +2073,8 @@
   function setEasyMore(on, remember){
     document.body.classList.toggle('easy-more', on);
     document.getElementById('moreToggle').innerHTML = on
-      ? '▲ Ocultar detalles'
-      : '⚙️ Más detalles (opcional)<small>Posición, cómo juega tu rival y secuencia de apuestas. No hace falta para analizar.</small>';
+      ? '▲ Ocultar detalles avanzados'
+      : '⚙️ Ajustar detalles avanzados<small>Cómo juega tu rival, cuántos rivales, cash o torneo y secuencia de apuestas. No hace falta para analizar.</small>';
     if (remember) { try { localStorage.setItem('rio_easy_more', on ? '1' : '0'); } catch (e) {} }
   }
   let easyMoreSaved = false;
@@ -2507,7 +2612,7 @@
         ? `Te tocaba pagar <b>${fmtN(r.toCall)}</b> en un bote de <b>${fmtN(r.pot)}</b>.`
         : `Nadie había apostado (bote de <b>${fmtN(r.pot)}</b>).`;
       const easy = `${situation} Ganabas unas <b>${of20(r.win)} de cada 20</b>${r.toCall > 0 ? ` y necesitabas <b>${of20(r.needed)}</b>` : ''}.`;
-      const pro = `${situation} Equity <b>${r.win.toFixed(1)}%</b>${r.toCall > 0 ? ` · necesitabas <b>${r.needed.toFixed(1)}%</b>` : ''}.`;
+      const pro = `${situation} Equity <b>${r.win.toFixed(1).replace('.', ',')}%</b>${r.toCall > 0 ? ` · necesitabas <b>${r.needed.toFixed(1).replace('.', ',')}%</b>` : ''}.`;
       return `<div class="tl-row"><div class="tl-mark ${r.g}">${MARK[r.g]}</div><div>
         <div class="tl-head">${STREET_NAMES[r.s]} <small>${VERDICT[r.g]}</small></div>
         <div class="tl-body"><span class="easy-only">${easy}</span><span class="pro-only">${pro}</span><br>
@@ -2827,7 +2932,7 @@
       if (q.kind === 'open') why = `Tu mano está en el <b>top ${Math.max(1, Math.round(sol.top))}%</b> y desde ${q.hp} se suele abrir aproximadamente el <b>${sol.lim}%</b> de las manos.`;
       else if (sol.bluff && sol.bluff.better) why = `Tu mano no es la mejor (ganas unas ${of20(sol.eq)} de cada 20), pero si apuestas el rival se retira unas <b>${of20(sol.bluff.f * 100)} de cada 20</b> veces: el farol compensa.`;
       else if (q.kind === 'facing' && sol.downgraded) why = `Vas por delante de buena parte de su rango (ganas unas ${of20(sol.eq)} de cada 20), pero si subes solo te pagarían las manos que te ganan: <b>paga</b>.`;
-      else if (q.kind === 'facing') why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces y para que pagar compense necesitas <b>${of20(sol.needed)}</b>.<span class="pro-only"> (Equity ${sol.eq.toFixed(1)}% · necesitas ${sol.needed.toFixed(1)}%)</span>`;
+      else if (q.kind === 'facing') why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces y para que pagar compense necesitas <b>${of20(sol.needed)}</b>.<span class="pro-only"> (Equity ${sol.eq.toFixed(1).replace('.', ',')}% · necesitas ${sol.needed.toFixed(1).replace('.', ',')}%)</span>`;
       else why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces contra su rango.${sol.rec === 'BET' ? ' Apostar rinde más que pasar: las manos peores te pagan.' : ' Apostar no rinde más que pasar: las peores se retirarían y solo te pagarían las mejores. Pasa.'}`;
       const head = { ok: '✓ ¡Correcto!', meh: '≈ Aceptable', bad: '✗ No era la mejor' }[g];
       // Al llegar a 10 situaciones, una sola vez: invitar a analizar sus propias manos.
@@ -2971,19 +3076,20 @@
 
   // ---- Bienvenida (primera visita) ----
   function openWelcome(){
-    const body = openModal('¡Bienvenido a RÍO! 👋', `
-      <p style="margin-top:0;">Te ayudamos a decidir en cada calle: <b>pagar, subir o tirar</b>, y te explicamos por qué.</p>
-      <ol style="padding-left:20px; margin:0 0 16px;">
-        <li><b>Elige tus cartas</b> y las de la mesa.</li>
-        <li>Indica <b>tu posición</b> y cómo juega tu rival.</li>
-        <li>Apunta <b>las apuestas</b> y pulsa <b>Analizar</b>.</li>
-      </ol>
-      <p class="hint" style="margin:-6px 0 14px;">Prueba <b>1 análisis sin registrarte</b> y consigue <b>5 más</b> con una cuenta gratis (solo tu email). El entrenamiento y las tablas son gratis siempre.</p>
-      <div style="display:grid; gap:8px;">
-        <button type="button" class="btn-primary" data-welcome="facil">🙂 Soy nuevo en el póker</button>
-        <button type="button" class="btn-secondary" data-welcome="pro">😎 Ya juego: quiero el modo Pro</button>
-        <button type="button" class="btn-secondary" data-welcome="train">🎯 Quiero practicar primero</button>
-      </div>`);
+    const body = openModal('¡Te damos la bienvenida a RÍO! 👋', `
+      <p style="margin-top:0;">Tu entrenador de póker: le das una mano y te dice <b>qué hacer y por qué</b>.</p>
+      <div class="welcome-steps">
+        <div><span>🃏</span><p><b>Mete tu mano</b><br>Con una captura, contándola o a mano.</p></div>
+        <div><span>🎯</span><p><b>Te dice qué hacer</b><br>Pagar, subir o tirar, explicado fácil.</p></div>
+        <div><span>📈</span><p><b>Aprende de tus errores</b><br>Guarda tus manos y mira dónde fallas.</p></div>
+      </div>
+      <p class="hint" style="margin:0 0 16px; text-align:center;">1 análisis de prueba sin registrarte · ${FREE_LIMIT} más con tu cuenta gratis</p>
+      <div class="welcome-q">¿Ya juegas al póker?</div>
+      <div class="welcome-choices">
+        <button type="button" class="welcome-choice" data-welcome="facil">🙂<b>Estoy empezando</b><small>Modo Fácil</small></button>
+        <button type="button" class="welcome-choice" data-welcome="pro">😎<b>Ya juego</b><small>Modo Avanzado</small></button>
+      </div>
+      <button type="button" class="link-btn" data-welcome="train" style="display:block; margin:12px auto 0;">🎯 Prefiero practicar primero</button>`);
     body.querySelectorAll('[data-welcome]').forEach(b => b.addEventListener('click', () => {
       const w = b.dataset.welcome;
       if (w === 'train'){ openTrainer(); return; }
@@ -3022,7 +3128,7 @@
            : '<p class="hint">Para dictar, pulsa el micrófono del teclado de tu móvil.</p>'}
       <button type="button" class="btn-primary" id="storyGo" style="width:100%; margin-top:10px;">Rellenar la mano</button>
       <div id="storyMsg" class="restore-msg"></div>
-      <p class="hint" style="margin-top:8px;">Gasta <b>1 crédito</b> de IA.</p>`);
+      <p class="hint" style="margin-top:8px;">Gasta <b>1 crédito de IA</b>.</p>`);
     const ta = body.querySelector('#storyText');
     const msg = body.querySelector('#storyMsg');
     const mic = body.querySelector('#storyMic');
@@ -3360,7 +3466,7 @@
     const pro = isPro();
     uploadBox.classList.toggle('locked', !pro);
     uploadProBadge.style.display = pro ? 'none' : 'inline-block';
-    document.getElementById('uploadSub').textContent = '1 crédito IA';
+    document.getElementById('uploadSub').textContent = '1 crédito de IA';
     document.getElementById('importProBadge').style.display = pro ? 'none' : 'inline-block';
     document.getElementById('storyProBadge').style.display = pro ? 'none' : 'inline-block';
   }
@@ -3392,14 +3498,17 @@
       const row = document.createElement('div');
       row.className = 'history-item';
       const street = typeof h.st === 'number' ? STREET_NAMES[h.st] + ' · ' : '';
+      const where = h.hp ? `${h.hp} vs ${h.vp} · ${h.game === 'torneo' ? 'Torneo' : 'Cash'} · ` : '';
+      const date = h.t ? new Date(h.t).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : h.when;
       const ev = typeof h.ev === 'number'
         ? `<span class="h-ev ${h.ev >= 0 ? 'pos' : 'neg'}">${h.ev >= 0 ? '+' : ''}${String(h.ev).replace('.', ',')} ${h.evU || ''}</span>`
         : '<span class="h-ev">—</span>';
       const you = h.g ? `<span class="h-you" title="Hiciste ${DECISION_ES[h.act] || h.act}">${YOU[h.g]}<br>${decisionHTML(h.act)}</span>` : '<span class="h-you">—</span>';
-      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${street}${h.equity}% de ganar · ${h.when}</div></div><span class="history-tag ${h.cls}">${decisionHTML(h.decision)}</span>${ev}${you}`;
+      row.innerHTML = `<div><div class="h-hand">${h.hand}</div><div class="h-meta">${street}${where}${String(h.equity).replace(".", ",")}% de ganar · ${date}</div></div><span class="history-tag ${h.cls}">${decisionHTML(h.decision)}</span>${ev}${you}`;
       historyList.appendChild(row);
     });
     if (pro && !visible.length) historyList.innerHTML = '<div class="history-locked">Ninguna mano con esos filtros.</div>';
+    if (pro) renderPatterns(hist);
     document.getElementById('histNote').innerHTML = pro
       ? '<b>EV</b>: lo que ganas o pierdes de media si pagas (o si apuestas, cuando no había nada que pagar). <b>Tu jugada</b>: ✅ hiciste lo recomendado · ≈ aceptable · ❌ error; solo aparece si apuntaste lo que hiciste en la secuencia de apuestas.'
       : '';
@@ -3411,6 +3520,27 @@
       document.getElementById('unlockHistoryLink').addEventListener('click', () => openPaywall('plans'));
     }
   }
+  // Patrones reales del historial: qué te recomienda RÍO en cada posición y cómo juegas tú.
+  function renderPatterns(hist){
+    const body = document.getElementById('histPatternsBody');
+    const pctOf = (n, t) => t ? Math.round(n / t * 100) + '%' : '—';
+    const withPos = hist.filter(h => h.hp);
+    const byPos = {};
+    withPos.forEach(h => {
+      const p = byPos[h.hp] || (byPos[h.hp] = { n: 0, CALL: 0, RAISE: 0, FOLD: 0, CHECK: 0, rated: 0, ok: 0 });
+      p.n++; p[h.decision === 'BET' ? 'RAISE' : h.decision]++;
+      if (h.g){ p.rated++; if (h.g === 'ok') p.ok++; }
+    });
+    const rows = Object.entries(byPos).sort((a, b) => b[1].n - a[1].n);
+    const rated = hist.filter(h => h.g);
+    body.innerHTML = `
+      <div class="pat-top"><div><b>${hist.length}</b><span>manos analizadas</span></div>
+        <div><b>${rated.length ? pctOf(rated.filter(h => h.g === 'ok').length, rated.length) : '—'}</b><span>bien jugadas${rated.length ? ` (${rated.length} con secuencia)` : ''}</span></div></div>
+      ${rows.length ? `<div class="pat-table"><div class="pat-row pat-h"><span>Posición</span><span>Manos</span><span>Pagar</span><span>Subir</span><span>Tirar</span><span>Tu acierto</span></div>
+        ${rows.map(([pos, p]) => `<div class="pat-row"><span><b>${pos}</b></span><span>${p.n}</span><span>${pctOf(p.CALL, p.n)}</span><span>${pctOf(p.RAISE, p.n)}</span><span>${pctOf(p.FOLD, p.n)}</span><span>${p.rated ? pctOf(p.ok, p.rated) : '—'}</span></div>`).join('')}</div>
+        <div class="hint" style="margin-top:6px;">Pagar / Subir / Tirar = lo que te recomendó RÍO en esa posición. Tu acierto solo cuenta las manos con la secuencia de apuestas apuntada.</div>`
+        : '<div class="hint">El desglose por posición aparecerá con tus próximas manos analizadas.</div>'}`;
+  }
   ['hfStreet', 'hfDec', 'hfEv', 'hfErr'].forEach(id => document.getElementById(id).addEventListener('change', renderHistory));
 
   function openPaywall(mode){
@@ -3419,13 +3549,13 @@
       document.getElementById('paywallCopy').innerHTML = 'Escribe tu email para entrar <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código. Tus manos y estadísticas se guardan en tu cuenta.';
     } else if (mode === 'free'){
       document.getElementById('paywallTitle').textContent = 'Crea tu cuenta gratis';
-      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tu análisis de prueba. Crea tu cuenta gratis y tendrás <b>5 análisis más</b>: solo tu email y un código, sin contraseña. Así tus manos y estadísticas se guardan aunque cambies de móvil.';
+      document.getElementById('paywallCopy').innerHTML = `Ya usaste tu análisis de prueba. Crea tu cuenta gratis y tendrás <b>${FREE_LIMIT} análisis más</b>: solo tu email y un código, sin contraseña. Así tus manos y estadísticas se guardan aunque cambies de móvil.`;
     } else if (mode === 'plans'){
-      document.getElementById('paywallTitle').textContent = 'RÍO PRO';
+      document.getElementById('paywallTitle').textContent = 'Pásate a RÍO PRO';
       document.getElementById('paywallCopy').innerHTML = '¿Ya pagaste antes? Inicia sesión más abajo con tu email.';
     } else {
       document.getElementById('paywallTitle').textContent = 'Has agotado tus análisis gratis';
-      document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>.';
+      document.getElementById('paywallCopy').innerHTML = `Ya usaste tus <b>${FREE_LIMIT} análisis gratis</b>. El entrenamiento, las tablas y el glosario siguen siendo gratis.`;
     }
     // Entrar o crear la cuenta gratis: sin precios, para que no parezca un pago.
     paywall.classList.toggle('login-mode', mode === 'login' || mode === 'free');
@@ -3445,9 +3575,9 @@
   const creditsModal = document.getElementById('creditsModal');
   // Si "out" es true, es porque se ha quedado sin créditos; si no, solo quiere ver los packs.
   function openCreditsModal(out){
-    document.getElementById('creditsTitle').textContent = out ? 'Te has quedado sin créditos' : 'Packs de créditos';
-    document.getElementById('creditsCopy').innerHTML = (out ? 'Ya has gastado los créditos de este mes. ' : '') +
-      `RÍO PRO incluye <b>${MONTHLY_CREDITS} créditos de IA al mes</b>. Si necesitas más, compra un pack: los análisis de manos siguen siendo <b>ilimitados</b>.`;
+    document.getElementById('creditsTitle').textContent = out ? 'Te has quedado sin créditos de IA' : 'Packs de créditos de IA';
+    document.getElementById('creditsCopy').innerHTML = (out ? `Has gastado tus créditos. Los <b>${MONTHLY_CREDITS} de RÍO PRO</b> se renuevan cada mes; si no quieres esperar, compra un pack. ` : `RÍO PRO incluye <b>${MONTHLY_CREDITS} créditos de IA al mes</b>. Si necesitas más, compra un pack. `) +
+      'Los análisis manuales siguen siendo <b>ilimitados</b>.';
     const packs = activePacks();
     document.getElementById('packList').innerHTML = packs.map((pk, i) => `
       <button type="button" class="pack ${pk.best ? 'best' : ''}" data-pack="${i}">
@@ -3662,7 +3792,7 @@
       if (resp.status === 402){ statusEl.style.color = 'var(--crimson)'; statusEl.textContent = '🔒 Esta función es solo para suscriptores de RÍO PRO.'; openPaywall(); return; }
       if (resp.status === 403 && data.error === 'LIMIT_REACHED'){
         statusEl.style.color = 'var(--crimson)';
-        statusEl.innerHTML = '📷 Has gastado tus créditos de este mes.';
+        statusEl.innerHTML = '📷 Te has quedado sin créditos de IA.';
         openCreditsModal(true);
         return;
       }
@@ -3689,7 +3819,7 @@
     const label = unit === 'fichas' ? 'fichas' : unit;
     document.getElementById('potInput').nextElementSibling.textContent = `Bote actual, en ${label}`;
     document.getElementById('callInput').nextElementSibling.textContent = `Lo que cuesta pagar ahora, en ${label}`;
-    document.getElementById('stackInput').nextElementSibling.textContent = `Fichas que te quedan detrás, en ${label}`;
+    document.getElementById('stackInput').nextElementSibling.textContent = `Lo que te queda delante, en ${label}`;
     document.getElementById('villStackInput').nextElementSibling.textContent = `Para el SPR efectivo, en ${label}`;
   }
   function simIterations(){ return storageGet('rio_sim_quality', 'rapida') === 'precisa' ? 5000 : 1500; }
@@ -3810,7 +3940,7 @@
       const idx = board.findIndex(c => !c); if (idx !== -1) openPicker('board', idx);
       return;
     }
-    const sharedRun = freeRun; freeRun = false;
+    const sharedRun = freeRun || isDemoHand(); freeRun = false; // manos compartidas y la de ejemplo no gastan análisis
     let trialRun = false;
     if (!isPro() && !sharedRun && !storageGet('rio_token', '')){
       // Sin cuenta: 1 análisis de prueba; después, cuenta gratis para 5 más.
@@ -3892,7 +4022,7 @@
       const bluff = reco.bc || null;
       const isBluff = reco.kind === 'bluff', isOpen = reco.kind === 'open';
       const heroDraw = aStreet > 0 && aStreet < 3 && hasDraw(hole, aBoard);
-      badge.innerHTML = decisionHTML(text);
+      badge.innerHTML = ({ ok: '🟢', warn: '🟡', no: '🔴' })[cls] + ' ' + decisionHTML(text);
       badge.className = 'decision-badge ' + cls;
 
       // --- Explicación modo Pro ---
@@ -3900,27 +4030,27 @@
         ? `Vas fuera de posición (${heroPos} vs ${villPos}): actúas antes que tu rival, así que juegas con menos información`
         : `Tienes posición (${heroPos} vs ${villPos}): tu rival actúa primero, así que ves lo que hace antes de decidir`;
       const vsRange = res.usedRange ? (villActed ? ` contra su ${rangeText}` : ` contra un rango ${rangeText}`) : '';
-      const edge = (win - needed).toFixed(1);
+      const edge = (win - needed).toFixed(1).replace('.', ',');
       let proText;
-      const evLine = bluff ? ` Apostar 2/3 del bote: el rival se retira ~<b>${Math.round(bluff.f * 100)}%</b>, cuando paga ganas ~<b>${Math.round(bluff.eqCall * 100)}%</b> · EV apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1)}</b> vs pasar <b>${bluff.evCheck.toFixed(1)}</b>.` : '';
+      const evLine = bluff ? ` Apostar 2/3 del bote: el rival se retira ~<b>${Math.round(bluff.f * 100)}%</b>, cuando paga ganas ~<b>${Math.round(bluff.eqCall * 100)}%</b> · EV apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1).replace('.', ',')}</b> vs pasar <b>${bluff.evCheck.toFixed(1).replace('.', ',')}</b>.` : '';
       if (text === 'BET'){
-        proText = `Nadie ha apostado y tu equity${vsRange} es <b>${win.toFixed(1)}%</b> (parte justa del bote: ${fairShare.toFixed(0)}%). Apuesta por valor: las manos peores te pagan.${evLine} ${posPhrase}.`;
+        proText = `Nadie ha apostado y tu equity${vsRange} es <b>${win.toFixed(1).replace('.', ',')}%</b> (parte justa del bote: ${fairShare.toFixed(0)}%). Apuesta por valor: las manos peores te pagan.${evLine} ${posPhrase}.`;
       } else if (text === 'CHECK'){
-        proText = `No hay nada que igualar y tu equity${vsRange} es <b>${win.toFixed(1)}%</b>. Apostar no rinde más que pasar: las manos peores se retiran y las mejores te pagan.${evLine} Pasa y ve la siguiente carta gratis. ${posPhrase}.`;
+        proText = `No hay nada que igualar y tu equity${vsRange} es <b>${win.toFixed(1).replace('.', ',')}%</b>. Apostar no rinde más que pasar: las manos peores se retiran y las mejores te pagan.${evLine} Pasa y ve la siguiente carta gratis. ${posPhrase}.`;
       } else if (text === 'RAISE' && reco.valueCheck){
-        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera el <b>${needed.toFixed(1)}%</b> necesario y además ganas ~<b>${Math.round(reco.valueCheck)}%</b> contra la parte fuerte de su rango, la que te pagaría una subida. ${posPhrase}.`;
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1).replace('.', ',')}%</b>) supera el <b>${needed.toFixed(1).replace('.', ',')}%</b> necesario y además ganas ~<b>${Math.round(reco.valueCheck)}%</b> contra la parte fuerte de su rango, la que te pagaría una subida. ${posPhrase}.`;
       } else if (text === 'RAISE'){
-        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera con margen el <b>${needed.toFixed(1)}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1).replace('.', ',')}%</b>) supera con margen el <b>${needed.toFixed(1).replace('.', ',')}%</b> que necesitas para igualar. ${posPhrase}${oop ? ', por eso conviene un margen mayor antes de subir, pero aun así vas claramente por delante' : ', así que puedes presionar con un margen más ajustado'}.`;
       } else if (text === 'CALL' && reco.downgraded){
-        proText = `Tu equity${vsRange} (<b>${win.toFixed(1)}%</b>) supera de sobra el <b>${needed.toFixed(1)}%</b> necesario, pero contra la parte fuerte de su rango (la que pagaría una subida) solo ganas ~<b>${Math.round(reco.valueCheck)}%</b>: subir solo te lo pagarían las manos que te ganan. <b>Paga</b> y no hinches el bote. ${posPhrase}.`;
+        proText = `Tu equity${vsRange} (<b>${win.toFixed(1).replace('.', ',')}%</b>) supera de sobra el <b>${needed.toFixed(1).replace('.', ',')}%</b> necesario, pero contra la parte fuerte de su rango (la que pagaría una subida) solo ganas ~<b>${Math.round(reco.valueCheck)}%</b>: subir solo te lo pagarían las manos que te ganan. <b>Paga</b> y no hinches el bote. ${posPhrase}.`;
       } else if (text === 'CALL'){
         proText = `Estás cerca del punto de equilibrio (diferencia de ${edge}%${vsRange}). ${posPhrase}. ${oop ? 'Fuera de posición conviene ser algo más conservador: iguala pero no metas más fichas todavía.' : 'Con posición puedes igualar tranquilo y decidir la siguiente calle ya con más información.'}`;
       } else {
-        proText = `Necesitas <b>${needed.toFixed(1)}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1)}%</b>${vsRange}. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
+        proText = `Necesitas <b>${needed.toFixed(1).replace('.', ',')}%</b> de equity para que pagar sea rentable y solo tienes <b>${win.toFixed(1).replace('.', ',')}%</b>${vsRange}. ${posPhrase}${oop ? ', lo que hace aún más difícil defenderte sin esa equity' : ''}. Salvo que tengas otras razones (faroles, lectura del rival), lo correcto es retirarse aquí.`;
       }
 
       if (isBluff){
-        proText = `Nadie ha apostado y cuando te pagan vas por detrás, pero una apuesta de 2/3 del bote hace retirarse al rival ~<b>${Math.round(bluff.f * 100)}%</b> de las veces${heroDraw ? ' y, si paga, aún tienes proyecto' : ''}. EV de apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1)}</b> frente a <b>${bluff.evCheck.toFixed(1)}</b> pasando: ${heroDraw ? 'semifarol' : 'farol'} rentable. ${posPhrase}.`;
+        proText = `Nadie ha apostado y cuando te pagan vas por detrás, pero una apuesta de 2/3 del bote hace retirarse al rival ~<b>${Math.round(bluff.f * 100)}%</b> de las veces${heroDraw ? ' y, si paga, aún tienes proyecto' : ''}. EV de apostar <b>${bluff.evBet >= 0 ? '+' : ''}${bluff.evBet.toFixed(1).replace('.', ',')}</b> frente a <b>${bluff.evCheck.toFixed(1).replace('.', ',')}</b> pasando: ${heroDraw ? 'semifarol' : 'farol'} rentable. ${posPhrase}.`;
       }
       if (isOpen){
         proText = text === 'RAISE'
@@ -3965,11 +4095,11 @@
       const outsCards = findOuts(hole, filledBoard);
       const outs = outsCards ? outsCards.length : null;
 
-      document.getElementById('statEquity').textContent = win.toFixed(1)+'%';
-      document.getElementById('statTie').textContent = tie.toFixed(1)+'%';
-      document.getElementById('statLose').textContent = lose.toFixed(1)+'%';
+      document.getElementById('statEquity').textContent = win.toFixed(1).replace('.', ',')+'%';
+      document.getElementById('statTie').textContent = tie.toFixed(1).replace('.', ',')+'%';
+      document.getElementById('statLose').textContent = lose.toFixed(1).replace('.', ',')+'%';
       document.getElementById('statOuts').textContent = outs===null ? '—' : outs+' cartas';
-      document.getElementById('statNeeded').textContent = call>0 ? needed.toFixed(1)+'%' : '—';
+      document.getElementById('statNeeded').textContent = call>0 ? needed.toFixed(1).replace('.', ',')+'%' : '—';
       document.getElementById('statRange').textContent = res.usedRange ? Math.max(1, Math.round(vPool.length / 1326 * 100))+'%' : '100%';
 
       // Cartas que te ayudan
@@ -3990,7 +4120,7 @@
         for (let c = 8; c >= 0; c--){
           const p = res.cats[c];
           if (p < 0.05 && c !== currentCat) continue;
-          rows.push(`<div class="final-row${c === currentCat ? ' current' : ''}"><span>${CAT_NAMES[c]}</span><div class="bar"><i style="width:${Math.max(1, p)}%"></i></div><b>${p < 1 ? p.toFixed(1) : Math.round(p)}%</b></div>`);
+          rows.push(`<div class="final-row${c === currentCat ? ' current' : ''}"><span>${CAT_NAMES[c]}</span><div class="bar"><i style="width:${Math.max(1, p)}%"></i></div><b>${p < 1 ? p.toFixed(1).replace('.', ',') : Math.round(p)}%</b></div>`);
         }
         document.getElementById('finalsBox').innerHTML = rows.join('');
       }
@@ -3998,25 +4128,56 @@
       const stack = Math.max(0, Number(document.getElementById('stackInput').value) || 0);
       const villStack = Math.max(0, Number(document.getElementById('villStackInput').value) || 0);
       const effStack = villStack>0 ? Math.min(stack, villStack) : stack;
-      document.getElementById('statRatio').textContent = call>0 ? (pot/call).toFixed(1)+' : 1' : '—';
+      document.getElementById('statRatio').textContent = call>0 ? (pot/call).toFixed(1).replace('.', ',')+' : 1' : '—';
       const effWin = (win + tie/2) / 100;
       const ev = call>0 ? (effWin*pot - (1-effWin)*call) : 0;
       const evEl = document.getElementById('statEV');
       const unitLabel = storageGet('rio_unit', 'fichas');
       const evUnitSuffix = unitLabel === 'fichas' ? '' : ' ' + unitLabel;
-      evEl.textContent = call>0 ? (ev>=0 ? '+' : '') + ev.toFixed(1) + evUnitSuffix : '—';
+      evEl.textContent = call>0 ? (ev>=0 ? '+' : '') + ev.toFixed(1).replace('.', ',') + evUnitSuffix : '—';
       evEl.style.color = call>0 ? (ev>=0 ? 'var(--ok)' : 'var(--crimson)') : 'var(--cream)';
-      document.getElementById('statSPR').textContent = (effStack>0 && pot>0) ? (effStack/pot).toFixed(1) : '—';
+      document.getElementById('statSPR').textContent = (effStack>0 && pot>0) ? (effStack/pot).toFixed(1).replace('.', ',') : '—';
 
       // Lo esencial, justo debajo de la decisión: cuánto ganas de media y tus opciones frente a lo que necesitas.
       const inBB = seqHasActions();
       const fmtEV = (v) => (v >= 0 ? '+' : '') + (inBB ? (v / bbSize()).toFixed(1).replace('.', ',') + ' BB' : v.toFixed(1).replace('.', ',') + ' ' + unitLabel);
       const evShown = call > 0 ? ev : bluff && (text === 'BET') ? bluff.evBet : null;
       const kchips = [];
-      if (evShown !== null) kchips.push(`<div class="kchip ${evShown >= 0 ? 'pos' : 'neg'}"><b>${fmtEV(evShown)}</b><span class="easy-only">${call > 0 ? 'ganas de media si pagas' : 'ganas de media si apuestas'}</span><span class="pro-only">${call > 0 ? 'EV de pagar' : 'EV de apostar'}</span></div>`);
       kchips.push(`<div class="kchip"><b>${Math.round(win)}%</b><span class="easy-only">Ganas</span><span class="pro-only">Equity</span></div>`);
-      if (call > 0) kchips.push(`<div class="kchip"><b>${Math.round(needed)}%</b><span>Necesitas</span></div>`);
+      if (call > 0) kchips.push(`<div class="kchip"><b>${Math.round(needed)}%</b><span class="easy-only">Necesitas</span><span class="pro-only">Pot odds</span></div>`);
+      if (evShown !== null) kchips.push(`<div class="kchip ${evShown >= 0 ? 'pos' : 'neg'}"><b>${fmtEV(evShown)}</b><span class="easy-only">${call > 0 ? 'de media si pagas' : 'de media si apuestas'}</span><span class="pro-only">${call > 0 ? 'EV de pagar' : 'EV de apostar'}</span></div>`);
+      if (aStreet > 0 && aStreet < 3 && outs !== null) kchips.push(`<div class="kchip"><b>${outs}</b><span class="easy-only">Cartas que te ayudan</span><span class="pro-only">Outs</span></div>`);
       document.getElementById('keyLine').innerHTML = kchips.join('');
+
+      // --- ¿Por qué? En pocas frases cortas: equity, precio, rival, proyectos, riesgo ---
+      const pctS = (x) => Math.round(x) + '%';
+      const absEV = (v) => fmtEV(Math.abs(v)).slice(1);
+      const why = [];
+      if (isOpen){
+        why.push(`🃏 ${handLabel} está en el <b>top ${Math.max(1, Math.round(reco.top))}%</b> de manos iniciales.`);
+        why.push(`📍 Desde <b>${heroPos}</b> se suele abrir ~<b>${OPEN_PCT[heroPos]}%</b> de las manos: ${text === 'RAISE' ? 'la tuya entra.' : 'la tuya se queda fuera.'}`);
+        if (text === 'RAISE') why.push('💰 Sube a unas 3 ciegas grandes: si solo pagas la ciega, regalas la iniciativa.');
+      } else if (call > 0){
+        why.push(`🎯 Ganas ~<b>${pctS(win)}</b> de las veces y necesitas <b>${pctS(needed)}</b> para que pagar compense.`);
+        why.push(`💰 Pagas <b>${fmtN(call)}</b> para un bote de <b>${fmtN(pot + call)}</b>: pagar ${ev >= 0 ? 'gana' : 'pierde'} de media <b>${absEV(ev)}</b>.`);
+        if (reco.downgraded) why.push(`⚠️ Contra sus manos fuertes (las que pagarían una subida) solo ganas ~<b>${Math.round(reco.valueCheck)}%</b>: paga, pero no subas.`);
+        else if (text === 'RAISE' && reco.valueCheck) why.push(`💪 Incluso contra sus manos fuertes ganas ~<b>${Math.round(reco.valueCheck)}%</b>: sube para cobrar más.`);
+      } else {
+        why.push(`🎯 Nadie ha apostado y ganas ~<b>${pctS(win)}</b> contra sus manos.`);
+        if (isBluff) why.push(`🎭 Si apuestas 2/3 del bote, se retira ~<b>${Math.round(bluff.f * 100)}%</b> de las veces: ${heroDraw ? 'semifarol rentable, y si paga aún puedes ligar' : 'farol rentable'}.`);
+        else if (text === 'BET') why.push('💰 Apostar gana más que pasar: las manos peores te pagan.');
+        else why.push('🤚 Apostar no gana más que pasar: las peores se retirarían y solo te pagarían las mejores.');
+      }
+      if (!isOpen && res.usedRange) why.push(villActed
+        ? `🧠 Por cómo ha apostado, tu rival suele tener manos fuertes: ~${Math.max(1, Math.round(vPool.length / 1326 * 100))}% de todas.`
+        : villRange.unknown ? '🧠 No sabemos cómo juega tu rival, así que suponemos un jugador medio (~40% de las manos).'
+        : villRange.set.size >= 169 ? '🧠 Tu rival juega casi cualquier mano.'
+        : `🧠 Tu rival juega ~${Math.round(villRange.pct)}% de las manos${villRange.custom ? ' (tu selección)' : ''}.`);
+      if (aStreet > 0 && aStreet < 3 && outs) why.push(`🃏 Tienes <b>${outs} ${outs === 1 ? 'carta' : 'cartas'}</b> que mejoran tu jugada en la próxima calle.`);
+      if (!isOpen && why.length < 5) why.push(oop ? '📍 Hablas antes que tu rival: juegas con menos información.' : '📍 Hablas después que tu rival: ves lo que hace antes de decidir.');
+      if (riskPremium) why.push('🏆 Torneo: te juegas buena parte de tu stack, así que pedimos algo más de ventaja.');
+      document.getElementById('whyTitle').innerHTML = `¿Por qué RÍO recomienda ${decisionHTML(text)}?`;
+      document.getElementById('whyList').innerHTML = why.map(x => `<li>${x}</li>`).join('');
 
       // --- Plan: cuánto apostar y qué hacer si te suben ---
       const curStreet = availableStreets() - 1;
@@ -4048,6 +4209,12 @@
       else planItems.push('Tira la mano: no hay plan que la salve a este precio.');
       if (tourney && !stackNow) planItems.push('Torneo: escribe <b>tu stack</b> para ajustar el consejo al riesgo de quedar eliminado.');
       document.getElementById('planBox').innerHTML = `<div class="plan-title">📋 Tu plan</div><ul>${planItems.filter(Boolean).map(x => `<li>${x}</li>`).join('')}</ul>`;
+      const verdict = text === 'CALL' ? `pagar <b>${fmtN(call)}${u}</b>`
+        : text === 'RAISE' && isOpen ? `subir a <b>${fmtN(Math.round(bbSize() * 3 * 100) / 100)}${u}</b>`
+        : text === 'RAISE' ? `subir a unas <b>${fmtN(Math.round(heroPut))}${u}</b>`
+        : text === 'BET' ? `apostar unas <b>${fmtN(Math.round(heroPut))}${u}</b>`
+        : text === 'CHECK' ? '<b>pasar</b>' : '<b>tirar la mano</b>';
+      document.getElementById('verdictLine').innerHTML = `RÍO recomienda ${verdict}`;
 
       const reviewRows = seqHasActions() ? reviewDecisions() : [];
       renderTimeline(reviewRows);
@@ -4061,6 +4228,11 @@
       resultPanel.classList.add('show');
       analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
       resultPanel.scrollIntoView({behavior:'smooth', block:'start'});
+      updateSticky();
+      const demo = isDemoHand();
+      document.getElementById('demoNext').style.display = demo ? 'block' : 'none';
+      document.getElementById('moreNudge').style.display = demo ? 'none' : '';
+      renderWhatIf({ aStreet, aBoard, dp, pot, call, oop, heroPos, unraised, premium: riskPremium, isOpen, text });
 
       // Tu jugada en esa mano (solo si apuntaste lo que hiciste en la secuencia): la peor nota.
       const worst = reviewRows.reduce((w, r) => (!w || ['ok', 'meh', 'bad'].indexOf(r.g) > ['ok', 'meh', 'bad'].indexOf(w.g)) ? r : w, null);
@@ -4068,7 +4240,8 @@
         hand: handLabel, equity: win.toFixed(1), rivals: numRivals,
         decision: text, cls: cls, t: Date.now(), st: aStreet,
         ev: evShown === null ? null : Math.round((inBB ? evShown / bbSize() : evShown) * 10) / 10, evU: inBB ? 'BB' : unitLabel,
-        g: worst ? worst.g : null, act: worst ? worst.act : null,
+ g: worst ? worst.g : null, act: worst ? worst.act : null,
+        hp: heroPos, vp: villPos, game: tourney ? 'torneo' : 'cash',
         when: new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})
       });
       updateUsageBadge();
@@ -4078,9 +4251,83 @@
         storageSet('rio_defaults', { heroPos, villPos, numRivals });
       }
 
-      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nPosiciones: tú ${heroPos} vs rival ${villPos}\nRango del rival: ${res.usedRange ? rangeLabel() : 'cualquier mano'}\nGanar ${win.toFixed(1)}% · Empatar ${tie.toFixed(1)}% · Perder ${lose.toFixed(1)}%\nOuts: ${outs===null?'—':outs}\nOdds necesarias: ${call>0?needed.toFixed(1)+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1)+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1):'—'}\nDecisión: ${text} (${DECISION_ES[text]})`;
+      lastSummary = `RÍO — Análisis de mano\nMano: ${handLabel}\nPosiciones: tú ${heroPos} vs rival ${villPos}\nRango del rival: ${res.usedRange ? rangeLabel() : 'cualquier mano'}\nGanar ${win.toFixed(1).replace('.', ',')}% · Empatar ${tie.toFixed(1).replace('.', ',')}% · Perder ${lose.toFixed(1).replace('.', ',')}%\nOuts: ${outs===null?'—':outs}\nOdds necesarias: ${call>0?needed.toFixed(1).replace('.', ',')+'%':'—'} · Ratio del bote: ${call>0?(pot/call).toFixed(1).replace('.', ',')+':1':'—'}\nEV de igualar: ${call>0?(ev>=0?'+':'')+ev.toFixed(1).replace('.', ','):'—'}\nDecisión: ${text} (${DECISION_ES[text]})`;
     }, 30);
   });
+
+  // ---- Mano de ejemplo: para probar RÍO sin saber aún cómo meter una mano ----
+  const DEMO = { hole: [{ rank: 14, suit: 's' }, { rank: 5, suit: 's' }], board: [{ rank: 13, suit: 's' }, { rank: 8, suit: 'd' }, { rank: 3, suit: 's' }],
+    heroPos: 'BTN', villPos: 'BB', pot: 30, call: 10 };
+  const sameCard = (a, b) => !!a && !!b && a.rank === b.rank && a.suit === b.suit;
+  function isDemoHand(){
+    return sameCard(hole[0], DEMO.hole[0]) && sameCard(hole[1], DEMO.hole[1]) &&
+      DEMO.board.every((c, i) => sameCard(board[i], c)) && !board[3] && !board[4] && !seqHasActions() &&
+      document.getElementById('heroPosInput').value === DEMO.heroPos && document.getElementById('villPosInput').value === DEMO.villPos &&
+      Number(document.getElementById('potInput').value) === DEMO.pot && Number(document.getElementById('callInput').value) === DEMO.call;
+  }
+  function loadDemo(){
+    document.getElementById('resetBtn').click();
+    hole = DEMO.hole.map(c => ({ ...c })); board = [...DEMO.board.map(c => ({ ...c })), null, null];
+    document.getElementById('heroPosInput').value = DEMO.heroPos; document.getElementById('villPosInput').value = DEMO.villPos;
+    document.getElementById('potInput').value = DEMO.pot; document.getElementById('callInput').value = DEMO.call;
+    updateOrderHint(); render();
+    const btn = document.getElementById('analyzeBtn');
+    btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    btn.classList.add('pulse'); setTimeout(() => btn.classList.remove('pulse'), 2400);
+  }
+  // Panel del ejemplo (solo en modo Fácil): la decisión se calcula de verdad la primera vez que lo abres.
+  document.getElementById('demoHole').innerHTML = DEMO.hole.map(c => cardHTML(c)).join('');
+  document.getElementById('demoBoard').innerHTML = DEMO.board.map(c => cardHTML(c)).join('');
+  let demoDone = false;
+  document.getElementById('demoPanel').addEventListener('toggle', (e) => {
+    if (!e.target.open || demoDone) return;
+    demoDone = true;
+    setTimeout(() => {
+      const r = recommend({ heroCards: DEMO.hole, boardCards: DEMO.board, pot: DEMO.pot, toCall: DEMO.call, rivals: 1,
+        pool: poolFromSet(topRange(40)), oop: false, street: 1, heroPos: DEMO.heroPos, iters: 2000 });
+      const cls = { RAISE: 'ok', BET: 'ok', CALL: 'warn', CHECK: 'warn', FOLD: 'no' }[r.text];
+      document.getElementById('demoDec').innerHTML = `<span class="decision-badge ${cls}">${decisionHTML(r.text)}</span>` +
+        `Tienes proyecto de color al as: ganas ~<b>${Math.round(r.eq)}%</b> de las veces y solo necesitas <b>${Math.round(r.needed)}%</b>.`;
+    }, 50);
+  });
+  document.getElementById('demoLoadBtn').addEventListener('click', loadDemo);
+  const backToStart = () => { document.getElementById('resetBtn').click(); document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  document.getElementById('demoOwnBtn').addEventListener('click', backToStart);
+  document.getElementById('againBtn').addEventListener('click', backToStart);
+
+  // ---- ¿Qué pasa si tu rival juega distinto? Misma mano contra 5 perfiles, de más tight a más suelto ----
+  const WHATIF = [['Muy tight', 12], ['Tight', 22], ['Normal', 40], ['Suelto', 60], ['Muy suelto', 100]];
+  let whatIfRun = 0;
+  async function renderWhatIf(c){
+    const box = document.getElementById('whatIf'), row = document.getElementById('whatIfRow'), note = document.getElementById('whatIfNote');
+    const run = ++whatIfRun;
+    // Abrir o tirar preflop depende de tu posición, no del rival: no hay escenarios que comparar.
+    if (c.isOpen){ box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    const cls = { RAISE: 'ok', BET: 'ok', CALL: 'warn', CHECK: 'warn', FOLD: 'no' };
+    const cur = villRange.custom ? -1 : WHATIF.reduce((bi, w, i) => Math.abs(w[1] - villRange.pct) < Math.abs(WHATIF[bi][1] - villRange.pct) ? i : bi, 0);
+    row.innerHTML = WHATIF.map(([n, pct], i) => `<div class="wi-cell${i === cur ? ' cur' : ''}">${n}<br><small>~${pct}%</small><b>…</b></div>`).join('');
+    note.textContent = '';
+    const results = [];
+    for (let i = 0; i < WHATIF.length; i++){
+      await new Promise(r => setTimeout(r, 0));
+      if (run !== whatIfRun) return; // hay un análisis más nuevo
+      const saved = villRange;
+      villRange = { set: topRange(WHATIF[i][1]), pct: WHATIF[i][1], custom: false };
+      const pool = villainPoolAt(c.dp || undefined);
+      villRange = saved;
+      const r = recommend({ heroCards: hole, boardCards: c.aBoard, pot: c.pot, toCall: c.call, rivals: numRivals, pool, oop: c.oop,
+        street: c.aStreet, heroPos: c.heroPos, unraised: c.unraised, premium: c.premium, iters: 1200 });
+      results.push(r.text);
+      const cell = row.children[i].querySelector('b');
+      cell.className = cls[r.text]; cell.innerHTML = decisionHTML(r.text);
+    }
+    const same = results.every(x => x === results[0]);
+    note.innerHTML = same
+      ? 'Aquí da igual cómo juegue: la decisión es la misma contra cualquier tipo de rival.'
+      : 'La decisión cambia según tu rival: contra jugadores <b>tight</b>, sus apuestas suelen ser manos fuertes y conviene ser más prudente; contra jugadores <b>sueltos</b>, tu mano gana más a menudo.' +
+        (cur === -1 ? '' : ' El recuadro rojo es el rival que has elegido.');
+  }
 
   const reraiseToggleBtn = document.getElementById('reraiseToggleBtn');
   const reraisePanel = document.getElementById('reraisePanel');
@@ -4115,14 +4362,14 @@
     const posPhrase = lastOop
       ? 'Sigues fuera de posición, y encima tu rival ha subido dos veces: su rango real suele ser más fuerte de lo normal.'
       : 'Tienes posición, lo que ayuda, pero una segunda subida suele indicar una mano más fuerte de lo habitual.';
-    const edge = (eq - needed).toFixed(1);
+    const edge = (eq - needed).toFixed(1).replace('.', ',');
     let text2;
     if (text === 'RAISE'){
-      text2 = `Con <b>${eq.toFixed(1)}%</b> de equity contra su rango de resubida sigues muy por encima del <b>${needed.toFixed(1)}%</b> que necesitas, incluso exigiendo un margen extra por la segunda subida. ${posPhrase}`;
+      text2 = `Con <b>${eq.toFixed(1).replace('.', ',')}%</b> de equity contra su rango de resubida sigues muy por encima del <b>${needed.toFixed(1).replace('.', ',')}%</b> que necesitas, incluso exigiendo un margen extra por la segunda subida. ${posPhrase}`;
     } else if (text === 'CALL'){
-      text2 = `Tu equity contra su rango de resubida (<b>${eq.toFixed(1)}%</b>) sigue por encima del <b>${needed.toFixed(1)}%</b> necesario (diferencia de ${edge}%), aunque justo. ${posPhrase} Iguala, pero no metas más fichas sin mejorar la mano.`;
+      text2 = `Tu equity contra su rango de resubida (<b>${eq.toFixed(1).replace('.', ',')}%</b>) sigue por encima del <b>${needed.toFixed(1).replace('.', ',')}%</b> necesario (diferencia de ${edge}%), aunque justo. ${posPhrase} Iguala, pero no metas más fichas sin mejorar la mano.`;
     } else {
-      text2 = `Necesitarías <b>${needed.toFixed(1)}%</b> de equity y contra su rango de resubida solo tienes <b>${eq.toFixed(1)}%</b>, con el añadido de que la segunda subida suele significar una mano fuerte del rival. ${posPhrase} Lo más sólido aquí es retirarse.`;
+      text2 = `Necesitarías <b>${needed.toFixed(1).replace('.', ',')}%</b> de equity y contra su rango de resubida solo tienes <b>${eq.toFixed(1).replace('.', ',')}%</b>, con el añadido de que la segunda subida suele significar una mano fuerte del rival. ${posPhrase} Lo más sólido aquí es retirarse.`;
     }
 
     const easy2 = text === 'RAISE'
