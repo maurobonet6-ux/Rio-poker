@@ -34,6 +34,8 @@ Devuelve ÚNICAMENTE un objeto JSON (sin texto adicional, sin markdown) con esta
 
 Reglas:
 - Cartas en formato rango+palo: rango en 2-9,T,J,Q,K,A (T = diez); palo en h,d,c,s (corazones, diamantes, tréboles, picas). Nunca repitas una carta.
+- Palabras de las cartas en español: "as"/"ases" = A, "rey"/"reyes" = K, "reina"/"dama"/"reinas" = Q, "jota"/"jotas"/"J" = J, "diez"/"dieces" = T, y "dos" a "nueve" = 2-9. "Pareja de X" o "doble X" = dos cartas de ese rango. "AK", "A-K", "as-rey" = as y rey; "suited"/"del mismo palo" = mismo palo; "offsuit"/"de distinto palo" = palos distintos.
+- El texto puede venir de un dictado por voz con errores: "as" puede aparecer como "has", "hace" o "az". Si el propio relato se contradice sobre una carta (por ejemplo, dice "as-rey" y luego nombra otra carta), usa la interpretación más lógica y explícalo en "notes". Si no hay contradicción, respeta lo que dice.
 - "board" son las comunitarias en orden: 3 del flop, luego turn, luego river (solo las que se mencionen).
 - Si el jugador no dice los palos, elige palos distintos entre sí salvo que diga "del mismo palo", "suited", "dos corazones", "proyecto de color", etc., y añade en "notes" que has supuesto los palos.
 - Posiciones posibles: UTG, HJ, CO, BTN, SB, BB. "botón" = BTN, "ciega pequeña" = SB, "ciega grande" = BB, "cutoff" = CO, "hijack" = HJ, "UTG" o "primero en hablar" = UTG. Si no se sabe, null.
