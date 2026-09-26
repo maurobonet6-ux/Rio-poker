@@ -623,14 +623,26 @@
   .board-hint b { color: var(--cream); }
 
   /* ---- Rellenar rápido ---- */
-  .quick-fill { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .quick-fill { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; align-items: stretch; }
   .quick-btn {
     display: block; text-align: left; border: 1px dashed var(--line); background: var(--panel-2); color: var(--cream);
     border-radius: 12px; padding: 11px 12px; font-weight: 700; font-size: 0.86rem; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
   }
   .quick-btn:hover { border-color: var(--gold); }
   .quick-btn small { display: block; font-weight: 500; font-size: 0.7rem; color: var(--cream-dim); margin-top: 2px; }
-  .quick-btn .pro-badge { margin-left: 4px; padding: 2px 7px; font-size: 0.6rem; }
+  .quick-btn .pro-badge { padding: 2px 7px; font-size: 0.6rem; }
+  .quick-foot { display: block; margin-top: 8px; font-size: 0.68rem; font-weight: 600; color: var(--cream-dim); }
+  .quick-foot:empty { display: none; }
+  .entry-q { font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; }
+  .entry-shot { display: block; text-align: center; border: 1px solid var(--gold); background: linear-gradient(180deg, rgba(232,40,63,0.14), rgba(232,40,63,0.04)); border-radius: 16px; padding: 18px 16px 14px; margin-bottom: 10px; cursor: pointer; }
+  .entry-shot:hover { background: linear-gradient(180deg, rgba(232,40,63,0.2), rgba(232,40,63,0.06)); }
+  .entry-shot-title { display: block; font-weight: 800; font-size: 1.02rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  .entry-shot-title .pro-badge { margin-left: 6px; padding: 2px 7px; font-size: 0.6rem; vertical-align: 2px; }
+  .entry-shot-sub { display: block; color: var(--cream-dim); font-size: 0.85rem; margin: 8px auto 14px; max-width: 360px; line-height: 1.4; }
+  .entry-shot-btn { display: inline-block; background: var(--gold); color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.9rem; border-radius: 999px; padding: 11px 26px; }
+  .entry-shot small { display: block; color: var(--cream-dim); font-size: 0.72rem; margin-top: 10px; }
+  .entry-manual { display: block; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid var(--line); color: var(--cream-dim); font: inherit; font-size: 0.85rem; padding: 12px 2px 4px; margin-bottom: 14px; cursor: pointer; }
+  .entry-manual b { display: block; color: var(--cream); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
   .or-line { font-size: 0.8rem; color: var(--cream-dim); margin: 0 0 10px; }
   body.tourney .tourney-show { display: block !important; }
 
@@ -662,7 +674,7 @@
   }
   #gameType { grid-template-columns: 1fr 1fr; }
 
-  .story-btn { grid-column: 1 / -1; border-style: solid; border-color: rgba(232,40,63,0.45); background: linear-gradient(100deg, rgba(232,40,63,0.16), var(--panel-2) 70%); font-size: 0.98rem; padding: 14px; }
+  .story-btn { border-style: solid; border-color: rgba(232,40,63,0.45); background: linear-gradient(160deg, rgba(232,40,63,0.14), var(--panel-2) 70%); }
   #storyMic.active { border-color: var(--crimson); color: var(--crimson); }
 
   .annual-btn { width: 100%; margin-top: 10px; }
@@ -769,14 +781,19 @@
 
   <section class="panel">
     <div class="panel-head"><div class="panel-num">1</div><h2>Tus cartas</h2></div>
-    <div class="panel-hint">Toca una carta para elegirla — puedes cambiarla cuando quieras</div>
+    <div class="entry-q">¿Cómo quieres introducir tu mano?</div>
+    <label class="entry-shot" for="screenshotInput" id="uploadBox">
+      <span class="entry-shot-title">📸 Analiza desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span></span>
+      <span class="entry-shot-sub">Sube una captura y RÍO detectará cartas, board, bote, apuestas y posiciones.</span>
+      <span class="entry-shot-btn">Subir captura</span>
+      <small id="uploadSub">1 crédito IA</small>
+      <input type="file" id="screenshotInput" accept="image/*" hidden>
+    </label>
     <div class="quick-fill">
-      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano <span class="pro-badge" id="storyProBadge">PRO</span><small>Díctala o escríbela como se la contarías a un amigo: la rellenamos por ti · 1 crédito</small></button>
-      <button type="button" class="quick-btn" id="importBtn">📋 Importar historial <span class="pro-badge" id="importProBadge">PRO</span><small>PokerStars · GGPoker</small></button>
-      <label class="quick-btn" for="screenshotInput" id="uploadBox">📸 Desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub">1 crédito · cartas, bote, apuesta y posiciones</small>
-        <input type="file" id="screenshotInput" accept="image/*" hidden>
-      </label>
+      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano<small>Díctala o escríbela como a un amigo</small><span class="quick-foot"><span class="pro-badge" id="storyProBadge">PRO</span> 1 crédito</span></button>
+      <button type="button" class="quick-btn" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
     </div>
+    <button type="button" class="entry-manual" id="manualBtn"><b>Manual</b>Selecciona tus cartas abajo ↓</button>
     <div class="shared-banner" id="sharedBanner" style="display:none;"></div>
     <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
     <div class="table-grid">
@@ -3105,10 +3122,15 @@
     const pro = isPro();
     uploadBox.classList.toggle('locked', !pro);
     uploadProBadge.style.display = pro ? 'none' : 'inline-block';
-    document.getElementById('uploadSub').textContent = '1 crédito · cartas, bote, apuesta y posiciones';
+    document.getElementById('uploadSub').textContent = '1 crédito IA';
     document.getElementById('importProBadge').style.display = pro ? 'none' : 'inline-block';
     document.getElementById('storyProBadge').style.display = pro ? 'none' : 'inline-block';
   }
+  document.getElementById('manualBtn').addEventListener('click', () => {
+    const idx = hole.findIndex(c => !c);
+    if (idx !== -1) openPicker('hole', idx);
+    else document.getElementById('holeRow').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
   uploadBox.addEventListener('click', (e) => {
     if (!isPro()){ e.preventDefault(); openPaywall(); }
   });
