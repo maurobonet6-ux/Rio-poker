@@ -700,6 +700,16 @@
   .pack-credits { font-weight: 800; font-size: 1.05rem; }
   .pack-price { grid-row: span 2; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.35rem; font-weight: 800; color: var(--gold); }
   .pack-unit { font-size: 0.74rem; color: var(--cream-dim); }
+
+  /* Ventana de entrar / crear cuenta gratis: sin precios */
+  #paywall.login-mode .sub-part { display: none !important; }
+  #paywall:not(.login-mode) .login-only { display: none !important; }
+  .login-label { margin-top: 16px; }
+  #paywall.login-mode .login-label { margin-top: 12px; }
+  #paywall.login-mode #restoreBtn { background: linear-gradient(100deg, var(--gold), #FF6B5B); color: #fff; border: none; font-weight: 800; }
+  .free-note { background: var(--ok-soft); color: var(--cream); border: 1px solid rgba(61,220,122,0.35); border-radius: 12px; padding: 11px 13px; font-size: 0.88rem; line-height: 1.4; }
+  #restoreHint { font-size: 0.82rem; color: var(--cream-dim); line-height: 1.4; margin-top: 12px !important; }
+  .see-plans { color: var(--cream-dim); font-weight: 600; font-size: 0.8rem; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -1152,16 +1162,17 @@
       <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
     </div>
     <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.</p>
-    <ul class="paywall-features">
+    <ul class="paywall-features sub-part">
       <li>♠ Análisis de manos ilimitados</li>
       <li>♥ 200 créditos de IA al mes para capturas y manos contadas</li>
       <li>♦ Consejo por posición en cada calle</li>
       <li>♣ Cuéntale tu mano por voz o importa tus historiales</li>
     </ul>
-    <div class="paywall-price"><span>9,99&nbsp;€</span><small>/ mes</small></div>
-    <button class="btn-primary" id="subscribeBtn" style="width:100%;">Suscribirme por 9,99€</button>
+    <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
+    <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%;">Suscribirme por 9,99€</button>
     <div class="restore-box" id="restoreBox">
-      <div class="settings-label" style="margin-top:16px;">🔑 Entra o crea tu cuenta gratis</div>
+      <div class="free-note login-only">✅ Crear tu cuenta es <b>gratis</b>. No te pedimos tarjeta ni ningún pago.</div>
+      <div class="settings-label login-label sub-part">🔑 ¿Ya tienes cuenta? Entra</div>
       <div class="hint" style="margin-top:2px;" id="restoreHint">Escribe tu email y te enviamos un código para entrar. Si aún no tienes cuenta, se crea gratis:</div>
       <input type="email" id="proEmail" placeholder="tu@email.com" autocomplete="email" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
       <input type="text" id="proCode" placeholder="Código de 6 dígitos" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="display:none; width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px; letter-spacing:0.3em; text-align:center;">
@@ -1169,7 +1180,8 @@
       <div id="restoreMsg" class="restore-msg"></div>
       <p class="paywall-fine">Al crear tu cuenta aceptas la <a href="/legal.html#privacidad" target="_blank">política de privacidad</a>. Debes ser mayor de 18 años.</p>
     </div>
-    <p class="paywall-fine">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Cancela cuando quieras desde "Gestionar suscripción".</p>
+    <p class="paywall-fine sub-part">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Cancela cuando quieras desde "Gestionar suscripción".</p>
+    <button type="button" class="link-btn login-only see-plans" id="seePlansLink">¿Quieres RÍO PRO? Ver planes (opcional)</button>
   </div>
 </div>
 
@@ -3040,7 +3052,7 @@
 
   function openPaywall(mode){
     if (mode === 'login'){
-      document.getElementById('paywallTitle').textContent = 'Entra en tu cuenta';
+      document.getElementById('paywallTitle').textContent = 'Entra o crea tu cuenta gratis';
       document.getElementById('paywallCopy').innerHTML = 'Escribe tu email para entrar <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código. Tus manos y estadísticas se guardan en tu cuenta.';
     } else if (mode === 'free'){
       document.getElementById('paywallTitle').textContent = 'Crea tu cuenta gratis';
@@ -3052,6 +3064,8 @@
       document.getElementById('paywallTitle').textContent = 'Has agotado tus análisis gratis';
       document.getElementById('paywallCopy').innerHTML = 'Ya usaste tus <b>5 análisis gratuitos</b>. Desbloquea <b>RÍO PRO</b> y sigue estudiando tus manos con datos.';
     }
+    // Entrar o crear la cuenta gratis: sin precios, para que no parezca un pago.
+    paywall.classList.toggle('login-mode', mode === 'login' || mode === 'free');
     paywall.classList.add('show');
     if (mode === 'login' || mode === 'free'){
       setTimeout(() => {
@@ -3062,6 +3076,7 @@
   }
   function closePaywall(){ paywall.classList.remove('show'); pendingAnalyze = false; }
   document.getElementById('closePaywall').addEventListener('click', closePaywall);
+  document.getElementById('seePlansLink').addEventListener('click', () => openPaywall('plans'));
   paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
 
   const creditsModal = document.getElementById('creditsModal');
