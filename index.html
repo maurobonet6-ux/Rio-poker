@@ -835,7 +835,7 @@
     <div class="mode-row">
       <div class="mode-switch" role="group" aria-label="Modo de la calculadora">
         <button type="button" data-mode="facil">Fácil</button>
-        <button type="button" data-mode="pro">Pro</button>
+        <button type="button" data-mode="pro">Avanzado</button>
       </div>
       <div class="mode-note" id="modeNote"></div>
     </div>
@@ -1094,7 +1094,7 @@
     <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
     <div class="trial-nudge" id="trialNudge" style="display:none;">🎁 <b>¿Te ha servido?</b> Crea tu cuenta gratis (solo tu email) y tendrás <b>5 análisis más</b>. <button type="button" class="btn-primary" id="trialSignup">Crear cuenta gratis</button></div>
     <div class="more-nudge easy-only" id="moreNudge">🎯 <b>¿Quieres un análisis más preciso?</b> Añade tu posición, cómo juega tu rival y lo que apostó cada uno.
-      <div class="more-btns"><button type="button" class="btn-secondary" id="moreNudgeAdd">Añadir detalles</button><button type="button" class="btn-primary" id="moreNudgePro">Activar modo Pro</button></div></div>
+      <div class="more-btns"><button type="button" class="btn-secondary" id="moreNudgeAdd">Añadir detalles</button><button type="button" class="btn-primary" id="moreNudgePro">Activar modo Avanzado</button></div></div>
     <button class="btn-primary" id="shareBtn" style="width:100%; margin-top:14px;">📤 Compartir esta mano</button>
     <button class="btn-secondary" id="copyBtn" style="width:100%; margin-top:10px;">📋 Copiar resumen de la mano</button>
     <button type="button" class="link-btn" id="feedbackBtn">👎 ¿Te parece raro este consejo? Avísanos</button>
@@ -1957,7 +1957,7 @@
     storageSet('rio_mode', pro ? 'pro' : 'facil');
     document.querySelectorAll('.mode-switch button').forEach(b => b.classList.toggle('active', b.dataset.mode === (pro ? 'pro' : 'facil')));
     document.getElementById('modeNote').innerHTML = pro
-      ? '<b>Modo Pro:</b> rango del rival, stacks, EV, SPR y todas las estadísticas.'
+      ? '<b>Modo Avanzado:</b> rango del rival, stacks, EV, SPR y todas las estadísticas.'
       : '<b>Modo Fácil:</b> te lo explicamos en palabras sencillas. Toca los <b>?</b> para aprender cada término.';
   }
   document.querySelectorAll('.mode-switch button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
@@ -2981,7 +2981,7 @@
       <p class="hint" style="margin:-6px 0 14px;">Prueba <b>1 análisis sin registrarte</b> y consigue <b>5 más</b> con una cuenta gratis (solo tu email). El entrenamiento y las tablas son gratis siempre.</p>
       <div style="display:grid; gap:8px;">
         <button type="button" class="btn-primary" data-welcome="facil">🙂 Soy nuevo en el póker</button>
-        <button type="button" class="btn-secondary" data-welcome="pro">😎 Ya juego: quiero el modo Pro</button>
+        <button type="button" class="btn-secondary" data-welcome="pro">😎 Ya juego: quiero el modo Avanzado</button>
         <button type="button" class="btn-secondary" data-welcome="train">🎯 Quiero practicar primero</button>
       </div>`);
     body.querySelectorAll('[data-welcome]').forEach(b => b.addEventListener('click', () => {
