@@ -602,6 +602,13 @@
   .street-btns button.missing small { color: var(--lavender); }
   .board-groups > div { transition: opacity .2s; }
   .board-groups > div.later { opacity: 0.3; }
+  .board-groups > div.later.next { opacity: 0.6; }
+  .board-groups > div.cur .grp-tag { color: var(--gold); }
+  .grp-tag.done { color: var(--cream); }
+  .grp-tag small { display: block; font-size: 0.58rem; letter-spacing: 0.02em; text-transform: none; font-weight: 500; opacity: 0.85; margin-top: 1px; }
+  .street-now { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--gold); color: #fff; font-size: 0.64rem; letter-spacing: 0.06em; vertical-align: 1px; }
+  .board-hint { font-size: 0.8rem; color: var(--cream-dim); margin-top: 10px; line-height: 1.4; }
+  .board-hint b { color: var(--cream); }
 
   /* ---- Rellenar rápido ---- */
   .quick-fill { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
@@ -766,12 +773,13 @@
         <div class="card-row" id="holeRow"></div>
       </div>
       <div>
-        <div class="zone-label">Comunitarias</div>
+        <div class="zone-label">Comunitarias <span class="street-now" id="streetNow">Preflop</span></div>
         <div class="board-groups">
-          <div><div class="card-row" id="flopRow"></div><div class="grp-tag">Flop</div></div>
-          <div><div class="card-row" id="turnRow"></div><div class="grp-tag">Turn</div></div>
-          <div><div class="card-row" id="riverRow"></div><div class="grp-tag">Río</div></div>
+          <div><div class="card-row" id="flopRow"></div><div class="grp-tag" id="tagFlop">Flop</div></div>
+          <div><div class="card-row" id="turnRow"></div><div class="grp-tag" id="tagTurn">Turn</div></div>
+          <div><div class="card-row" id="riverRow"></div><div class="grp-tag" id="tagRiver">Río</div></div>
         </div>
+        <div class="board-hint" id="boardHint"></div>
       </div>
     </div>
     <div class="current-hand" id="currentHand">Elige tus dos cartas para empezar.</div>
@@ -1496,6 +1504,7 @@
     });
 
     updateCurrentHand();
+    renderBoardState();
     renderRangeUI();
     renderSeq(); syncFromSeq(); renderStreetBtns();
     resultPanel.classList.remove('show');
@@ -1520,6 +1529,34 @@
     currentHandEl.innerHTML = `Mano actual: <b>${categoryName(best.category, best.tiebreak)}</b>`;
   }
 
+  // En qué calle estás según las comunitarias puestas, y aviso de que no hacen falta las 5.
+  function renderBoardState(){
+    const n = board.filter(Boolean).length;
+    const flopN = board.slice(0, 3).filter(Boolean).length;
+    const cs = cardStreets(); // 1 preflop … 4 río
+    document.getElementById('streetNow').textContent = ['Preflop', 'Flop', 'Turn', 'Río'][cs - 1];
+    const groups = [
+      { el: 'tagFlop', name: 'Flop', done: flopN === 3, street: 2 },
+      { el: 'tagTurn', name: 'Turn', done: !!board[3], street: 3 },
+      { el: 'tagRiver', name: 'Río', done: !!board[4], street: 4 }];
+    const divs = document.querySelectorAll('.board-groups > div');
+    groups.forEach((g, i) => {
+      const tag = document.getElementById(g.el);
+      tag.classList.toggle('done', g.done);
+      const isNext = g.street === cs + 1;
+      tag.innerHTML = g.name + (g.done ? ' ✓' : '') + (!g.done && isNext && cs > 1 ? '<small>solo si ya salió</small>' : '');
+      divs[i].classList.toggle('next', isNext);
+      divs[i].classList.toggle('cur', g.street === cs);
+    });
+    let hint;
+    if (n === 0) hint = 'Pon <b>solo las cartas que ya han salido</b>. ¿Estás antes del flop? Déjalas vacías.';
+    else if (flopN < 3) hint = `El flop son 3 cartas: ${flopN === 2 ? 'falta 1' : 'faltan ' + (3 - flopN)}.`;
+    else if (cs === 2) hint = '<b>Estás en el flop.</b> No hace falta poner el turn ni el río: añádelos solo si ya han salido.';
+    else if (cs === 3) hint = '<b>Estás en el turn.</b> Añade el río solo si ya ha salido.';
+    else hint = '<b>Estás en el río</b>: la mesa está completa.';
+    document.getElementById('boardHint').innerHTML = hint;
+  }
+
   function nextEmptySlot(afterZone, afterIdx){
     const curIndex = SLOT_ORDER.findIndex(o=>o.zone===afterZone && o.idx===afterIdx);
     for (let i=curIndex+1;i<SLOT_ORDER.length;i++){
@@ -1542,10 +1579,16 @@
   document.getElementById('closePicker').addEventListener('click', closePicker);
   overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closePicker(); });
 
+  function slotLabel(){
+    if (!activeSlot) return '';
+    const i = activeSlot.idx;
+    if (activeSlot.zone === 'hole') return `Tu carta ${i + 1} de 2 · `;
+    return i < 3 ? `Flop · carta ${i + 1} de 3 · ` : i === 3 ? 'Turn · ' : 'Río · ';
+  }
   function renderPickerStep(){
     pickerBody.innerHTML = '';
     if (pickStep === 'rank'){
-      pickerTitle.textContent = 'Elige el valor';
+      pickerTitle.textContent = slotLabel() + 'Elige el valor';
       const grid = document.createElement('div');
       grid.className = 'rank-grid';
       for (const rank of RANKS){
@@ -1558,7 +1601,7 @@
       }
       pickerBody.appendChild(grid);
     } else {
-      pickerTitle.textContent = RANK_LABEL(pickedRank) + ' — elige el palo';
+      pickerTitle.textContent = slotLabel() + RANK_LABEL(pickedRank) + ' — elige el palo';
       const back = document.createElement('button');
       back.type = 'button'; back.className = 'back-btn'; back.textContent = '← Cambiar valor';
       back.addEventListener('click', () => { pickStep = 'rank'; renderPickerStep(); });
@@ -1588,9 +1631,11 @@
     closePicker();
     render(slot);
     const nxt = nextEmptySlot(slot.zone, slot.idx);
-    // Solo avanza automáticamente dentro de la misma zona (mano→mano o comunitarias→comunitarias).
-    // Al pasar de la mano a las comunitarias hace falta pinchar tú la primera.
-    if (nxt && nxt.zone === slot.zone){
+    // Solo avanza automáticamente dentro de tu mano o dentro del flop.
+    // Al pasar de la mano a las comunitarias, o del flop al turn y al río, hace falta
+    // pinchar tú: así queda claro que no hacen falta las 5 comunitarias.
+    const sameGroup = slot.zone === 'hole' || (slot.idx < 2);
+    if (nxt && nxt.zone === slot.zone && sameGroup && (nxt.zone === 'hole' || nxt.idx < 3)){
       setTimeout(() => openPicker(nxt.zone, nxt.idx), 320);
     }
   }
