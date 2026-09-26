@@ -1504,7 +1504,16 @@
   // Abre un enlace de pago de Stripe con el email de tu cuenta ya puesto y, además, un
   // identificador de tu cuenta (client_reference_id): así el servidor asocia el pago a tu
   // cuenta aunque pagues con otro email (por ejemplo, con Apple Pay). Ver lib/stripe.js.
+  let pendingPayment = null;
   function openPayment(link){
+    // Sin cuenta, el pago no se podría asociar a nadie: primero entrar o crear la cuenta gratis.
+    if (!storageGet('rio_token', '')){
+      pendingPayment = link;
+      openPaywall('login');
+      document.getElementById('paywallTitle').textContent = 'Primero, entra en tu cuenta';
+      document.getElementById('paywallCopy').innerHTML = 'Para que tu pago quede asociado a tu cuenta, entra o crea tu cuenta gratis (solo tu email y un código). Justo después podrás pagar.';
+      return;
+    }
     let url = link;
     try {
       const email = JSON.parse(localStorage.getItem('rio_email') || '""');
@@ -1692,9 +1701,9 @@
   // Pregunta a nuestro pequeño servidor (que a su vez pregunta a Stripe) si la
   // sesión guardada sigue teniendo una suscripción activa. Devuelve true/false,
   // o 'logout' si la sesión ya no es válida. Nunca lanza error.
-  async function verifyProSession(){
+  async function verifyProSession(deep){
     try {
-      const r = await fetch(API_ENDPOINT, { headers: authHeaders() });
+      const r = await fetch(API_ENDPOINT + (deep ? '?deep=1' : ''), { headers: authHeaders() });
       if (r.status === 401) return 'logout';
       const data = await r.json();
       if (!r.ok) return null;
@@ -1720,11 +1729,11 @@
   // a RÍO desde otra pestaña (por ejemplo, tras pagar en Stripe) y con el botón
   // "Ya he pagado, comprobar". Devuelve true, false o null (sin respuesta).
   var lastProCheck = 0; // "var": revalidateOnLoad() la usa antes de llegar a esta línea
-  async function recheckPro(force){
+  async function recheckPro(force, deep){
     if (!storageGet('rio_token', '')) return false;
     if (!force && Date.now() - lastProCheck < 15000) return null;
     lastProCheck = Date.now();
-    const pro = await verifyProSession();
+    const pro = await verifyProSession(deep);
     if (pro === null) return null; // sin respuesta del servidor: no tocamos nada
     if (pro === 'logout'){ logoutPro(); return false; }
     storageSet('rio_pro', pro);
@@ -3710,7 +3719,7 @@
       }, 200);
     }
   }
-  function closePaywall(){ paywall.classList.remove('show'); pendingAnalyze = false; }
+  function closePaywall(){ paywall.classList.remove('show'); pendingAnalyze = false; pendingPayment = null; }
   document.getElementById('closePaywall').addEventListener('click', closePaywall);
   document.getElementById('seePlansLink').addEventListener('click', () => openPaywall('plans'));
   paywall.addEventListener('click', (e)=>{ if (e.target === paywall) closePaywall(); });
@@ -3766,7 +3775,7 @@
     const msg = btn.nextElementSibling;
     if (!storageGet('rio_token', '')){ msg.className = 'restore-msg paid-msg'; msg.textContent = 'Primero entra con tu email (más abajo o en el menú).'; return; }
     btn.disabled = true; msg.className = 'restore-msg paid-msg'; msg.textContent = 'Comprobando tu pago…';
-    const pro = await recheckPro(true);
+    const pro = await recheckPro(true, true); // a fondo: también busca pagos cuyo aviso de Stripe no llegó
     btn.disabled = false;
     if (pro === true){
       msg.className = 'restore-msg paid-msg ok'; msg.textContent = '¡Listo! Ya eres RÍO PRO.';
@@ -4074,6 +4083,15 @@
         msg.textContent = data.pro ? '¡Suscripción activa! Desbloqueando RÍO PRO…' : '¡Cuenta lista! Ya puedes usar tus análisis gratis.';
         msg.className = 'restore-msg ok';
         updateUsageBadge(); renderHistory();
+        if (pendingPayment){
+          // Acaba de entrar para pagar: botón para seguir (abrir el pago necesita un toque del usuario).
+          const link = pendingPayment; pendingPayment = null;
+          msg.innerHTML = data.pro ? '¡Ya eres RÍO PRO!' : '¡Cuenta lista! <button type="button" class="btn-primary" id="goPayBtn" style="width:100%; margin-top:10px;">Continuar al pago →</button>';
+          const go = document.getElementById('goPayBtn');
+          if (go) go.addEventListener('click', () => { openPayment(link); closePaywall(); });
+          else setTimeout(closePaywall, 1200);
+          return;
+        }
         const resume = pendingAnalyze;
         setTimeout(() => { closePaywall(); if (resume) analyzeBtn.click(); }, 900);
       }
