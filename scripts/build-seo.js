@@ -1,5 +1,6 @@
-// Genera las páginas estáticas para buscadores: /glosario/… y /tablas/…, más
-// sitemap.xml y robots.txt. Usa el mismo ranking de manos que index.html.
+// Genera las páginas estáticas para buscadores: /glosario/…, /tablas/…, /guias/…
+// y /manos/… (una por cada una de las 169 manos iniciales), más sitemap.xml y
+// robots.txt. Usa el mismo ranking de manos que index.html.
 // Ejecutar después de cambiar textos o rangos:  node scripts/build-seo.js
 const fs = require('fs');
 const path = require('path');
@@ -9,6 +10,8 @@ const SITE = 'https://rio-poker.vercel.app';
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const HAND_RANKING = html.match(/const HAND_RANKING = '([^']+)'/)[1].split(' ');
 const RANK_CHARS = 'AKQJT98765432';
+const EQUITY = require('./data/equity-preflop.json');
+const GUIDES = require('./data/guias.js');
 const combos = n => n.length === 2 ? 6 : (n[2] === 's' ? 4 : 12);
 function topRange(pct){
   if (pct >= 100) return new Set(HAND_RANKING);
@@ -129,8 +132,10 @@ p,li{color:var(--dim)}b{color:var(--cream)}.lead{font-size:1.08rem;color:var(--c
 .cards a small{display:block;color:var(--dim);font-weight:400;font-size:.8rem;margin-top:3px}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.pills a{border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:.8rem;text-decoration:none;color:var(--dim)}.pills a.on{border-color:var(--gold);color:var(--cream);background:rgba(232,40,63,.14)}
 .grid{display:grid;grid-template-columns:repeat(13,1fr);gap:2px;max-width:520px}
-.grid span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;background:var(--panel-2);color:var(--dim);font-size:clamp(.5rem,2.1vw,.68rem);font-weight:700}
-.grid span.in{background:var(--gold);color:#fff}.grid span.pair:not(.in){background:#232327}
+.grid a{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;background:var(--panel-2);color:var(--dim);font-size:clamp(.5rem,2.1vw,.68rem);font-weight:700;text-decoration:none}
+.grid a.in{background:var(--gold);color:#fff}.grid a.pair:not(.in){background:#232327}.grid a.cur{outline:2px solid var(--cream);outline-offset:-2px}
+.tbl{width:100%;border-collapse:collapse;margin:12px 0;font-size:.9rem}.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;color:var(--dim)}.tbl th{color:var(--cream)}.tbl td.si{color:var(--ok);font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0}.stats div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--dim);font-size:.8rem}.stats b{display:block;font-size:1.3rem}
 .note{font-size:.82rem}footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--dim)}footer a{color:var(--dim)}`;
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -156,6 +161,7 @@ function page({ url, title, desc, crumbs, body, related }){
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/seo.css">
+<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map(([n, u], i) => ({ '@type': 'ListItem', position: i + 1, name: n, item: SITE + (u || url) })) })}</script>
 </head>
 <body>
 <div class="wrap">
@@ -165,7 +171,7 @@ ${body}
   <div class="cta"><p><b>¿Tienes una mano que no sabes si jugaste bien?</b><br>RÍO te dice si pagar, subir o tirar, explicado fácil.</p><a href="/">Analiza tu mano gratis →</a></div>
 ${related || ''}
   <footer>RÍO es una herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas prohíben las ayudas en tiempo real. <b>+18</b> · Juega con responsabilidad · <a href="https://www.jugarbien.es" rel="noopener">jugarbien.es</a><br>
-  <a href="/glosario/">Glosario</a> · <a href="/tablas/">Tablas de manos</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a></footer>
+  <a href="/guias/">Guías</a> · <a href="/manos/">Manos iniciales</a> · <a href="/glosario/">Glosario</a> · <a href="/tablas/">Tablas de manos</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a></footer>
 </div>
 </body>
 </html>
@@ -177,6 +183,26 @@ function write(rel, content){
   fs.writeFileSync(file, content);
 }
 const urls = ['/'];
+const guidesFor = (gloss) => {
+  const list = GUIDES.filter(g => g.gloss.includes(gloss));
+  return list.length ? `  <h2>Guías relacionadas</h2><ul class="cards">${list.map(g => `<li><a href="/guias/${g.slug}/">${g.title}</a></li>`).join('')}</ul>\n` : '';
+};
+
+// --- Manos iniciales: nombres y datos ---
+const RANK_NAME = { A: 'As', K: 'Rey', Q: 'Reina', J: 'Jota', T: '10' };
+const RANK_PLURAL = { A: 'ases', K: 'reyes', Q: 'reinas', J: 'jotas', T: 'dieces', 9: 'nueves', 8: 'ochos', 7: 'sietes', 6: 'seises', 5: 'cincos', 4: 'cuatros', 3: 'treses', 2: 'doses' };
+const shown = r => r === 'T' ? '10' : r;
+const handSlug = n => n.toLowerCase();
+const isPair = n => n.length === 2;
+const suited = n => n[2] === 's';
+function handName(n){
+  if (isPair(n)) return `pareja de ${RANK_PLURAL[n[0]]}`;
+  return `${shown(n[0])}${shown(n[1])} ${suited(n) ? 'del mismo palo' : 'de distinto palo'}`;
+}
+const handLabel = n => isPair(n) ? `${n} (${handName(n)})` : `${handName(n)} (${n})`;
+const handCodeList = [];
+for (let i = 0; i < 13; i++) for (let j = 0; j < 13; j++)
+  handCodeList.push(i === j ? RANK_CHARS[i] + RANK_CHARS[j] : i < j ? RANK_CHARS[i] + RANK_CHARS[j] + 's' : RANK_CHARS[j] + RANK_CHARS[i] + 'o');
 
 // --- Glosario ---
 const glossCards = GLOSSARY.map(([slug, name, , short]) => `<li><a href="/glosario/${slug}/">${name}<small>${short}</small></a></li>`).join('');
@@ -197,17 +223,17 @@ GLOSSARY.forEach(([slug, name, title, short, body]) => {
     body: `  <h1>${title}</h1>
   <p class="lead">${short}</p>
   ${body}`,
-    related: `  <h2>Más términos</h2><div class="pills">${others}</div>`
+    related: guidesFor(slug) + `  <h2>Más términos</h2><div class="pills">${others}</div>`
   }));
   urls.push(`/glosario/${slug}/`);
 });
 
 // --- Tablas ---
-function gridHTML(set){
+function gridHTML(set, cur){
   let g = '';
   for (let i = 0; i < 13; i++) for (let j = 0; j < 13; j++){
     const n = i === j ? RANK_CHARS[i] + RANK_CHARS[j] : i < j ? RANK_CHARS[i] + RANK_CHARS[j] + 's' : RANK_CHARS[j] + RANK_CHARS[i] + 'o';
-    g += `<span class="${set.has(n) ? 'in' : ''}${i === j ? ' pair' : ''}">${n}</span>`;
+    g += `<a href="/manos/${handSlug(n)}/" class="${set.has(n) ? 'in' : ''}${i === j ? ' pair' : ''}${n === cur ? ' cur' : ''}">${n}</a>`;
   }
   return `<div class="grid">${g}</div>`;
 }
@@ -261,6 +287,164 @@ Object.entries(CHART_SETS).forEach(([k, v]) => {
     urls.push(`/tablas/${k}/${slugPos(p)}/`);
   });
 });
+
+// --- Guías ---
+write('guias/index.html', page({
+  url: '/guias/', title: 'Guías de póker en español: 3-bet, outs, pot odds, AK… | RÍO',
+  desc: 'Guías prácticas de póker: cómo jugar AK preflop, cuándo hacer 3-bet, cómo calcular outs y pot odds, set mining, ciega grande, faroles y más.',
+  crumbs: [['RÍO', '/'], ['Guías']],
+  body: `  <h1>Guías de póker</h1>
+  <p class="lead">Respuestas cortas y con números a las dudas más buscadas al empezar a estudiar póker.</p>
+  <ul class="cards">${GUIDES.map(g => `<li><a href="/guias/${g.slug}/">${g.title}</a></li>`).join('')}</ul>`
+}));
+urls.push('/guias/');
+GUIDES.forEach(g => {
+  const hands = g.hands.length ? `  <h2>Manos relacionadas</h2><div class="pills">${g.hands.map(h => `<a href="/manos/${handSlug(h)}/">${handLabel(h)}</a>`).join('')}</div>\n` : '';
+  const gloss = g.gloss.map(s => GLOSSARY.find(x => x[0] === s)).map(([s, n]) => `<a href="/glosario/${s}/">${n}</a>`).join('');
+  const others = GUIDES.filter(o => o !== g).map(o => `<li><a href="/guias/${o.slug}/">${o.title}</a></li>`).join('');
+  write(`guias/${g.slug}/index.html`, page({
+    url: `/guias/${g.slug}/`, title: `${g.title} | RÍO`, desc: g.desc,
+    crumbs: [['RÍO', '/'], ['Guías', '/guias/'], [g.title]],
+    body: `  <h1>${g.title}</h1>
+  <p class="lead">${g.desc}</p>
+  ${g.body}`,
+    related: hands + `  <h2>Términos del glosario</h2><div class="pills">${gloss}</div>
+  <h2>Más guías</h2><ul class="cards">${others}</ul>`
+  }));
+  urls.push(`/guias/${g.slug}/`);
+});
+
+// --- Manos: una página por cada una de las 169 manos ---
+const VAL = r => 12 - RANK_CHARS.indexOf(r); // A = 12 … 2 = 0
+const cumCombos = {};
+{ let sum = 0; for (const n of HAND_RANKING){ sum += combos(n); cumCombos[n] = sum; } }
+const RANGES = Object.fromEntries(Object.entries(CHART_SETS).map(([k, v]) => [k, v.list.map(([p, pct]) => [p, topRange(pct)])]));
+const VALUE_3BET = new Set(['AA', 'KK', 'QQ', 'AKs', 'AKo']);
+const LATE_3BET = new Set(['JJ', 'TT', 'AQs', 'AQo', 'AJs', 'KQs']);
+const BLUFF_3BET = new Set(['A5s', 'A4s', 'A3s', 'A2s', '76s', '65s', 'K9s', 'QJs', 'JTs', 'T9s']);
+const GUIDE_BY_CAT = {
+  ases: ['que-hacer-contra-un-3-bet', 'cuanto-subir-preflop'], parejaAlta: ['cuando-hacer-3-bet', 'que-hacer-contra-un-3-bet'],
+  parejaMedia: ['como-jugar-parejas-pequenas', 'que-hacer-contra-un-3-bet'], parejaBaja: ['como-jugar-parejas-pequenas', 'probabilidades-de-poker'],
+  ak: ['como-jugar-ak-preflop', 'cuando-hacer-3-bet'], broadway: ['cuando-hacer-3-bet', 'que-hacer-contra-un-3-bet'],
+  axS: ['cuando-hacer-3-bet', 'como-jugar-proyecto-de-color'], axO: ['que-hacer-contra-un-3-bet', 'como-jugar-desde-la-ciega-grande'],
+  conectadas: ['como-jugar-proyecto-de-color', 'como-calcular-outs'], mismoPalo: ['como-jugar-desde-la-ciega-grande', 'como-jugar-proyecto-de-color'],
+  floja: ['como-jugar-desde-la-ciega-grande', 'cuanto-subir-preflop']
+};
+function category(n){
+  if (isPair(n)) return n === 'AA' ? 'ases' : VAL(n[0]) >= 10 ? 'ases' : VAL(n[0]) >= 8 ? 'parejaAlta' : VAL(n[0]) >= 4 ? 'parejaMedia' : 'parejaBaja';
+  if (n.startsWith('AK')) return 'ak';
+  const hi = VAL(n[0]), lo = VAL(n[1]), gap = hi - lo;
+  if (lo >= 8) return 'broadway';
+  if (n[0] === 'A') return suited(n) ? 'axS' : 'axO';
+  if (gap <= 2 && lo >= 1 && (suited(n) || (gap === 1 && lo >= 5))) return 'conectadas';
+  if (suited(n)) return 'mismoPalo';
+  return 'floja';
+}
+// Las tablas usan el ranking de index.html, que ordena por fuerza en un all-in; algunas
+// manos especulativas quedan fuera aunque muchos jugadores las abran desde el botón.
+function outsideTables(n){
+  const { opens } = openWhere(n, '6-max-cash');
+  return opens.length ? '' : ' Ojo: las tablas de RÍO la dejan fuera de los rangos de apertura porque ordenan las manos por su fuerza si llegáis al all-in. Con 100 ciegas o más, algunos jugadores la abren desde el botón porque gana mucho cuando liga.';
+}
+function categoryText(n){
+  const c = category(n), name = handName(n);
+  switch (c){
+    case 'ases': return `Es una de las mejores manos del póker. Con ${name} quieres <b>meter dinero en el bote antes del flop</b>: sube si nadie ha entrado y resube si alguien ha subido. El riesgo no está antes del flop, sino después: una pareja alta no gana siempre si la mesa trae proyectos o el rival muestra mucha fuerza.`;
+    case 'parejaAlta': return `Una pareja alta que gana a la mayoría de manos antes del flop, pero que sufre cuando salen cartas por encima (${n[0] === 'J' ? 'Q, K o A' : 'J, Q, K o A'}). Ábrela siempre y resube contra aperturas de posiciones tardías. Contra mucha acción (4-bet) con muchas ciegas, cuidado: te enfrentas a AA, KK, QQ o AK.`;
+    case 'parejaMedia': return `Una pareja media: suele ir por delante antes del flop, pero muchas veces salen cartas más altas en la mesa. Su mejor escenario es ligar <b>trío</b> (≈12% en el flop) y cobrar un bote grande. Ábrela desde casi cualquier posición; contra una subida, paga más que resubir.`;
+    case 'parejaBaja': return `Una pareja pequeña casi nunca gana sin mejorar. Se juega para ligar <b>trío</b> (1 de cada 8,5 flops): paga subidas solo si podéis jugaros unas 15 veces lo que te cuesta. Sin trío, en mesas con cartas altas, lo normal es retirarse.`;
+    case 'ak': return `La mejor mano sin pareja. Domina a AQ, AJ y KQ, que suelen pagarte, y bloquea AA y KK. Sube siempre y resube (3-bet) cuando alguien suba. Recuerda que antes del flop <b>no ha ligado nada</b>: liga pareja o mejor en el flop solo un 32% de las veces.`;
+    case 'broadway': return `Dos cartas altas${suited(n) ? ' del mismo palo, que además pueden ligar color' : ''}. Ligan parejas altas y escaleras altas, pero pueden estar <b>dominadas</b>: contra ${n[0] === 'A' ? 'AK' : 'A' + shown(n[0])} comparten una carta y la otra del rival es mejor. ${suited(n) ? 'Ábrela desde casi todas las posiciones.' : 'Juégala con más cuidado desde las primeras posiciones y contra subidas de jugadores prudentes.'}`;
+    case 'axS': return `Un as con otra carta del mismo palo: si liga color, es el <b>color al as</b>, el mejor posible. ${VAL(n[1]) <= 3 ? `Además, con ${n[1] === '5' ? '5' : shown(n[1])} puedes ligar la escalera A-2-3-4-5, y es una de las mejores manos para un <b>3-bet de farol</b>: el as quita combinaciones de AA y AK al rival.` : 'La segunda carta es floja: si ligas solo el as, cuidado con kickers mejores.'}`;
+    case 'axO': return `Un as de distinto palo con una segunda carta baja. Parece mejor de lo que es: cuando ligas el as, un rival con AK, AQ o AJ te gana con mejor <b>kicker</b>. Juégala desde posiciones tardías si nadie ha entrado y tírala contra subidas de jugadores prudentes.`;
+    case 'conectadas': return `Cartas ${VAL(n[0]) - VAL(n[1]) === 1 ? 'seguidas' : 'casi seguidas'}${suited(n) ? ' y del mismo palo' : ''}: pocas veces ganan con pareja, pero ligan <b>escaleras${suited(n) ? ' y colores' : ''}</b> escondidos que cobran botes grandes. Rinden más con muchas ciegas detrás y pocos rivales en el bote, y peor en torneo con stacks cortos.${outsideTables(n)}`;
+    case 'mismoPalo': return `El palo compartido le da algo de valor (color en ~6% de las manos hasta el river), pero la carta baja hace que, cuando ligues pareja, a menudo ganes poco o pierdas contra un kicker mejor. Rinde más en posición y defendiendo la ciega grande a buen precio.${outsideTables(n)}`;
+    default: return `Una mano floja: sin palo compartido ni cartas seguidas, liga poco y, cuando liga, suele ser con kicker malo. Lo normal es <b>tirarla</b>, salvo desde el botón o las ciegas si nadie ha entrado o el precio es muy bueno.`;
+  }
+}
+function openWhere(n, set){
+  const opens = RANGES[set].filter(([p, r]) => p !== 'BB' && r.has(n)).map(([p]) => p);
+  const bb = RANGES[set].find(([p]) => p === 'BB')[1].has(n);
+  return { opens, bb };
+}
+function verdict(n){
+  const { opens, bb } = openWhere(n, '6-max-cash');
+  if (opens.includes('UTG')) return 'Ábrela desde cualquier posición.';
+  if (opens.length) return `Ábrela desde ${opens.join(', ')}} si nadie ha entrado antes; tírala desde posiciones anteriores.`;
+  if (bb) return 'No la abras; solo defiéndela desde la ciega grande cuando te suban.';
+  return 'Tírala casi siempre.';
+}
+function threeBetText(n){
+  if (VALUE_3BET.has(n)) return `<b>Resube siempre (3-bet) por valor.</b> Si te vuelven a subir (4-bet), ${n === 'AA' || n === 'KK' ? 've all-in sin dudarlo.' : 'con muchas ciegas y contra un jugador prudente plantéate pagar o incluso retirarte; con 40 ciegas o menos, all-in.'}`;
+  if (LATE_3BET.has(n)) return `<b>Resube (3-bet) contra aperturas de CO, botón o ciega pequeña</b>; contra UTG, pagar suele ser mejor. Si te hacen 4-bet con muchas ciegas, normalmente retírate.`;
+  if (BLUFF_3BET.has(n)) return `<b>Puedes usarla de 3-bet de farol</b> de vez en cuando (desde el botón o las ciegas contra aperturas tardías), porque juega bien si te pagan. El resto de veces, paga en posición o retírate.`;
+  const { opens } = openWhere(n, '6-max-cash');
+  if (opens.length) return `No es mano para resubir. Contra una subida, <b>paga</b> si tienes posición y el que sube abre muchas manos; si no, <b>retírate</b>.`;
+  return `Contra una subida, <b>retírate</b>, salvo a veces desde la ciega grande si el precio es muy bueno.`;
+}
+function postflopFacts(n){
+  if (isPair(n)) return [['Trío o mejor en el flop', '11,8%'], ['Trío o mejor hasta el river', '19,2%']];
+  const f = [['Pareja o mejor en el flop (con alguna de tus cartas)', '32,4%'], ['Pareja con alguna de tus cartas hasta el river', '48,7%']];
+  if (suited(n)) f.push(['Proyecto de color en el flop', '10,9%'], ['Color hecho hasta el river', '6,4%']);
+  return f;
+}
+const topPct = n => Math.round(cumCombos[n] / 1326 * 1000) / 10;
+const pctES = x => String(x).replace('.', ',');
+function handPage(n, idx){
+  const name = handName(n), eq = EQUITY[n], c = combos(n), cat = category(n);
+  const rows = '<tr><th>Partida</th><th>Abrir desde</th><th>Ciega grande</th></tr>' + Object.entries(CHART_SETS).map(([k, v]) => {
+    const { opens, bb } = openWhere(n, k);
+    const where = opens.length ? opens.map(p => `<a href="/tablas/${k}/${slugPos(p)}/">${p}</a>`).join(', ') : 'Ninguna: tirar';
+    return `<tr><td><a href="/tablas/${k}/">${v.name}</a></td><td class="${opens.length ? 'si' : ''}">${where}</td><td class="${bb ? 'si' : ''}"><a href="/tablas/${k}/bb/">${bb ? 'Defender' : 'Tirar'}</a></td></tr>`;
+  }).join('');
+  const prev = HAND_RANKING[idx - 1], next = HAND_RANKING[idx + 1];
+  const twin = isPair(n) ? null : n.slice(0, 2) + (suited(n) ? 'o' : 's');
+  const similar = HAND_RANKING.filter(h => h !== n && category(h) === cat).sort((a, b) => Math.abs(HAND_RANKING.indexOf(a) - idx) - Math.abs(HAND_RANKING.indexOf(b) - idx)).slice(0, 6);
+  const pills = [prev && [prev, `← ${prev} (nº ${idx})`], next && [next, `${next} (nº ${idx + 2}) →`], twin && [twin, handLabel(twin)]].filter(Boolean)
+    .concat(similar.filter(h => h !== prev && h !== next && h !== twin).map(h => [h, handLabel(h)]));
+  const guides = GUIDE_BY_CAT[cat].map(s => GUIDES.find(g => g.slug === s));
+  const title = isPair(n) ? `Cómo jugar ${n} (${name}) en póker` : `Cómo jugar ${shown(n[0])}${shown(n[1])} ${suited(n) ? 'del mismo palo' : 'de distinto palo'} (${n}) en póker`;
+  return page({
+    url: `/manos/${handSlug(n)}/`, title: `${title} | RÍO`,
+    desc: `${n} es la mano nº ${idx + 1} de 169 y gana el ${pctES(eq)}% de las veces contra una mano al azar. ${verdict(n)} Desde qué posición jugarla, qué hacer si te suben y con qué frecuencia liga.`,
+    crumbs: [['RÍO', '/'], ['Manos iniciales', '/manos/'], [n]],
+    body: `  <h1>${title}</h1>
+  <p class="lead"><b>Resumen:</b> ${verdict(n)}</p>
+  <div class="stats"><div><b>nº ${idx + 1}</b>de 169 manos</div><div><b>top ${pctES(topPct(n))}%</b>de todas las manos</div><div><b>${pctES(eq)}%</b>gana contra una mano al azar</div><div><b>${c}</b>combinaciones (${pctES(Math.round(c / 1326 * 10000) / 100)}% de los repartos)</div></div>
+  <h2>¿Es buena mano ${n}?</h2>
+  <p>${categoryText(n)}</p>
+  <p>Si juntas las mejores manos hasta ${n} incluida, suman el ${pctES(topPct(n))}% de todas las manos posibles: ${topPct(n) <= 9 ? 'entra en el rango de apertura de todas las posiciones.' : topPct(n) <= 19 ? 'entra en el rango de apertura de casi todas las posiciones.' : topPct(n) <= 45 ? 'entra en los rangos de las posiciones tardías, no en los de las primeras.' : 'queda fuera de los rangos de apertura normales.'}</p>
+  <h2>¿Desde qué posición abrir ${n}?</h2>
+  <p>Con ${name}, si nadie ha subido antes que tú:</p>
+  <table class="tbl">${rows}</table>
+  <p class="note">UTG = primero en hablar · BTN = botón · SB = ciega pequeña. En la ciega grande, “Defender” significa pagar o resubir cuando alguien sube. Tablas orientativas: con stacks cortos o rivales muy agresivos, los rangos cambian.</p>
+  <h2>¿Qué hacer con ${n} si alguien sube antes?</h2>
+  <p>${threeBetText(n)}</p>
+  <h2>¿Cuántas veces liga ${n}?</h2>
+  <table class="tbl">${postflopFacts(n).map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>
+  <h2>${n} en la tabla de manos</h2>
+  ${gridHTML(new Set([n]), n)}
+  <p class="note">Toca cualquier mano de la tabla para ver su página.</p>`,
+    related: `  <h2>Manos parecidas</h2><div class="pills">${pills.map(([h, l]) => `<a href="/manos/${handSlug(h)}/">${l}</a>`).join('')}</div>
+  <h2>Guías útiles</h2><ul class="cards">${guides.map(g => `<li><a href="/guias/${g.slug}/">${g.title}</a></li>`).join('')}</ul>`
+  });
+}
+{
+  const top20 = HAND_RANKING.slice(0, 20).map(h => `<a href="/manos/${handSlug(h)}/">${h}</a>`).join('');
+  write('manos/index.html', page({
+    url: '/manos/', title: 'Las 169 manos iniciales del póker: cómo jugar cada una | RÍO',
+    desc: 'Ranking de las 169 manos iniciales de Texas Hold’em con una página para cada una: equity, desde qué posición abrirla y qué hacer si te suben.',
+    crumbs: [['RÍO', '/'], ['Manos iniciales']],
+    body: `  <h1>Las 169 manos iniciales</h1>
+  <p class="lead">Toca una mano para ver cómo jugarla: su puesto en el ranking, cuántas veces gana contra una mano al azar, desde qué posición abrirla y qué hacer si alguien sube.</p>
+  ${gridHTML(new Set(HAND_RANKING.slice(0, 20)))}
+  <p class="note">Diagonal = parejas · arriba a la derecha = mismo palo (s) · abajo a la izquierda = distinto palo (o). En rojo, las 20 mejores.</p>
+  <h2>Las 20 mejores manos</h2><div class="pills">${top20}</div>
+  <p>¿Buscas qué manos jugar según tu sitio en la mesa? Mira las <a href="/tablas/">tablas por posición</a>.</p>`
+  }));
+  urls.push('/manos/');
+  HAND_RANKING.forEach((n, i) => { write(`manos/${handSlug(n)}/index.html`, handPage(n, i)); urls.push(`/manos/${handSlug(n)}/`); });
+}
 
 write('seo.css', CSS + '\n');
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
