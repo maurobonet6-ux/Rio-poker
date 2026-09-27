@@ -12,7 +12,10 @@ const n = (s, re) => (s.match(re) || [])[1];
 const fz = info.find(x => x.startsWith('⚠️'));
 const G = { ganas: n(info[0], /Ganas ~(\d+)%/), nec: n(info[0], /necesitas (\d+)%/), fz: fz && n(fz, /ganas ~(\d+)%/),
   ev: (/pierde/.test(info[1]) ? '−' : '+') + n(info[1], /de media ([\d,]+)/) };
-const H = { ...require('./manos.js')[HN].guion(G), END: 13.5, TOTAL: 17.3 };
+// FIN: cuándo empieza el final (por defecto 13.5 s). Con voz en off se alarga para que dé tiempo a decirlo todo.
+const FIN = +(process.env.FIN || 13.5);
+const H = { ...require('./manos.js')[HN].guion(G), END: FIN, TOTAL: FIN + 3.8 };
+H.caps[H.caps.length - 1].to = FIN - 0.1;
 
 const RED = s => s === '♥' || s === '♦';
 const card = (id, [r, s], cls = '') => `<div class="card ${cls}" id="${id}"><div class="face ${RED(s) ? 'red' : ''}">

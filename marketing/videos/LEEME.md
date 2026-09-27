@@ -47,3 +47,17 @@ Todo está en **`manos.js`**. Copia un bloque y cambia:
 | `video-que-es-rio.js` | Monta el vídeo «Qué es RÍO» |
 | `audio_mesa.py`, `audio_que_es_rio.py` | Crean los efectos de sonido (sin derechos de autor) |
 | `fonts/` | Copia local de las fuentes de la web (Google Fonts, licencia OFL) |
+
+## Poner voz en off
+
+1. Crea la voz (por ejemplo en ttsmaker.com) con **una frase por línea** y descárgala en MP3.
+2. Genera el vídeo dando tiempo a la voz y mézclala indicando en qué segundo empieza cada frase:
+
+```bash
+cd marketing/videos
+FIN=14.45 node video-mesa.js ak          # FIN = segundo en que empieza el final (por defecto 13.5)
+python3 mezclar-voz.py salida/rio-ak.mp4 voz.mp3 0.25,3.8,6.3,9.35,10.95,12.85,14.55,15.35,16.5 salida/rio-ak-voz.mp4
+```
+
+`mezclar-voz.py` corta la voz por sus silencios, limpia la voz, baja los efectos mientras se habla y deja
+el volumen a -14 LUFS (el de TikTok e Instagram).
