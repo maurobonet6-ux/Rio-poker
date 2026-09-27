@@ -39,7 +39,7 @@ function fakeRes(){
   res.setHeader = () => {};
   return res;
 }
-const hoy = new Date().toISOString().slice(0, 10);
+const hoy = require('../../lib/stats').dia();
 const cuenta = async (email, src) => {
   await global.fetch('https://redis.test', { body: JSON.stringify(['SET', `rio:code:${email}`, '123456']) });
   const res = fakeRes();
@@ -96,4 +96,20 @@ test('solo el administrador puede ver las estadísticas', async () => {
   assert.strictEqual(si.body.dias.length, 14);
   assert.deepStrictEqual(si.body.dias[0], { dia: hoy, cuentas: 3, analisis: 10, pago: 0, pro: 0, packs: 0 });
   assert.deepStrictEqual(si.body.porOrigen.instagram, { cuentas: 2, pro: 1 });
+});
+
+test('los días van con la hora de España', () => {
+  const { dia } = require('../../lib/stats');
+  assert.strictEqual(dia(new Date('2026-09-27T22:30:00Z')), '2026-09-28'); // 00:30 en Madrid (verano)
+  assert.strictEqual(dia(new Date('2026-01-15T23:30:00Z')), '2026-01-16'); // 00:30 en Madrid (invierno)
+  assert.strictEqual(dia(new Date('2026-09-27T21:30:00Z')), '2026-09-27'); // 23:30 en Madrid
+});
+
+test('el resumen enseña 14 días seguidos, empezando por hoy en España', async () => {
+  entorno();
+  const { resumen, dia } = require('../../lib/stats');
+  const { dias } = await resumen(14);
+  assert.strictEqual(dias.length, 14);
+  assert.strictEqual(dias[0].dia, dia());
+  for (let i = 1; i < dias.length; i++) assert.strictEqual(Date.parse(dias[i - 1].dia) - Date.parse(dias[i].dia), 86400000);
 });
