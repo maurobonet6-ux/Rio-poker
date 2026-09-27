@@ -32,14 +32,38 @@ test('ninguna página del glosario o de las tablas tiene enlaces internos rotos'
 test('las páginas generadas están al día con scripts/build-seo.js', () => {
   // Si falla: ejecuta  node scripts/build-seo.js  y sube los cambios.
   const { execFileSync } = require('child_process');
-  const before = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8') + fs.readFileSync(path.join(ROOT, 'glosario/spr/index.html'), 'utf8');
+  const leer = () => ['sitemap.xml', 'glosario/spr/index.html', 'index.html'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('');
+  const before = leer();
   execFileSync('node', [path.join(ROOT, 'scripts/build-seo.js')], { stdio: 'ignore' });
-  const after = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8') + fs.readFileSync(path.join(ROOT, 'glosario/spr/index.html'), 'utf8');
+  const after = leer();
   assert.strictEqual(after, before);
 });
 
 test('la versión de la app está en un solo sitio', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8');
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert.match(html, /const APP_VERSION = 'v\d+\.\d+'/);
+  assert.match(js, /const APP_VERSION = 'v\d+\.\d+'/);
   assert.doesNotMatch(html, /RÍO v\d/, 'hay una versión escrita a mano en el HTML');
+});
+
+test('portada: la dirección de la web solo está en sitio.json', () => {
+  const site = JSON.parse(fs.readFileSync(path.join(ROOT, 'sitio.json'), 'utf8')).url;
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  assert.match(html, new RegExp(`<link rel="canonical" href="${site}/">`));
+  assert.match(html, new RegExp(`<meta property="og:url" content="${site}/">`));
+  const fuera = html.replace(/<!-- SEO: [\s\S]*?<!-- \/SEO -->/, '');
+  assert.doesNotMatch(fuera, /https:\/\/[a-z0-9.-]*vercel\.app/, 'hay una dirección escrita a mano fuera del bloque SEO');
+});
+
+test('portada: datos para Google válidos y FAQ igual al que se ve', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+  const tipos = ld['@graph'].map(n => n['@type']);
+  assert.deepStrictEqual(tipos, ['SoftwareApplication', 'FAQPage']);
+  const faq = ld['@graph'][1].mainEntity;
+  const visibles = [...html.matchAll(/<details class="faq-item"><summary>([^<]+)<\/summary>/g)].map(m => m[1]);
+  assert.deepStrictEqual(faq.map(q => q.name), visibles);
+  assert.ok(faq.every(q => q.acceptedAnswer.text.length > 20));
+  assert.match(html, /<h1>RÍO <span class="h1-sub">Calculadora y entrenador de póker en español<\/span><\/h1>/);
+  assert.strictEqual((html.match(/<h1[\s>]/g) || []).length, 1, 'la portada debe tener un solo H1');
 });
