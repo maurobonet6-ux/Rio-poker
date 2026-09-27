@@ -194,13 +194,23 @@ test('estadísticas: el administrador ve su panel y sus visitas no cuentan', asy
   await abrir(page, { pro: true, admin: true, storage: { rio_admin: true, rio_email: 'admin@rio.test' },
     api: { stats: { dias, porOrigen: { instagram: { cuentas: 2, pro: 1 } }, cuentasTotales: 5 } } });
   await page.waitForFunction(() => localStorage.getItem('rio_sin_estadisticas') === '1'); // el servidor dijo que es admin
-  await page.evaluate(() => document.getElementById('navStats').click());
+  await expect(page.locator('#navAdminStats')).toHaveCount(1);
+  await expect(page.locator('#navStats')).toHaveCount(1); // su propio progreso sigue ahí
+  await page.evaluate(() => document.getElementById('navAdminStats').click());
   await expect(page.locator('#helpBody .stats-tbl').first()).toContainText('14 días');
   await expect(page.locator('#helpBody .stats-tbl tr.tot')).toContainText('20'); // 7 + 13 manos
   await expect(page.locator('#helpBody')).toContainText('instagram');
   // Al volver a entrar, el contador de visitas de Vercel ya no se carga para el admin.
   await page.reload();
   expect(await page.evaluate(() => [...document.scripts].some(s => s.src.includes('/_vercel/insights')))).toBe(false);
+});
+
+test('estadísticas: "Estadísticas y errores" abre el progreso del jugador, no el panel de admin', async ({ page }) => {
+  await abrir(page, { pro: true, storage: { rio_email: 'cliente@rio.test' } });
+  await expect(page.locator('#navAdminStats')).toHaveCount(0);
+  await page.evaluate(() => document.getElementById('navStats').click());
+  await expect(page.locator('#helpBody')).toContainText('Aún no hay datos');
+  await expect(page.locator('#helpBody .stats-tbl')).toHaveCount(0);
 });
 
 test('estadísticas: se guarda de dónde llega la persona y se manda al crear la cuenta', async ({ page }) => {
