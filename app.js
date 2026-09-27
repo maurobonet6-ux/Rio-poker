@@ -2026,7 +2026,7 @@
         <p class="hint">Cuentas totales: <b>${d.cuentasTotales}</b>. Las visitas están en Vercel → Analytics; aquí, lo que pasa después de entrar. Tus propias visitas y clics no cuentan.</p>
         <div class="stats-scroll"><table class="stats-tbl">
           <thead><tr><th>Día</th>${COLS.map(([, n]) => `<th>${n}</th>`).join('')}</tr></thead>
-          <tbody>${fila('<b>14 días</b>', tot, 'tot')}${d.dias.map(x => fila(escHTML(fecha(x.dia)), x)).join('')}</tbody>
+          <tbody>${fila('<b>Total 14 días</b>', tot, 'tot')}${d.dias.map(x => fila(escHTML(fecha(x.dia)), x)).join('')}</tbody>
         </table></div>
         <div class="sub-title" style="margin-top:16px;">De dónde vienen (desde siempre)</div>
         ${origenes.length ? `<div class="stats-scroll"><table class="stats-tbl">

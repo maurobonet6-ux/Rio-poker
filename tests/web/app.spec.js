@@ -197,7 +197,7 @@ test('estadísticas: el administrador ve su panel y sus visitas no cuentan', asy
   await expect(page.locator('#navAdminStats')).toHaveCount(1);
   await expect(page.locator('#navStats')).toHaveCount(1); // su propio progreso sigue ahí
   await page.evaluate(() => document.getElementById('navAdminStats').click());
-  await expect(page.locator('#helpBody .stats-tbl').first()).toContainText('14 días');
+  await expect(page.locator('#helpBody .stats-tbl').first()).toContainText('Total 14 días');
   await expect(page.locator('#helpBody .stats-tbl tr.tot')).toContainText('20'); // 7 + 13 manos
   await expect(page.locator('#helpBody')).toContainText('instagram');
   // Al volver a entrar, el contador de visitas de Vercel ya no se carga para el admin.
