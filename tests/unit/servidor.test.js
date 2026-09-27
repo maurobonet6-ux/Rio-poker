@@ -47,3 +47,16 @@ test('la captura sin imagen devuelve un error claro', async () => {
   assert.strictEqual(res.statusCode, 400);
   assert.match(res.body.error, /imagen/i);
 });
+
+test('enlaces cortos para las redes: /ig, /yt… llevan a la portada con su origen', () => {
+  const fs = require('fs'), path = require('path');
+  const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'vercel.json'), 'utf8'));
+  const r = Object.fromEntries((cfg.redirects || []).map(x => [x.source, x]));
+  assert.strictEqual(r['/ig'].destination, '/?utm_source=instagram');
+  assert.strictEqual(r['/yt'].destination, '/?utm_source=youtube');
+  for (const x of cfg.redirects){
+    assert.match(x.source, /^\/[a-z]{2}$/);
+    assert.match(x.destination, /^\/\?utm_source=[a-z]+$/);
+    assert.strictEqual(x.permanent, false); // temporal: así se pueden cambiar sin que los navegadores lo recuerden
+  }
+});

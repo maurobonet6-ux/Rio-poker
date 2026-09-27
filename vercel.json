@@ -8,5 +8,15 @@
     { "source": "/api/photo-usage", "destination": "/api/account?action=photo-usage" },
     { "source": "/api/track", "destination": "/api/account?action=track" },
     { "source": "/api/stats", "destination": "/api/account?action=stats" }
+  ],
+  "redirects": [
+    { "source": "/ig", "destination": "/?utm_source=instagram", "permanent": false },
+    { "source": "/yt", "destination": "/?utm_source=youtube", "permanent": false },
+    { "source": "/tt", "destination": "/?utm_source=tiktok", "permanent": false },
+    { "source": "/tg", "destination": "/?utm_source=telegram", "permanent": false },
+    { "source": "/dc", "destination": "/?utm_source=discord", "permanent": false },
+    { "source": "/fb", "destination": "/?utm_source=facebook", "permanent": false },
+    { "source": "/rd", "destination": "/?utm_source=reddit", "permanent": false },
+    { "source": "/wa", "destination": "/?utm_source=whatsapp", "permanent": false }
   ]
 }
