@@ -4,6 +4,12 @@ const { chromium } = require('@playwright/test');
 const fs = require('fs'), path = require('path'), { spawn, execFileSync } = require('child_process');
 const { SALIDA, ffmpeg, unirAudio, fontRoute } = require('./comun.js');
 const FF = ffmpeg(), FPS = 30, HERE = SALIDA, TOTAL = 20.6;
+// WARP (opcional) estira partes del vídeo para que quepa una voz en off: "diseño:salida,..." en segundos.
+// Ej.: WARP=0:0,2.05:3.35,3.95:5.55,5.45:7.85 alarga el inicio; después, todo se desplaza lo mismo.
+const WARP = (process.env.WARP || '0:0').split(',').map(x => x.split(':').map(Number));
+const aSalida = d => { let [pd, po] = WARP[0]; for (const [dd, oo] of WARP.slice(1)){ if (d <= dd) return po + (d - pd)*(oo - po)/(dd - pd); pd = dd; po = oo; } return po + (d - pd); };
+const aDiseno = o => { let [pd, po] = WARP[0]; for (const [dd, oo] of WARP.slice(1)){ if (o <= oo) return pd + (o - po)*(dd - pd)/(oo - po); pd = dd; po = oo; } return pd + (o - po); };
+const TOTAL_SALIDA = aSalida(TOTAL);
 process.chdir(SALIDA);
 const src = f => 'file://' + path.join(HERE, f);
 const K = 692 / 400;                        // de las capturas (400 px de ancho) a la pantalla del móvil
@@ -132,12 +138,12 @@ function render(t){
   if (process.env.SNAP){ fs.mkdirSync(path.join(HERE, 'snap'), { recursive: true }); for (const t of process.env.SNAP.split(',')){ await p.evaluate(x => render(x), +t); await p.screenshot({ path: path.join(HERE, 'snap', 'e-' + t + '.png') }); } await b.close(); return; }
   const out = path.join(HERE, 'rio-explica-mudo.mp4');
   const ff = spawn(FF, ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-i', '-', '-vf', 'format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
-  for (let i = 0; i < Math.round(TOTAL*FPS); i++){ await p.evaluate(x => render(x), i/FPS);
+  for (let i = 0; i < Math.round(TOTAL_SALIDA*FPS); i++){ await p.evaluate(x => render(x), aDiseno(i/FPS));
     const buf = await p.screenshot({ type: 'jpeg', quality: 94 }); if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r)); }
   ff.stdin.end(); await new Promise(r => ff.on('close', r)); await b.close();
   fs.rmSync(f);
   const wav = path.join(HERE, 'que-es-rio.wav'), final = path.join(HERE, 'rio-que-es-rio.mp4');
-  execFileSync('python3', [path.join(__dirname, 'audio_que_es_rio.py'), wav]);
+  execFileSync('python3', [path.join(__dirname, 'audio_que_es_rio.py'), wav], { env: { ...process.env, WARP: process.env.WARP || '0:0' } });
   unirAudio(out, wav, final);
   console.log(final);
 })();

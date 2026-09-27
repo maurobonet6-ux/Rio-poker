@@ -59,5 +59,7 @@ FIN=14.45 node video-mesa.js ak          # FIN = segundo en que empieza el final
 python3 mezclar-voz.py salida/rio-ak.mp4 voz.mp3 0.25,3.8,6.3,9.35,10.95,12.85,14.55,15.35,16.5 salida/rio-ak-voz.mp4
 ```
 
+Para «Qué es RÍO», `WARP=0:0,2.05:3.35,3.95:5.55,5.45:7.85 node video-que-es-rio.js` alarga el inicio para que quepa la voz.
+
 `mezclar-voz.py` corta la voz por sus silencios, limpia la voz, baja los efectos mientras se habla y deja
 el volumen a -14 LUFS (el de TikTok e Instagram).
