@@ -29,9 +29,34 @@
 {"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","@id":"https://rio-poker.vercel.app/#app","name":"RÍO","alternateName":"RÍO · Calculadora y entrenador de póker","url":"https://rio-poker.vercel.app/","description":"Calculadora de póker para repasar tus manos: probabilidad de ganar, outs, odds del bote, EV y consejo por posición en preflop, flop, turn y river.","applicationCategory":"GameApplication","applicationSubCategory":"Calculadora de póker","operatingSystem":"Web, Android, iOS","inLanguage":"es","image":"https://rio-poker.vercel.app/og-image.png","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}},{"@type":"FAQPage","@id":"https://rio-poker.vercel.app/#faq","inLanguage":"es","mainEntity":[{"@type":"Question","name":"¿Qué es RÍO?","acceptedAnswer":{"@type":"Answer","text":"RÍO es una calculadora y entrenador de póker en español. Le dices tus cartas, la mesa, el bote y lo que te toca pagar, y te dice si pagar, subir o tirar en cada calle, con la probabilidad de ganar, los outs, las odds del bote y el EV explicados fácil."}},{"@type":"Question","name":"¿Es gratis?","acceptedAnswer":{"@type":"Answer","text":"Sí. Tienes un análisis de prueba sin registrarte y 5 más al crear tu cuenta gratis, solo con tu email. El entrenamiento, el glosario y las tablas de manos son gratis. RÍO PRO (9,99 €/mes o 79,99 €/año) da análisis manuales ilimitados y funciones con IA como analizar una captura."}},{"@type":"Question","name":"¿Puedo usar RÍO mientras juego?","acceptedAnswer":{"@type":"Answer","text":"No. RÍO es una herramienta de estudio para repasar tus manos después de jugar. La mayoría de salas online prohíben las ayudas en tiempo real."}},{"@type":"Question","name":"¿Qué diferencia hay entre el modo Fácil y el Avanzado?","acceptedAnswer":{"@type":"Answer","text":"El modo Fácil te guía paso a paso y te pregunta el bote con dos preguntas sencillas. El Avanzado muestra todos los datos: rango del rival, EV, SPR y más detalles de cada calle."}},{"@type":"Question","name":"¿Funciona en el móvil?","acceptedAnswer":{"@type":"Answer","text":"Sí. RÍO funciona en el navegador del móvil y del ordenador, y puedes instalarlo en la pantalla de inicio como una app."}},{"@type":"Question","name":"¿Qué necesito saber de póker para usarlo?","acceptedAnswer":{"@type":"Answer","text":"Solo las reglas básicas de Texas Hold'em. Si no conoces un término como equity, pot odds u outs, tienes el glosario de póker y las tablas de manos iniciales por posición."}}]}]}
 </script>
 <!-- /SEO -->
-<!-- Estadísticas de visitas de Vercel (sin cookies). Se activan en Vercel → Analytics. -->
-<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
-<script defer src="/_vercel/insights/script.js"></script>
+<!-- Estadísticas de visitas de Vercel (sin cookies). Se activan en Vercel → Analytics.
+     · No cuentan las visitas del administrador (o de un dispositivo abierto una vez con ?sinestadisticas=1;
+       ?conestadisticas=1 lo deshace).
+     · Guarda de dónde llegó la persona la primera vez (?utm_source=… o la web de la que viene), para saber
+       qué red social trae cuentas y clientes. -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  (function(){
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.has('sinestadisticas')) localStorage.setItem('rio_sin_estadisticas', '1');
+      if (q.has('conestadisticas')) localStorage.removeItem('rio_sin_estadisticas');
+      if (!localStorage.getItem('rio_src')){
+        var src = q.get('utm_source') || '', ref = '';
+        try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch(e){}
+        if (!src && ref && ref !== location.hostname){
+          var redes = { instagram: 'instagram', youtube: 'youtube', youtu: 'youtube', tiktok: 'tiktok', facebook: 'facebook', google: 'google', chatgpt: 'chatgpt', reddit: 'reddit', t: 'telegram', telegram: 'telegram', discord: 'discord', x: 'x', twitter: 'x' };
+          var partes = ref.replace(/^(www|m|l|lm)\./, '').split('.');
+          src = redes[partes[0]] || partes[0];
+        }
+        localStorage.setItem('rio_src', (src || 'directo').toLowerCase().slice(0, 40));
+      }
+      if (localStorage.getItem('rio_sin_estadisticas') === '1') return;
+    } catch(e){}
+    var s = document.createElement('script'); s.defer = true; s.src = '/_vercel/insights/script.js';
+    document.head.appendChild(s);
+  })();
+</script>
 <title>RÍO — Calculadora de póker · Decide en cada calle</title>
 <meta name="google-site-verification" content="5Jb1JVNjgTQIfLwJ1bwyH3I1LJ4JpQxOFmUyAJRoSug">
 <meta name="description" content="Calculadora de póker para repasar tus manos: probabilidad de ganar, outs, odds del bote, EV y consejo por posición en preflop, flop, turn y river.">

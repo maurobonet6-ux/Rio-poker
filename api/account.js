@@ -11,7 +11,9 @@ const routes = {
   'logout': require('../lib/routes/logout'),
   'check-pro': require('../lib/routes/check-pro'),
   'free-use': require('../lib/routes/free-use'),
-  'photo-usage': require('../lib/routes/photo-usage')
+  'photo-usage': require('../lib/routes/photo-usage'),
+  'track': require('../lib/routes/track'),
+  'stats': require('../lib/routes/stats')
 };
 
 module.exports = async (req, res) => {

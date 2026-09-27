@@ -22,6 +22,7 @@
   // cuenta aunque pagues con otro email (por ejemplo, con Apple Pay). Ver lib/stripe.js.
   let pendingPayment = null;
   function openPayment(link){
+    trackEvent('pago');
     // Sin cuenta, el pago no se podría asociar a nadie: primero entrar o crear la cuenta gratis.
     if (!storageGet('rio_token', '')){
       pendingPayment = link;
@@ -57,6 +58,13 @@
   function storageGet(key, fallback){
     try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); }
     catch(e){ return fallback; }
+  }
+  // Valores guardados como texto simple (no JSON), p. ej. los que pone el script de estadísticas del <head>.
+  function rawStorage(key){ try { return localStorage.getItem(key) || ''; } catch(e){ return ''; } }
+  // Avisa al servidor para las estadísticas del administrador (sin datos personales).
+  function trackEvent(ev){
+    if (rawStorage('rio_sin_estadisticas') === '1') return;
+    try { navigator.sendBeacon('/api/track?e=' + encodeURIComponent(ev)); } catch(e){}
   }
   function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} onStoredKey(key); }
 
@@ -160,6 +168,14 @@
       inboxBtn.addEventListener('click', () => openInbox());
       document.getElementById('navLogout').insertAdjacentElement('beforebegin', inboxBtn);
     } else if (!admin && inboxBtn) inboxBtn.remove();
+    let statsBtn = document.getElementById('navStats');
+    if (admin && !statsBtn){
+      statsBtn = document.createElement('button');
+      statsBtn.type = 'button'; statsBtn.className = 'sidebar-link'; statsBtn.id = 'navStats';
+      statsBtn.innerHTML = '<span class="ic">📊</span><span class="lbl">Estadísticas</span><span class="admin-badge">ADMIN</span>';
+      statsBtn.addEventListener('click', () => openStats());
+      document.getElementById('navInbox').insertAdjacentElement('beforebegin', statsBtn);
+    } else if (!admin && statsBtn) statsBtn.remove();
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
     document.getElementById('sidebarAccount').textContent = logged ? storageGet('rio_email', '') : 'Sin cuenta · tus datos solo en este navegador';
@@ -228,6 +244,8 @@
       const data = await r.json();
       if (!r.ok) return null;
       storageSet('rio_admin', data.admin === true);
+      // Las visitas y clics del administrador no cuentan en las estadísticas.
+      if (data.admin === true) try { localStorage.setItem('rio_sin_estadisticas', '1'); } catch(e){}
       return data.pro === true;
     } catch(e){ return null; } // null = no se pudo comprobar (servidor no desplegado aún, sin conexión…)
   }
@@ -1991,6 +2009,34 @@
     } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar los avisos.')}</p>`; }
   }
 
+  // ---- Estadísticas propias (solo administrador) ----
+  async function openStats(){
+    closeSidebar();
+    const body = openModal('📊 Estadísticas', '<p class="hint">Cargando…</p>');
+    try {
+      const r = await fetch('/api/stats', { headers: authHeaders() });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      const COLS = [['cuentas', 'Cuentas'], ['analisis', 'Manos'], ['pago', 'Clic pagar'], ['pro', 'PRO'], ['packs', 'Packs']];
+      const tot = Object.fromEntries(COLS.map(([k]) => [k, d.dias.reduce((a, x) => a + (x[k] || 0), 0)]));
+      const fila = (etq, v, cls = '') => `<tr class="${cls}"><td>${etq}</td>${COLS.map(([k]) => `<td>${v[k] || 0}</td>`).join('')}</tr>`;
+      const fecha = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+      const origenes = Object.entries(d.porOrigen).sort((a, b) => ((b[1].cuentas || 0) - (a[1].cuentas || 0)));
+      body.innerHTML = `
+        <p class="hint">Cuentas totales: <b>${d.cuentasTotales}</b>. Las visitas están en Vercel → Analytics; aquí, lo que pasa después de entrar. Tus propias visitas y clics no cuentan.</p>
+        <div class="stats-scroll"><table class="stats-tbl">
+          <thead><tr><th>Día</th>${COLS.map(([, n]) => `<th>${n}</th>`).join('')}</tr></thead>
+          <tbody>${fila('<b>14 días</b>', tot, 'tot')}${d.dias.map(x => fila(escHTML(fecha(x.dia)), x)).join('')}</tbody>
+        </table></div>
+        <div class="sub-title" style="margin-top:16px;">De dónde vienen (desde siempre)</div>
+        ${origenes.length ? `<div class="stats-scroll"><table class="stats-tbl">
+          <thead><tr><th>Origen</th><th>Cuentas</th><th>PRO</th><th>Packs</th></tr></thead>
+          <tbody>${origenes.map(([o, v]) => `<tr><td>${escHTML(o)}</td><td>${v.cuentas || 0}</td><td>${v.pro || 0}</td><td>${v.packs || 0}</td></tr>`).join('')}</tbody>
+        </table></div>` : '<p class="hint">Todavía no hay cuentas nuevas con origen.</p>'}
+        <p class="hint" style="margin-top:12px;">Enlaces para tus bios: <b>rio-poker.vercel.app/?utm_source=instagram</b> · <b>?utm_source=youtube</b></p>`;
+    } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar las estadísticas.')}</p>`; }
+  }
+
   // ---- Compartir una mano por enlace ----
   // Toda la mano va dentro del propio enlace (#m=…), así no hace falta guardar
   // nada en el servidor. Quien lo abre ve el análisis sin cuenta y sin gastar
@@ -2576,7 +2622,7 @@
       } else {
         const code = document.getElementById('proCode').value.trim();
         if (!/^\d{6}$/.test(code)){ fail('Escribe el código de 6 dígitos.'); return; }
-        const { ok, status, data } = await postJson('/api/verify-code', { email: pendingLoginEmail, code });
+        const { ok, status, data } = await postJson('/api/verify-code', { email: pendingLoginEmail, code, src: rawStorage('rio_src') });
         if (!ok){
           if (status === 429) pendingLoginEmail = null; // demasiados intentos: hay que pedir otro código
           fail(data.error || 'No se pudo comprobar el código.');
@@ -2645,6 +2691,7 @@
       } catch(e){ /* sin conexión: dejamos analizar */ }
     }
     analyzeBtn.disabled = true; analyzeBtn.textContent = 'Calculando…';
+    trackEvent('analisis');
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
       const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);

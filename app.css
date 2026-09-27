@@ -805,6 +805,12 @@ body.tourney .tourney-show { display: block !important; }
 
 .annual-btn { width: 100%; margin-top: 14px; flex: none; }
 .inbox-item { border-bottom: 1px solid var(--line); padding: 10px 0; }
+.stats-scroll { overflow-x: auto; }
+.stats-tbl { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.stats-tbl th, .stats-tbl td { padding: 7px 6px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.stats-tbl th:first-child, .stats-tbl td:first-child { text-align: left; }
+.stats-tbl th { color: var(--cream-dim); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.stats-tbl tr.tot td { font-weight: 800; color: var(--cream); background: var(--panel-2); }
 .inbox-item pre { white-space: pre-wrap; word-break: break-word; font-size: 0.72rem; color: var(--cream-dim); background: var(--panel-2); padding: 8px; border-radius: 8px; margin: 0; }
 
 .footer-links { margin-top: 10px; line-height: 1.9; }
