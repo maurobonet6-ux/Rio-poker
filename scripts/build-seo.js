@@ -1,14 +1,15 @@
 // Genera las páginas estáticas para buscadores: /glosario/…, /tablas/…, /guias/…
-// y /manos/… (una por cada una de las 169 manos iniciales), más sitemap.xml y
-// robots.txt. Usa el mismo ranking de manos que index.html.
+// y /manos/… (una por cada una de las 169 manos iniciales), más sitemap.xml,
+// robots.txt y las etiquetas SEO de la portada (index.html).
+// Usa el mismo ranking de manos que app.js. La dirección de la web está en sitio.json.
 // Ejecutar después de cambiar textos o rangos:  node scripts/build-seo.js
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const SITE = 'https://rio-poker.vercel.app';
-const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const HAND_RANKING = html.match(/const HAND_RANKING = '([^']+)'/)[1].split(' ');
+const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, 'sitio.json'), 'utf8')).url.replace(/\/+$/, '');
+const appJs = fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8');
+const HAND_RANKING = appJs.match(/const HAND_RANKING = '([^']+)'/)[1].split(' ');
 const RANK_CHARS = 'AKQJT98765432';
 const EQUITY = require('./data/equity-preflop.json');
 const GUIDES = require('./data/guias.js');
@@ -21,7 +22,7 @@ function topRange(pct){
   return set;
 }
 
-// Mismas tablas que CHART_SETS en index.html.
+// Mismas tablas que CHART_SETS en app.js.
 const CHART_SETS = {
   '6-max-cash':   { name: '6 jugadores · cash', list: [['UTG',15],['HJ',19],['CO',27],['BTN',45],['SB',40],['BB',60]] },
   '6-max-torneo': { name: '6 jugadores · torneo', list: [['UTG',14],['HJ',18],['CO',26],['BTN',45],['SB',42],['BB',65]] },
@@ -458,4 +459,38 @@ Disallow: /api/
 
 Sitemap: ${SITE}/sitemap.xml
 `);
+
+// Portada: canonical, og:url, imágenes y datos estructurados (SoftwareApplication + FAQ).
+// Las preguntas del FAQ se leen del bloque visible «Preguntas frecuentes» de index.html,
+// así lo que ve Google y lo que ve la gente es siempre lo mismo.
+const indexFile = path.join(ROOT, 'index.html');
+const indexHtml = fs.readFileSync(indexFile, 'utf8');
+const text = h => h.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+const faq = [...indexHtml.matchAll(/<details class="faq-item"><summary>([\s\S]*?)<\/summary><p>([\s\S]*?)<\/p><\/details>/g)]
+  .map(([, q, a]) => ({ '@type': 'Question', name: text(q), acceptedAnswer: { '@type': 'Answer', text: text(a) } }));
+if (faq.length < 3) throw new Error('No encuentro las preguntas frecuentes en index.html');
+const desc = indexHtml.match(/<meta name="description" content="([^"]+)">/)[1];
+const ld = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'SoftwareApplication', '@id': `${SITE}/#app`, name: 'RÍO', alternateName: 'RÍO · Calculadora y entrenador de póker',
+      url: `${SITE}/`, description: desc, applicationCategory: 'GameApplication', applicationSubCategory: 'Calculadora de póker',
+      operatingSystem: 'Web, Android, iOS', inLanguage: 'es', image: `${SITE}/og-image.png`,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' } },
+    { '@type': 'FAQPage', '@id': `${SITE}/#faq`, inLanguage: 'es', mainEntity: faq }
+  ]
+};
+const seoBlock = `<!-- SEO: lo escribe scripts/build-seo.js con la dirección de sitio.json. No lo edites a mano. -->
+<link rel="canonical" href="${SITE}/">
+<meta property="og:url" content="${SITE}/">
+<meta property="og:image" content="${SITE}/og-image.png">
+<meta name="twitter:image" content="${SITE}/og-image.png">
+<script type="application/ld+json">
+${JSON.stringify(ld).replace(/</g, '\\u003c')}
+</script>
+<!-- /SEO -->`;
+const re = /<!-- SEO: [\s\S]*?<!-- \/SEO -->/;
+if (!re.test(indexHtml)) throw new Error('Falta el bloque <!-- SEO: … <!-- /SEO --> en index.html');
+fs.writeFileSync(indexFile, indexHtml.replace(re, seoBlock));
+
 console.log(`${urls.length} URLs generadas`);

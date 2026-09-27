@@ -1,7 +1,7 @@
 # RÍO — Despliegue con verificación real de pago
 
 Este proyecto tiene estas partes:
-- `index.html` — tu página (la herramienta de poker)
+- `index.html` — tu página (la herramienta de poker); su lógica está en `app.js` y sus estilos en `app.css`
 - `api/account.js` + `vercel.json` — agrupan en una sola función las operaciones de cuenta (`lib/routes/`): el plan gratuito de Vercel permite como máximo 12 funciones
 - `lib/routes/send-code.js` y `lib/routes/verify-code.js` — inicio de sesión: envían un código de 6 dígitos al email del suscriptor y lo comprueban
 - `lib/routes/check-pro.js` — le pregunta a Stripe si el usuario con sesión iniciada tiene suscripción activa
@@ -27,7 +27,7 @@ Este proyecto tiene estas partes:
 
 2. **Sube estos archivos a GitHub**
    - Ve a github.com → New repository → ponle un nombre, por ejemplo `rio-poker`.
-   - Dentro del repo, usa "Add file → Upload files" y arrastra `index.html`, `LEEME.md`, `package.json`, `package-lock.json` y las carpetas `api` y `lib` completas.
+   - Dentro del repo, usa "Add file → Upload files" y arrastra `index.html`, `app.js`, `app.css`, `LEEME.md`, `package.json`, `package-lock.json` y las carpetas `api` y `lib` completas.
    - Confirma los cambios ("Commit changes").
 
 3. **Importa el repo en Vercel**
@@ -60,8 +60,8 @@ Este proyecto tiene estas partes:
 
 5. **Configura tu Payment Link de Stripe**
    - En Stripe → tu Payment Link → edítalo → en "Después del pago" pon que redirija a tu URL de Vercel (ej: `https://rio-poker.vercel.app`).
-   - Copia la URL del Payment Link y pégala en `index.html`, en la constante `PAYMENT_LINK` (búscala con Ctrl+F), sustituyendo el texto de ejemplo.
-   - Vuelve a subir el `index.html` actualizado a GitHub — Vercel lo redesplegará solo.
+   - Copia la URL del Payment Link y pégala en `app.js`, en la constante `PAYMENT_LINK` (búscala con Ctrl+F), sustituyendo el texto de ejemplo.
+   - Vuelve a subir el `app.js` actualizado a GitHub — Vercel lo redesplegará solo.
 
 6. **Activa el portal de clientes de Stripe** (para el botón "Gestionar suscripción")
    - En Stripe → Configuración → Facturación → **Portal de clientes** → actívalo y guarda.
@@ -80,15 +80,16 @@ Este proyecto tiene estas partes:
 
 10. **Plan anual** (opcional)
     - Crea en Stripe un precio anual y su Payment Link.
-    - En `index.html`, rellena `ANNUAL_PAYMENT_LINK` y `ANNUAL_PRICE_LABEL` (búscalos con Ctrl+F). El botón aparece solo.
+    - En `app.js`, rellena `ANNUAL_PAYMENT_LINK` y `ANNUAL_PRICE_LABEL` (búscalos con Ctrl+F). El botón aparece solo.
 
 11. **Imagen al compartir**
-    - En `index.html`, las etiquetas `og:image` y `twitter:image` apuntan a `https://rio-poker.vercel.app/og-image.png`. Si tu web tiene otra dirección, cámbiala ahí.
+    - La dirección de la web está en un solo sitio: `sitio.json`. Si cambias de dominio, cámbiala ahí y ejecuta `node scripts/build-seo.js`: actualiza la dirección canónica, `og:url`, `og:image`, los datos para Google de la portada, el sitemap y todas las páginas del glosario y las tablas.
+    - Las preguntas frecuentes de la portada se escriben en `index.html` (bloque «Preguntas frecuentes»); el mismo script las copia a los datos para Google.
 
 12. **Precios (PRO 9,99 € con 200 créditos/mes y packs de créditos)**
-    - En Stripe crea el precio mensual de 9,99 € de RÍO PRO y su Payment Link; pégalo en `PAYMENT_LINK` en `index.html`.
-    - Crea los packs (pago único): 100 créditos · 2,99 €, 300 · 6,99 €, 1.000 · 17,99 €, con un Payment Link cada uno. Pega los enlaces en `CREDIT_PACKS_UI` (`index.html`). Los créditos se reconocen por el importe pagado (ver `lib/packs.js`); si cambias los precios, pon `CREDIT_PACK_AMOUNTS` en Vercel.
-    - Los créditos incluidos al mes están en `MONTHLY_CREDITS` (`lib/quota.js` e `index.html`).
+    - En Stripe crea el precio mensual de 9,99 € de RÍO PRO y su Payment Link; pégalo en `PAYMENT_LINK` en `app.js`.
+    - Crea los packs (pago único): 100 créditos · 2,99 €, 300 · 6,99 €, 1.000 · 17,99 €, con un Payment Link cada uno. Pega los enlaces en `CREDIT_PACKS_UI` (`app.js`). Los créditos se reconocen por el importe pagado (ver `lib/packs.js`); si cambias los precios, pon `CREDIT_PACK_AMOUNTS` en Vercel.
+    - Los créditos incluidos al mes están en `MONTHLY_CREDITS` (`lib/quota.js` y `app.js`).
 
 ## Cómo funciona la verificación
 

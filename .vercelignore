@@ -5,3 +5,4 @@ playwright.config.js
 test-results/
 playwright-report/
 marketing/
+sitio.json

@@ -189,6 +189,36 @@ test('el administrador sí ve sus avisos', async ({ page }) => {
   await expect(page.locator('#navInbox')).toHaveCount(1);
 });
 
+test('estadísticas: el administrador ve su panel y sus visitas no cuentan', async ({ page }) => {
+  const dias = Array.from({ length: 14 }, (_, i) => ({ dia: new Date(Date.now() - i * 864e5).toISOString().slice(0, 10), cuentas: i ? 0 : 2, analisis: i ? 1 : 7, pago: 0, pro: i ? 0 : 1, packs: 0 }));
+  await abrir(page, { pro: true, admin: true, storage: { rio_admin: true, rio_email: 'admin@rio.test' },
+    api: { stats: { dias, porOrigen: { instagram: { cuentas: 2, pro: 1 } }, cuentasTotales: 5 } } });
+  await page.waitForFunction(() => localStorage.getItem('rio_sin_estadisticas') === '1'); // el servidor dijo que es admin
+  await page.evaluate(() => document.getElementById('navStats').click());
+  await expect(page.locator('#helpBody .stats-tbl').first()).toContainText('14 días');
+  await expect(page.locator('#helpBody .stats-tbl tr.tot')).toContainText('20'); // 7 + 13 manos
+  await expect(page.locator('#helpBody')).toContainText('instagram');
+  // Al volver a entrar, el contador de visitas de Vercel ya no se carga para el admin.
+  await page.reload();
+  expect(await page.evaluate(() => [...document.scripts].some(s => s.src.includes('/_vercel/insights')))).toBe(false);
+});
+
+test('estadísticas: se guarda de dónde llega la persona y se manda al crear la cuenta', async ({ page }) => {
+  const { llamadas } = await abrir(page, { path: '/?utm_source=Instagram' });
+  expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('instagram');
+  expect(await page.evaluate(() => [...document.scripts].some(s => s.src.includes('/_vercel/insights')))).toBe(true);
+  let cuerpo = null;
+  await page.route('**/api/verify-code', (r) => { cuerpo = JSON.parse(r.request().postData()); r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ token: 'c'.repeat(64), email: 'nuevo@rio.test', pro: false }) }); });
+  await page.evaluate(() => document.getElementById('navLogin').click());
+  await expect(page.locator('#paywall.show')).toBeVisible();
+  await page.fill('#proEmail', 'nuevo@rio.test');
+  await page.locator('#restoreBtn').click();
+  await page.fill('#proCode', '123456');
+  await page.locator('#restoreBtn').click();
+  await expect.poll(() => cuerpo && cuerpo.src).toBe('instagram');
+  expect(llamadas).toContain('send-code');
+});
+
 test('en el móvil nada se sale de la pantalla', async ({ page }, info) => {
   test.skip(info.project.name !== 'movil', 'solo en móvil');
   await abrir(page, { pro: true });
