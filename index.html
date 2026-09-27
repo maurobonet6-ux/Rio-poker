@@ -22,9 +22,34 @@
 <meta name="twitter:title" content="RÍO — Tu entrenador de póker en español">
 <meta name="twitter:description" content="Cuéntale tu mano y te dice qué hiciste bien en cada calle: pagar, subir o tirar, explicado fácil.">
 <meta name="twitter:image" content="https://rio-poker.vercel.app/og-image.png">
-<!-- Estadísticas de visitas de Vercel (sin cookies). Se activan en Vercel → Analytics. -->
-<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
-<script defer src="/_vercel/insights/script.js"></script>
+<!-- Estadísticas de visitas de Vercel (sin cookies). Se activan en Vercel → Analytics.
+     · No cuentan las visitas del administrador (o de un dispositivo abierto una vez con ?sinestadisticas=1;
+       ?conestadisticas=1 lo deshace).
+     · Guarda de dónde llegó la persona la primera vez (?utm_source=… o la web de la que viene), para saber
+       qué red social trae cuentas y clientes. -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  (function(){
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.has('sinestadisticas')) localStorage.setItem('rio_sin_estadisticas', '1');
+      if (q.has('conestadisticas')) localStorage.removeItem('rio_sin_estadisticas');
+      if (!localStorage.getItem('rio_src')){
+        var src = q.get('utm_source') || '', ref = '';
+        try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch(e){}
+        if (!src && ref && ref !== location.hostname){
+          var redes = { instagram: 'instagram', youtube: 'youtube', youtu: 'youtube', tiktok: 'tiktok', facebook: 'facebook', google: 'google', chatgpt: 'chatgpt', reddit: 'reddit', t: 'telegram', telegram: 'telegram', discord: 'discord', x: 'x', twitter: 'x' };
+          var partes = ref.replace(/^(www|m|l|lm)\./, '').split('.');
+          src = redes[partes[0]] || partes[0];
+        }
+        localStorage.setItem('rio_src', (src || 'directo').toLowerCase().slice(0, 40));
+      }
+      if (localStorage.getItem('rio_sin_estadisticas') === '1') return;
+    } catch(e){}
+    var s = document.createElement('script'); s.defer = true; s.src = '/_vercel/insights/script.js';
+    document.head.appendChild(s);
+  })();
+</script>
 <title>RÍO — Calculadora de póker · Decide en cada calle</title>
 <meta name="google-site-verification" content="5Jb1JVNjgTQIfLwJ1bwyH3I1LJ4JpQxOFmUyAJRoSug">
 <meta name="description" content="Calculadora de póker para repasar tus manos: probabilidad de ganar, outs, odds del bote, EV y consejo por posición en preflop, flop, turn y river.">
@@ -825,6 +850,12 @@
 
   .annual-btn { width: 100%; margin-top: 14px; flex: none; }
   .inbox-item { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .stats-scroll { overflow-x: auto; }
+  .stats-tbl { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .stats-tbl th, .stats-tbl td { padding: 7px 6px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .stats-tbl th:first-child, .stats-tbl td:first-child { text-align: left; }
+  .stats-tbl th { color: var(--cream-dim); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .stats-tbl tr.tot td { font-weight: 800; color: var(--cream); background: var(--panel-2); }
   .inbox-item pre { white-space: pre-wrap; word-break: break-word; font-size: 0.72rem; color: var(--cream-dim); background: var(--panel-2); padding: 8px; border-radius: 8px; margin: 0; }
 
   .footer-links { margin-top: 10px; line-height: 1.9; }
@@ -1534,6 +1565,7 @@
   // cuenta aunque pagues con otro email (por ejemplo, con Apple Pay). Ver lib/stripe.js.
   let pendingPayment = null;
   function openPayment(link){
+    trackEvent('pago');
     // Sin cuenta, el pago no se podría asociar a nadie: primero entrar o crear la cuenta gratis.
     if (!storageGet('rio_token', '')){
       pendingPayment = link;
@@ -1569,6 +1601,13 @@
   function storageGet(key, fallback){
     try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); }
     catch(e){ return fallback; }
+  }
+  // Valores guardados como texto simple (no JSON), p. ej. los que pone el script de estadísticas del <head>.
+  function rawStorage(key){ try { return localStorage.getItem(key) || ''; } catch(e){ return ''; } }
+  // Avisa al servidor para las estadísticas del administrador (sin datos personales).
+  function trackEvent(ev){
+    if (rawStorage('rio_sin_estadisticas') === '1') return;
+    try { navigator.sendBeacon('/api/track?e=' + encodeURIComponent(ev)); } catch(e){}
   }
   function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} onStoredKey(key); }
 
@@ -1672,6 +1711,14 @@
       inboxBtn.addEventListener('click', () => openInbox());
       document.getElementById('navLogout').insertAdjacentElement('beforebegin', inboxBtn);
     } else if (!admin && inboxBtn) inboxBtn.remove();
+    let statsBtn = document.getElementById('navStats');
+    if (admin && !statsBtn){
+      statsBtn = document.createElement('button');
+      statsBtn.type = 'button'; statsBtn.className = 'sidebar-link'; statsBtn.id = 'navStats';
+      statsBtn.innerHTML = '<span class="ic">📊</span><span class="lbl">Estadísticas</span><span class="admin-badge">ADMIN</span>';
+      statsBtn.addEventListener('click', () => openStats());
+      document.getElementById('navInbox').insertAdjacentElement('beforebegin', statsBtn);
+    } else if (!admin && statsBtn) statsBtn.remove();
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
     document.getElementById('sidebarAccount').textContent = logged ? storageGet('rio_email', '') : 'Sin cuenta · tus datos solo en este navegador';
@@ -1740,6 +1787,8 @@
       const data = await r.json();
       if (!r.ok) return null;
       storageSet('rio_admin', data.admin === true);
+      // Las visitas y clics del administrador no cuentan en las estadísticas.
+      if (data.admin === true) try { localStorage.setItem('rio_sin_estadisticas', '1'); } catch(e){}
       return data.pro === true;
     } catch(e){ return null; } // null = no se pudo comprobar (servidor no desplegado aún, sin conexión…)
   }
@@ -3503,6 +3552,34 @@
     } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar los avisos.')}</p>`; }
   }
 
+  // ---- Estadísticas propias (solo administrador) ----
+  async function openStats(){
+    closeSidebar();
+    const body = openModal('📊 Estadísticas', '<p class="hint">Cargando…</p>');
+    try {
+      const r = await fetch('/api/stats', { headers: authHeaders() });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      const COLS = [['cuentas', 'Cuentas'], ['analisis', 'Manos'], ['pago', 'Clic pagar'], ['pro', 'PRO'], ['packs', 'Packs']];
+      const tot = Object.fromEntries(COLS.map(([k]) => [k, d.dias.reduce((a, x) => a + (x[k] || 0), 0)]));
+      const fila = (etq, v, cls = '') => `<tr class="${cls}"><td>${etq}</td>${COLS.map(([k]) => `<td>${v[k] || 0}</td>`).join('')}</tr>`;
+      const fecha = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+      const origenes = Object.entries(d.porOrigen).sort((a, b) => ((b[1].cuentas || 0) - (a[1].cuentas || 0)));
+      body.innerHTML = `
+        <p class="hint">Cuentas totales: <b>${d.cuentasTotales}</b>. Las visitas están en Vercel → Analytics; aquí, lo que pasa después de entrar. Tus propias visitas y clics no cuentan.</p>
+        <div class="stats-scroll"><table class="stats-tbl">
+          <thead><tr><th>Día</th>${COLS.map(([, n]) => `<th>${n}</th>`).join('')}</tr></thead>
+          <tbody>${fila('<b>14 días</b>', tot, 'tot')}${d.dias.map(x => fila(escHTML(fecha(x.dia)), x)).join('')}</tbody>
+        </table></div>
+        <div class="sub-title" style="margin-top:16px;">De dónde vienen (desde siempre)</div>
+        ${origenes.length ? `<div class="stats-scroll"><table class="stats-tbl">
+          <thead><tr><th>Origen</th><th>Cuentas</th><th>PRO</th><th>Packs</th></tr></thead>
+          <tbody>${origenes.map(([o, v]) => `<tr><td>${escHTML(o)}</td><td>${v.cuentas || 0}</td><td>${v.pro || 0}</td><td>${v.packs || 0}</td></tr>`).join('')}</tbody>
+        </table></div>` : '<p class="hint">Todavía no hay cuentas nuevas con origen.</p>'}
+        <p class="hint" style="margin-top:12px;">Enlaces para tus bios: <b>rio-poker.vercel.app/?utm_source=instagram</b> · <b>?utm_source=youtube</b></p>`;
+    } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar las estadísticas.')}</p>`; }
+  }
+
   // ---- Compartir una mano por enlace ----
   // Toda la mano va dentro del propio enlace (#m=…), así no hace falta guardar
   // nada en el servidor. Quien lo abre ve el análisis sin cuenta y sin gastar
@@ -4088,7 +4165,7 @@
       } else {
         const code = document.getElementById('proCode').value.trim();
         if (!/^\d{6}$/.test(code)){ fail('Escribe el código de 6 dígitos.'); return; }
-        const { ok, status, data } = await postJson('/api/verify-code', { email: pendingLoginEmail, code });
+        const { ok, status, data } = await postJson('/api/verify-code', { email: pendingLoginEmail, code, src: rawStorage('rio_src') });
         if (!ok){
           if (status === 429) pendingLoginEmail = null; // demasiados intentos: hay que pedir otro código
           fail(data.error || 'No se pudo comprobar el código.');
@@ -4157,6 +4234,7 @@
       } catch(e){ /* sin conexión: dejamos analizar */ }
     }
     analyzeBtn.disabled = true; analyzeBtn.textContent = 'Calculando…';
+    trackEvent('analisis');
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
       const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);

@@ -14,6 +14,7 @@
 const { redisCmd } = require('../lib/redis');
 const { creditsForItems } = require('../lib/packs');
 const { accountFromRef, linkCustomer } = require('../lib/stripe');
+const { contar } = require('../lib/stats');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Método no permitido' }); return; }
@@ -42,6 +43,16 @@ module.exports = async (req, res) => {
     const credits = creditsForItems(items);
     const payEmail = String((session.customer_details && session.customer_details.email) || session.customer_email || '').trim().toLowerCase();
     const email = account || payEmail;
+
+    // Estadísticas (una sola vez por pago, aunque Stripe repita el aviso): nuevo PRO o pack,
+    // y de qué red social vino esa cuenta.
+    try {
+      const esSuscripcion = session.mode === 'subscription' || items.some(it => it.price && it.price.type === 'recurring');
+      if ((esSuscripcion || credits) && await redisCmd(['SADD', 'rio:stats:pagos', session.id]) === 1){
+        const origen = email ? await redisCmd(['GET', `rio:src:${email}`]) : null;
+        await contar(esSuscripcion ? 'pro' : 'packs', origen || 'directo');
+      }
+    } catch (e) { /* las estadísticas nunca deben romper el cobro */ }
     if (!credits || !email) { res.status(200).json({ ok: true, linked: !!account }); return; }
 
     // Mismo registro que /api/redeem-credits: cada compra se suma una sola vez.
