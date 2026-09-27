@@ -3,7 +3,7 @@ const { chromium } = require('@playwright/test');
 // Uso: node video-que-es-rio.js   (antes: capturas-manos.js ak y capturas-web.js)
 const fs = require('fs'), path = require('path'), { spawn, execFileSync } = require('child_process');
 const { SALIDA, ffmpeg, unirAudio, fontRoute } = require('./comun.js');
-const FF = ffmpeg(), FPS = 30, HERE = SALIDA, TOTAL = 22.9;
+const FF = ffmpeg(), FPS = 30, HERE = SALIDA, TOTAL = 24.1;
 process.chdir(SALIDA);
 const src = f => 'file://' + path.join(HERE, f);
 const K = 692 / 400;                        // de las capturas (400 px de ancho) a la pantalla del móvil
@@ -58,26 +58,26 @@ em{font-style:normal;color:#E8283F}
 
 <div class="cap" data-in="5.5" data-out="7.9" data-a="none"><div class="mid words" data-at="0">📸 Sube una <em>captura</em></div><div class="sub rise" data-at="0.5">RÍO lee cartas, bote y apuestas</div></div>
 <div class="cap" data-in="8.0" data-out="10.3" data-a="none"><div class="mid words" data-at="0">🎙️ O <em>cuéntale</em> la mano</div><div class="sub rise" data-at="0.4">por voz o por escrito</div></div>
-<div class="cap" data-in="10.4" data-out="12.5" data-a="none"><div class="mid words" data-at="0">✍️ O elige tus <em>cartas</em></div><div class="sub rise" data-at="0.4">paso a paso · gratis</div></div>
-<div class="cap" data-in="12.6" data-out="15.6" data-a="none"><div class="mid words" data-at="0.05">Y RÍO te dice <em>qué hacer</em></div><div class="sub rise" data-at="1.4">y por qué, explicado fácil</div></div>
+<div class="cap" data-in="10.4" data-out="13.1" data-a="none"><div class="mid words" data-at="0">✍️ O elige tus <em>cartas</em></div><div class="sub rise" data-at="0.4">paso a paso · gratis</div></div>
+<div class="cap" data-in="13.2" data-out="16.8" data-a="none"><div class="mid words" data-at="0.05">Y RÍO te dice <em>qué hacer</em></div><div class="sub rise" data-at="1.9">y por qué, explicado fácil</div></div>
 
-<div id="phone" data-in="5.5" data-out="15.6" data-a="phone"><div id="screen"><div class="notch"></div><div class="bar">RÍO<i>☰</i></div>
+<div id="phone" data-in="5.5" data-out="16.8" data-a="phone"><div id="screen"><div class="notch"></div><div class="bar">RÍO<i>☰</i></div>
   <div class="scr" data-s="5.5" data-e="8.0"><img src="${src('x-entry.png')}">${tap(200, 255, 6.6)}</div>
   <div class="scr" data-s="8.0" data-e="10.4"><img src="${src('x-story.png')}">${tap(200, 443, 9.5)}</div>
-  <div class="scr" data-s="10.4" data-e="11.1"><img src="${src('x-pick1.png')}">${tap(64, 97, 10.75)}</div>
-  <div class="scr" data-s="11.1" data-e="11.8"><img src="${src('x-pick2.png')}">${tap(290, 145, 11.4)}</div>
-  <div class="scr pad" data-s="11.8" data-e="12.6"><img src="${src('ak-cards5.png')}"></div>
-  <div class="scr" data-s="12.6" data-e="14.0"><img class="stampimg" src="${src('x-result.png')}"></div>
-  <div class="scr" data-s="14.0" data-e="15.6"><img src="${src('x-why.png')}"></div>
+  <div class="scr" data-s="10.4" data-e="11.3"><img src="${src('x-pick1.png')}">${tap(64, 97, 10.85)}</div>
+  <div class="scr" data-s="11.3" data-e="12.0"><img src="${src('x-pick2.png')}">${tap(290, 145, 11.6)}</div>
+  <div class="scr pad" data-s="12.0" data-e="13.2"><img src="${src('ak-cards5.png')}"></div>
+  <div class="scr" data-s="13.2" data-e="15.2"><img class="stampimg" src="${src('x-result.png')}"></div>
+  <div class="scr" data-s="15.2" data-e="16.8"><img src="${src('x-why.png')}"></div>
 </div></div>
 
-<div class="center" data-in="15.7" data-out="19.1" data-a="none">
+<div class="center" data-in="16.9" data-out="20.3" data-a="none">
   <div class="mid words" data-at="0">Por qué <em>RÍO</em></div>
   <div class="list" style="display:flex">
     <div class="row pop" data-at="0.35"><span>🇪🇸</span>En español y fácil de entender</div>
     <div class="row pop" data-at="0.8"><span>🆓</span>Gratis para empezar</div>
     <div class="row pop" data-at="1.25"><span>📈</span>Aprende de tus errores</div></div></div>
-<div class="center" data-in="19.2" data-out="99" data-a="zoom">
+<div class="center" data-in="20.4" data-out="99" data-a="zoom">
   <div class="big words" data-at="0.1">Pruébalo <em>gratis</em></div>
   <div class="url pop pulse" data-at="0.6">rio-poker.vercel.app</div>
   <div class="sub rise" data-at="0.9">👆 enlace en la bio</div>
@@ -125,8 +125,8 @@ function render(t){
     x.style.opacity = q < 0 || q > 1 ? 0 : Math.sin(Math.PI*q); x.style.top = (cl(q)*100) + '%'; });
   // Temblor y destello al mostrar el resultado
   const ph = document.getElementById('phone');
-  if (t >= 12.6 && t < 12.9){ const k = 1 - (t - 12.6)/0.3; ph.style.transform += ' translate(' + Math.sin(t*95)*12*k + 'px,' + Math.cos(t*80)*8*k + 'px)'; }
-  document.getElementById('flash').style.opacity = t >= 12.58 && t < 12.8 ? 0.55*(1 - (t - 12.58)/0.22) : 0;
+  if (t >= 13.2 && t < 13.5){ const k = 1 - (t - 13.2)/0.3; ph.style.transform += ' translate(' + Math.sin(t*95)*12*k + 'px,' + Math.cos(t*80)*8*k + 'px)'; }
+  document.getElementById('flash').style.opacity = t >= 13.18 && t < 13.4 ? 0.55*(1 - (t - 13.18)/0.22) : 0;
   document.querySelector('.pbar').style.width = (100*t/TOTAL) + '%';
 }
 </script></body></html>`;
