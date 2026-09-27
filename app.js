@@ -168,12 +168,12 @@
       inboxBtn.addEventListener('click', () => openInbox());
       document.getElementById('navLogout').insertAdjacentElement('beforebegin', inboxBtn);
     } else if (!admin && inboxBtn) inboxBtn.remove();
-    let statsBtn = document.getElementById('navStats');
+    let statsBtn = document.getElementById('navAdminStats');
     if (admin && !statsBtn){
       statsBtn = document.createElement('button');
-      statsBtn.type = 'button'; statsBtn.className = 'sidebar-link'; statsBtn.id = 'navStats';
+      statsBtn.type = 'button'; statsBtn.className = 'sidebar-link'; statsBtn.id = 'navAdminStats';
       statsBtn.innerHTML = '<span class="ic">📊</span><span class="lbl">Estadísticas</span><span class="admin-badge">ADMIN</span>';
-      statsBtn.addEventListener('click', () => openStats());
+      statsBtn.addEventListener('click', () => openAdminStats());
       document.getElementById('navInbox').insertAdjacentElement('beforebegin', statsBtn);
     } else if (!admin && statsBtn) statsBtn.remove();
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
@@ -2010,7 +2010,7 @@
   }
 
   // ---- Estadísticas propias (solo administrador) ----
-  async function openStats(){
+  async function openAdminStats(){
     closeSidebar();
     const body = openModal('📊 Estadísticas', '<p class="hint">Cargando…</p>');
     try {
