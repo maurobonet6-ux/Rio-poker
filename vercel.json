@@ -5,6 +5,8 @@
     { "source": "/api/logout", "destination": "/api/account?action=logout" },
     { "source": "/api/check-pro", "destination": "/api/account?action=check-pro" },
     { "source": "/api/free-use", "destination": "/api/account?action=free-use" },
-    { "source": "/api/photo-usage", "destination": "/api/account?action=photo-usage" }
+    { "source": "/api/photo-usage", "destination": "/api/account?action=photo-usage" },
+    { "source": "/api/track", "destination": "/api/account?action=track" },
+    { "source": "/api/stats", "destination": "/api/account?action=stats" }
   ]
 }

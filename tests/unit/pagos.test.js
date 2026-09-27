@@ -27,6 +27,8 @@ function simular(session){
   };
   return redis;
 }
+// Las órdenes de estadísticas se prueban aparte (estadisticas.test.js).
+const sinEstadisticas = (cmds) => cmds.filter(c => !/^rio:(stats|src)/.test(String(c[1])));
 function fakeRes(){
   const res = { statusCode: 200, body: null };
   res.status = (c) => { res.statusCode = c; return res; };
@@ -41,7 +43,7 @@ test('webhook: la suscripción pagada con otro email se asocia a la cuenta del e
   const res = fakeRes();
   await handler({ method: 'POST', body: { id: 'evt_1' } }, res);
   assert.strictEqual(res.statusCode, 200);
-  assert.deepStrictEqual(redis, [['SADD', 'rio:customers:cuenta@gmail.com', 'cus_ABC123']]);
+  assert.deepStrictEqual(sinEstadisticas(redis), [['SADD', 'rio:customers:cuenta@gmail.com', 'cus_ABC123']]);
 });
 
 test('webhook: un pack pagado con otro email suma los créditos a la cuenta del enlace', async () => {
@@ -50,7 +52,7 @@ test('webhook: un pack pagado con otro email suma los créditos a la cuenta del 
   const handler = require('../../api/stripe-webhook');
   const res = fakeRes();
   await handler({ method: 'POST', body: { id: 'evt_2' } }, res);
-  assert.deepStrictEqual(redis, [['SADD', 'rio:redeemed:cuenta@gmail.com', 'cs_2'], ['INCRBY', 'rio:extra:cuenta@gmail.com', 100]]);
+  assert.deepStrictEqual(sinEstadisticas(redis), [['SADD', 'rio:redeemed:cuenta@gmail.com', 'cs_2'], ['INCRBY', 'rio:extra:cuenta@gmail.com', 100]]);
 });
 
 test('"Ya he pagado, comprobar": encuentra el pago aunque el aviso de Stripe no llegara', async () => {
