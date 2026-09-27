@@ -6,7 +6,7 @@ porcentajes de los vídeos son los mismos que daría RÍO.
 
 ## Qué vídeos hace
 
-- **`rio-que-es-rio.mp4`** (≈23 s): qué es RÍO y cómo funciona. Para fijarlo en el perfil.
+- **`rio-que-es-rio.mp4`** (≈21 s): qué es RÍO y cómo funciona. Para fijarlo en el perfil.
 - **`rio-<mano>.mp4`** (≈17 s): uno por cada mano de `manos.js`, con el formato «¿Qué harías tú?».
   Mesa minimalista con los colores de RÍO, cuenta atrás, respuesta de RÍO y el porqué.
 

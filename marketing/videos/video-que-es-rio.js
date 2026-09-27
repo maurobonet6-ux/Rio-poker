@@ -3,7 +3,7 @@ const { chromium } = require('@playwright/test');
 // Uso: node video-que-es-rio.js   (antes: capturas-manos.js ak y capturas-web.js)
 const fs = require('fs'), path = require('path'), { spawn, execFileSync } = require('child_process');
 const { SALIDA, ffmpeg, unirAudio, fontRoute } = require('./comun.js');
-const FF = ffmpeg(), FPS = 30, HERE = SALIDA, TOTAL = 24.1;
+const FF = ffmpeg(), FPS = 30, HERE = SALIDA, TOTAL = 20.6;
 process.chdir(SALIDA);
 const src = f => 'file://' + path.join(HERE, f);
 const K = 692 / 400;                        // de las capturas (400 px de ancho) a la pantalla del móvil
@@ -38,9 +38,6 @@ em{font-style:normal;color:#E8283F}
 .tap{position:absolute;width:110px;height:110px;margin:-55px;border-radius:50%;border:5px solid #F5F2EC;opacity:0;z-index:5}
 .tap:after{content:'';position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;border-radius:50%;background:rgba(245,242,236,.75)}
 .scan{position:absolute;left:0;right:0;height:6px;background:#E8283F;box-shadow:0 0 30px 10px rgba(232,40,63,.55);z-index:4;opacity:0}
-.list{flex-direction:column;gap:30px;margin-top:40px;align-items:stretch;width:880px}
-.row{display:flex;align-items:center;gap:30px;background:#141416;border:2px solid rgba(245,242,236,.10);border-radius:30px;padding:34px 40px;font-size:50px;font-weight:700;text-align:left}
-.row span{font-size:64px}
 .url{margin-top:50px;font-family:'Bricolage Grotesque';font-weight:800;font-size:68px;background:linear-gradient(90deg,#E8283F,#ff6a5a);padding:30px 54px;border-radius:30px;color:#fff;box-shadow:0 20px 70px rgba(232,40,63,.5)}
 .foot{font-size:32px;color:rgba(245,242,236,.45);margin-top:60px}
 #flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:30}
@@ -71,13 +68,7 @@ em{font-style:normal;color:#E8283F}
   <div class="scr" data-s="15.2" data-e="16.8"><img src="${src('x-why.png')}"></div>
 </div></div>
 
-<div class="center" data-in="16.9" data-out="20.3" data-a="none">
-  <div class="mid words" data-at="0">Por qué <em>RÍO</em></div>
-  <div class="list" style="display:flex">
-    <div class="row pop" data-at="0.35"><span>🇪🇸</span>En español y fácil de entender</div>
-    <div class="row pop" data-at="0.8"><span>🆓</span>Gratis para empezar</div>
-    <div class="row pop" data-at="1.25"><span>📈</span>Aprende de tus errores</div></div></div>
-<div class="center" data-in="20.4" data-out="99" data-a="zoom">
+<div class="center" data-in="16.9" data-out="99" data-a="zoom">
   <div class="big words" data-at="0.1">Pruébalo <em>gratis</em></div>
   <div class="url pop pulse" data-at="0.6">rio-poker.vercel.app</div>
   <div class="sub rise" data-at="0.9">👆 enlace en la bio</div>
