@@ -208,7 +208,8 @@ test('estadísticas: se guarda de dónde llega la persona y se manda al crear la
   expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('instagram');
   expect(await page.evaluate(() => [...document.scripts].some(s => s.src.includes('/_vercel/insights')))).toBe(true);
   let cuerpo = null;
-  await page.route('**/api/verify-code', (r) => { cuerpo = JSON.parse(r.request().postData()); r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ token: 'c'.repeat(64), email: 'nuevo@rio.test', pro: false }) }); });
+  await page.route('**/api/verify-code', (r) => { cuerpo = JSON.parse(r.request().postData()); r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ token: 'c'.repeat(64), email: 'nuevo@rio.test', pro: false, nueva: true }) }); });
+  await page.evaluate(() => { window.va = (...a) => (window.__va = window.__va || []).push(a); });
   await page.evaluate(() => document.getElementById('navLogin').click());
   await expect(page.locator('#paywall.show')).toBeVisible();
   await page.fill('#proEmail', 'nuevo@rio.test');
@@ -217,6 +218,20 @@ test('estadísticas: se guarda de dónde llega la persona y se manda al crear la
   await page.locator('#restoreBtn').click();
   await expect.poll(() => cuerpo && cuerpo.src).toBe('instagram');
   expect(llamadas).toContain('send-code');
+  // Conversión "Cuenta creada" en Vercel Analytics, con el origen.
+  await expect.poll(() => page.evaluate(() => window.__va || [])).toContainEqual(['event', { name: 'Cuenta creada', origen: 'instagram' }]);
+});
+
+test('conversiones: analizar una mano y pulsar pagar se cuentan', async ({ page }) => {
+  const beacons = [];
+  await abrir(page, { pro: true, path: '/?utm_source=tiktok' });
+  await page.evaluate(() => { window.va = (...a) => (window.__va = window.__va || []).push(a); });
+  page.on('request', (r) => { if (r.url().includes('/api/track')) beacons.push(new URL(r.url()).searchParams.get('e')); });
+  await ponerMano(page, ['Ah', 'Kh'], ['Kd', '7c', '2s']);
+  await ponerBote(page, 10, 5);
+  await analizar(page);
+  await expect.poll(() => page.evaluate(() => window.__va || [])).toContainEqual(['event', { name: 'Mano analizada', origen: 'tiktok' }]);
+  await expect.poll(() => beacons).toContain('analisis');
 });
 
 test('en el móvil nada se sale de la pantalla', async ({ page }, info) => {
@@ -270,6 +285,7 @@ test('"Ya he pagado, comprobar" activa PRO si el servidor ya ve el pago', async 
   let pagado = false;
   await abrir(page, { logged: true, storage: { rio_email: JSON.stringify('jugador@rio.test') } });
   await page.route('**/api/check-pro*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ pro: pagado, email: 'jugador@rio.test' }) }));
+  await page.evaluate(() => { window.va = (...a) => (window.__va = window.__va || []).push(a); });
   await page.evaluate(() => document.getElementById('navPlan').click());
   const boton = page.locator('#proPlanCard .paid-check');
   await boton.click();
@@ -278,6 +294,9 @@ test('"Ya he pagado, comprobar" activa PRO si el servidor ya ve el pago', async 
   await boton.click();
   await expect(page.locator('#proPlanCard .paid-msg')).toContainText('Ya eres RÍO PRO');
   expect(await page.evaluate(() => localStorage.getItem('rio_pro'))).toBe('true');
+  // Conversión "PRO pagado" en Vercel Analytics, una sola vez.
+  const pro = await page.evaluate(() => (window.__va || []).filter(a => a[1].name === 'PRO pagado'));
+  expect(pro).toHaveLength(1);
 });
 
 test('modo Fácil: pasos con guía y bote en dos preguntas', async ({ page }) => {

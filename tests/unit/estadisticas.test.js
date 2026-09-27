@@ -50,9 +50,11 @@ const cuenta = async (email, src) => {
 test('una cuenta nueva cuenta una vez, con su origen; las cuentas de antes no cuentan', async () => {
   const kv = entorno();
   kv.set('rio:data:veterano@rio.test', '{}'); // cuenta anterior a las estadísticas
-  assert.strictEqual((await cuenta('nuevo@rio.test', 'Instagram')).statusCode, 200);
-  await cuenta('nuevo@rio.test', 'instagram'); // vuelve a entrar: no es nueva
-  await cuenta('veterano@rio.test', 'youtube');
+  const primera = await cuenta('nuevo@rio.test', 'Instagram');
+  assert.strictEqual(primera.statusCode, 200);
+  assert.strictEqual(primera.body.nueva, true); // la web lo manda a Vercel Analytics como "Cuenta creada"
+  assert.strictEqual((await cuenta('nuevo@rio.test', 'instagram')).body.nueva, false); // vuelve a entrar: no es nueva
+  assert.strictEqual((await cuenta('veterano@rio.test', 'youtube')).body.nueva, false);
   assert.strictEqual(kv.get(`rio:stats:${hoy}`).get('cuentas'), 1);
   assert.strictEqual(kv.get('rio:stats:src').get('instagram:cuentas'), 1);
   assert.strictEqual(kv.get('rio:src:nuevo@rio.test'), 'instagram');

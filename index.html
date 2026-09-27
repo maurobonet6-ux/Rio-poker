@@ -1604,10 +1604,18 @@
   }
   // Valores guardados como texto simple (no JSON), p. ej. los que pone el script de estadísticas del <head>.
   function rawStorage(key){ try { return localStorage.getItem(key) || ''; } catch(e){ return ''; } }
+  // Conversiones en Vercel Analytics (Eventos personalizados; Vercel solo los muestra con el plan Pro).
+  // Nombres: "Mano analizada", "Clic pagar", "Cuenta creada", "PRO pagado".
+  function conversion(nombre){
+    if (rawStorage('rio_sin_estadisticas') === '1') return;
+    try { window.va('event', { name: nombre, origen: rawStorage('rio_src') || 'directo' }); } catch(e){}
+  }
   // Avisa al servidor para las estadísticas del administrador (sin datos personales).
+  const NOMBRE_CONVERSION = { analisis: 'Mano analizada', pago: 'Clic pagar' };
   function trackEvent(ev){
     if (rawStorage('rio_sin_estadisticas') === '1') return;
     try { navigator.sendBeacon('/api/track?e=' + encodeURIComponent(ev)); } catch(e){}
+    if (NOMBRE_CONVERSION[ev]) conversion(NOMBRE_CONVERSION[ev]);
   }
   function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} onStoredKey(key); }
 
@@ -1817,6 +1825,7 @@
     const pro = await verifyProSession(deep);
     if (pro === null) return null; // sin respuesta del servidor: no tocamos nada
     if (pro === 'logout'){ logoutPro(); return false; }
+    if (pro === true && !isPro()) conversion('PRO pagado'); // acaba de pagar (vuelve de Stripe o "Ya he pagado")
     storageSet('rio_pro', pro);
     refreshFreeLeft(); pullSync(); updateAccountUI();
     if (typeof updateUsageBadge === 'function') updateUsageBadge();
@@ -3576,7 +3585,7 @@
           <thead><tr><th>Origen</th><th>Cuentas</th><th>PRO</th><th>Packs</th></tr></thead>
           <tbody>${origenes.map(([o, v]) => `<tr><td>${escHTML(o)}</td><td>${v.cuentas || 0}</td><td>${v.pro || 0}</td><td>${v.packs || 0}</td></tr>`).join('')}</tbody>
         </table></div>` : '<p class="hint">Todavía no hay cuentas nuevas con origen.</p>'}
-        <p class="hint" style="margin-top:12px;">Enlaces para tus bios: <b>rio-poker.vercel.app/?utm_source=instagram</b> · <b>?utm_source=youtube</b></p>`;
+        <p class="hint" style="margin-top:12px;">Enlaces para tus bios: <b>rio-poker.vercel.app/?utm_source=instagram</b> · <b>?utm_source=tiktok</b> · <b>?utm_source=youtube</b> (lista completa en marketing/enlaces-utm.md)</p>`;
     } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar las estadísticas.')}</p>`; }
   }
 
@@ -4174,6 +4183,7 @@
         storageSet('rio_token', data.token);
         storageSet('rio_email', data.email);
         storageSet('rio_pro', !!data.pro);
+        if (data.nueva) conversion('Cuenta creada');
         pendingLoginEmail = null;
         document.getElementById('proCode').value = '';
         refreshPhotoUsage(); refreshFreeLeft(); pullSync();
