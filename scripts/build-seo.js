@@ -139,6 +139,10 @@ p,li{color:var(--dim)}b{color:var(--cream)}.lead{font-size:1.08rem;color:var(--c
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0}.stats div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--dim);font-size:.8rem}.stats b{display:block;font-size:1.3rem}
 .note{font-size:.82rem}footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--dim)}footer a{color:var(--dim)}`;
 
+// Guarda de dónde llegó la persona si entra por una guía o página de manos (misma lógica que
+// el script de index.html): así una cuenta creada tras leer una guía cuenta para su red o foro.
+const ORIGEN_JS = `<script>try{if(!localStorage.getItem('rio_src')){var q=new URLSearchParams(location.search),src=q.get('utm_source')||'',ref='';try{ref=document.referrer?new URL(document.referrer).hostname:''}catch(e){}if(!src&&ref&&ref!==location.hostname){var r={instagram:'instagram',youtube:'youtube',youtu:'youtube',tiktok:'tiktok',facebook:'facebook',google:'google',chatgpt:'chatgpt',reddit:'reddit',t:'telegram',telegram:'telegram',discord:'discord',x:'x',twitter:'x'},p=ref.replace(/^(www|m|l|lm)\\./,'').split('.');src=r[p[0]]||p[0]}localStorage.setItem('rio_src',(src||'directo').toLowerCase().slice(0,40))}}catch(e){}</script>`;
+
 const esc = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 function page({ url, title, desc, crumbs, body, related }){
   return `<!DOCTYPE html>
@@ -162,6 +166,7 @@ function page({ url, title, desc, crumbs, body, related }){
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/seo.css">
+${ORIGEN_JS}
 <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map(([n, u], i) => ({ '@type': 'ListItem', position: i + 1, name: n, item: SITE + (u || url) })) })}</script>
 </head>
 <body>
