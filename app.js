@@ -2033,7 +2033,7 @@
           <thead><tr><th>Origen</th><th>Cuentas</th><th>PRO</th><th>Packs</th></tr></thead>
           <tbody>${origenes.map(([o, v]) => `<tr><td>${escHTML(o)}</td><td>${v.cuentas || 0}</td><td>${v.pro || 0}</td><td>${v.packs || 0}</td></tr>`).join('')}</tbody>
         </table></div>` : '<p class="hint">Todavía no hay cuentas nuevas con origen.</p>'}
-        <p class="hint" style="margin-top:12px;">Enlaces cortos para tus bios y mensajes (cada uno cuenta para su red): <b>rio-poker.vercel.app/ig</b> (Instagram) · <b>/yt</b> (YouTube) · <b>/tg</b> (Telegram) · <b>/dc</b> (Discord) · <b>/fb</b> (Facebook) · <b>/rd</b> (Reddit) · <b>/wa</b> (WhatsApp) · <b>/tt</b> (TikTok)</p>`;
+        <p class="hint" style="margin-top:12px;">Enlaces cortos para tus bios y mensajes (cada uno cuenta para su red): <b>riopoker.es/ig</b> (Instagram) · <b>/yt</b> (YouTube) · <b>/tg</b> (Telegram) · <b>/dc</b> (Discord) · <b>/fb</b> (Facebook) · <b>/rd</b> (Reddit) · <b>/wa</b> (WhatsApp) · <b>/tt</b> (TikTok)</p>`;
     } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar las estadísticas.')}</p>`; }
   }
 
