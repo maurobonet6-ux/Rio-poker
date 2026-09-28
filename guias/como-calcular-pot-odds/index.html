@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cómo calcular las pot odds y saber si pagar | RÍO</title>
-<meta name="description" content="La fórmula de las pot odds, una tabla según el tamaño de la apuesta y cómo compararlas con tu equity para decidir si pagar es rentable.">
+<meta name="description" content="La fórmula de las pot odds con un ejemplo paso a paso, una tabla según la apuesta, el formato &quot;3 a 1&quot;, las odds implícitas e inversas y los errores más comunes.">
 <link rel="canonical" href="https://rio-poker.vercel.app/guias/como-calcular-pot-odds/">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="RÍO">
 <meta property="og:title" content="Cómo calcular las pot odds y saber si pagar | RÍO">
-<meta property="og:description" content="La fórmula de las pot odds, una tabla según el tamaño de la apuesta y cómo compararlas con tu equity para decidir si pagar es rentable.">
+<meta property="og:description" content="La fórmula de las pot odds con un ejemplo paso a paso, una tabla según la apuesta, el formato &quot;3 a 1&quot;, las odds implícitas e inversas y los errores más comunes.">
 <meta property="og:url" content="https://rio-poker.vercel.app/guias/como-calcular-pot-odds/">
 <meta property="og:image" content="https://rio-poker.vercel.app/og-image.png">
 <meta property="og:locale" content="es_ES">
@@ -19,6 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/seo.css">
+<script>try{if(!localStorage.getItem('rio_src')){var q=new URLSearchParams(location.search),src=q.get('utm_source')||'',ref='';try{ref=document.referrer?new URL(document.referrer).hostname:''}catch(e){}if(!src&&ref&&ref!==location.hostname){var r={instagram:'instagram',youtube:'youtube',youtu:'youtube',tiktok:'tiktok',facebook:'facebook',google:'google',chatgpt:'chatgpt',reddit:'reddit',t:'telegram',telegram:'telegram',discord:'discord',x:'x',twitter:'x'},p=ref.replace(/^(www|m|l|lm)\./,'').split('.');src=r[p[0]]||p[0]}localStorage.setItem('rio_src',(src||'directo').toLowerCase().slice(0,40))}}catch(e){}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"RÍO","item":"https://rio-poker.vercel.app/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://rio-poker.vercel.app/guias/"},{"@type":"ListItem","position":3,"name":"Cómo calcular las pot odds y saber si pagar","item":"https://rio-poker.vercel.app/guias/como-calcular-pot-odds/"}]}</script>
 </head>
 <body>
@@ -26,7 +27,7 @@
   <div class="top"><a class="logo" href="/">RÍO</a><a class="go" href="/">Analizar una mano</a></div>
   <div class="crumbs"><a href="/">RÍO</a> › <a href="/guias/">Guías</a> › Cómo calcular las pot odds y saber si pagar</div>
   <h1>Cómo calcular las pot odds y saber si pagar</h1>
-  <p class="lead">La fórmula de las pot odds, una tabla según el tamaño de la apuesta y cómo compararlas con tu equity para decidir si pagar es rentable.</p>
+  <p class="lead">La fórmula de las pot odds con un ejemplo paso a paso, una tabla según la apuesta, el formato "3 a 1", las odds implícitas e inversas y los errores más comunes.</p>
   <p>Las <a href="/glosario/pot-odds/">pot odds</a> te dicen <b>cuántas veces necesitas ganar</b> para que pagar no pierda dinero.</p>
   <p class="formula">pot odds = lo que pagas ÷ (bote final si pagas)</p>
   <div class="ex"><b>Ejemplo:</b> el bote es 100 y el rival apuesta 50. Si pagas 50, el bote final es 100 + 50 + 50 = 200. Pot odds = 50 ÷ 200 = <b>25%</b>.</div>
@@ -41,6 +42,33 @@
   <p>Compara las pot odds con tu <a href="/glosario/equity/">equity</a>: si ganas más veces de las que necesitas, <b>paga</b>; si menos, <b>retírate</b> (salvo que tengas <a href="/glosario/odds-implicitas/">odds implícitas</a>).</p>
   <div class="ex"><b>Ejemplo:</b> en el turn tienes proyecto de color (9 outs, ~20%) y el rival apuesta medio bote (necesitas 25%). Por pot odds no llega: solo compensa si esperas cobrar bastante más en el river cuando ligues.</div>
   <p>Para sacar tu equity con proyectos, cuenta tus outs: <a href="/guias/como-calcular-outs/">cómo calcular outs</a>.</p>
+  <h2>Ejemplo paso a paso</h2>
+  <p>Estás en el turn con 8♠ 7♠ y el board es 9♥ 6♣ 2♦ K♠: tienes un proyecto de escalera abierta (te vale cualquier 5 o 10). Hay 60 en el bote y el rival apuesta 40.</p>
+  <ol>
+  <li><b>Lo que pagas:</b> 40.</li>
+  <li><b>Bote final si pagas:</b> 60 + 40 + 40 = 140.</li>
+  <li><b>Pot odds:</b> 40 ÷ 140 = <b>28,6%</b>. Es lo que necesitas ganar.</li>
+  <li><b>Tu equity:</b> 8 outs de 46 cartas que no ves = <b>17,4%</b>.</li>
+  <li><b>Decisión:</b> 17,4% es menos que 28,6%, así que solo por las cartas es <b>fold</b>.</li>
+  </ol>
+  <div class="ex"><b>¿Y con odds implícitas?</b> Para que el call compense, el bote final tendría que ser de 40 ÷ 0,174 ≈ 230. Es decir, cuando ligues tendrías que cobrar unos <b>90 más</b> en el river. Contra alguien que paga mucho puede pasar; contra un rival prudente, no.</div>
+  <h2>Pot odds en formato "3 a 1"</h2>
+  <p>Mucha gente las dice como una proporción: lo que hay en el centro <b>a</b> lo que pagas. Con un bote de 100 y una apuesta de 50 hay 150 en el centro y pagas 50: son <b>3 a 1</b>. Para pasarlo a porcentaje: 1 ÷ (3 + 1) = 25%.</p>
+  <table class="tbl"><tr><th>Proporción</th><th>Necesitas ganar</th></tr>
+  <tr><td>2 a 1</td><td>33,3%</td></tr>
+  <tr><td>3 a 1</td><td>25%</td></tr>
+  <tr><td>4 a 1</td><td>20%</td></tr>
+  <tr><td>5 a 1</td><td>16,7%</td></tr></table>
+  <p>Tu mano también se puede decir así: con un proyecto de color en el turn fallas 37 cartas y ligas con 9, unos <b>4 a 1 en contra</b>. Si el bote te da más de 4 a 1, pagar compensa.</p>
+  <h2>Odds implícitas e implícitas inversas</h2>
+  <p>Las <a href="/glosario/odds-implicitas/">odds implícitas</a> suman lo que esperas ganar <b>después</b> si ligas: hacen que un call un poco justo pase a ser bueno. Las <b>implícitas inversas</b> son lo contrario: lo que puedes <b>perder</b> cuando ligas pero no ganas. Por ejemplo, ligas un color bajo y el rival tiene uno más alto, o ligas escalera con una carta que le da color al rival. En esos casos, cuenta menos outs de los que parece.</p>
+  <h2>Errores típicos</h2>
+  <ul>
+  <li><b>Olvidar tu propio call en el bote final.</b> Con bote 100 y apuesta 50, 50 ÷ 150 = 33% está mal: el bote final es 200 y necesitas un 25%.</li>
+  <li><b>Usar la probabilidad del flop al river cuando no vas a ver las dos cartas.</b> Si el rival puede volver a apostar en el turn, compara con la de una sola carta (unos 19,6% con un proyecto de color, no 35%).</li>
+  <li><b>Contar outs que no te dan la mejor mano.</b> Es el caso de las odds implícitas inversas: esos outs valen menos.</li>
+  <li><b>Pagar "por si acaso".</b> Si las cuentas dicen fold y el rival no te va a pagar más cuando ligues, retirarse no es miedo: es ahorrar dinero.</li>
+  </ul>
   <div class="cta"><p><b>¿Tienes una mano que no sabes si jugaste bien?</b><br>RÍO te dice si pagar, subir o tirar, explicado fácil.</p><a href="/">Analiza tu mano gratis →</a></div>
   <h2>Términos del glosario</h2><div class="pills"><a href="/glosario/pot-odds/">Pot odds</a><a href="/glosario/equity/">Equity</a><a href="/glosario/ev/">EV (valor esperado)</a><a href="/glosario/odds-implicitas/">Odds implícitas</a></div>
   <h2>Más guías</h2><ul class="cards"><li><a href="/guias/como-jugar-ak-preflop/">Cómo jugar AK preflop</a></li><li><a href="/guias/cuando-hacer-3-bet/">Cuándo hacer 3-bet en póker (y con qué manos)</a></li><li><a href="/guias/como-calcular-outs/">Cómo calcular outs y la probabilidad de ligar</a></li><li><a href="/guias/como-jugar-parejas-pequenas/">Cómo jugar parejas pequeñas (set mining)</a></li><li><a href="/guias/como-jugar-desde-la-ciega-grande/">Cómo jugar desde la ciega grande</a></li><li><a href="/guias/cuanto-subir-preflop/">Cuánto subir preflop: el tamaño de apertura</a></li><li><a href="/guias/como-jugar-proyecto-de-color/">Cómo jugar un proyecto de color</a></li><li><a href="/guias/cuando-hacer-un-farol/">Cuándo hacer un farol en póker</a></li><li><a href="/guias/que-hacer-contra-un-3-bet/">Qué hacer cuando te hacen 3-bet</a></li><li><a href="/guias/cuando-hacer-c-bet/">Cuándo hacer una apuesta de continuación (c-bet)</a></li><li><a href="/guias/probabilidades-de-poker/">Probabilidades de póker que debes saber</a></li></ul>

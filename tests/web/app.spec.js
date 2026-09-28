@@ -341,3 +341,10 @@ test('pagar sin haber entrado: primero pide entrar o crear la cuenta', async ({ 
   await expect(page.locator('#paywallTitle')).toHaveText('Primero, entra en tu cuenta');
   expect(await page.evaluate(() => window.__abiertos.length)).toBe(0); // no se abre Stripe sin cuenta
 });
+
+test('estadísticas: una guía también guarda de dónde llega la persona (y no pisa un origen anterior)', async ({ page }) => {
+  await abrir(page, { path: '/guias/como-calcular-pot-odds/?utm_source=pokerred' });
+  expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('pokerred');
+  await page.goto('http://rio.test/manos/aks/?utm_source=otra');
+  expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('pokerred');
+});
