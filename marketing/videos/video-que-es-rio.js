@@ -76,7 +76,7 @@ em{font-style:normal;color:#E8283F}
 
 <div class="center" data-in="16.9" data-out="99" data-a="zoom">
   <div class="big words" data-at="0.1">Pruébalo <em>gratis</em></div>
-  <div class="url pop pulse" data-at="0.6">rio-poker.vercel.app</div>
+  <div class="url pop pulse" data-at="0.6">riopoker.es</div>
   <div class="sub rise" data-at="0.9">👆 enlace en la bio</div>
   <div class="foot rise" data-at="1.2">Herramienta de estudio · analiza después de jugar</div></div>
 <div id="flash"></div><div class="pbar"></div>

@@ -9,7 +9,10 @@ const fileFor = (url) => path.join(ROOT, url.endsWith('/') ? url + 'index.html' 
 
 test('todas las URL del sitemap existen', () => {
   const xml = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
-  const urls = [...xml.matchAll(/<loc>https:\/\/rio-poker\.vercel\.app([^<]*)<\/loc>/g)].map(m => m[1]);
+  const SITE = require('../../sitio.json').url;
+  const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1]);
+  assert.ok(locs.every(l => l.startsWith(SITE + '/')), 'todas las URL del sitemap usan ' + SITE);
+  const urls = locs.map(l => l.slice(SITE.length));
   assert.ok(urls.length > 40, 'el sitemap tiene pocas páginas');
   for (const u of urls) assert.ok(fs.existsSync(fileFor(u)), 'falta la página ' + u);
 });

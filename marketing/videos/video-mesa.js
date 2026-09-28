@@ -114,7 +114,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><link href="https
   <div class="stats"><div class="st"><b><span class="count" data-to="${G.ganas}" data-at="9.6">0</span>%</b><span>Ganas</span></div><div class="st"><b><span class="count" data-to="${G.nec}" data-at="9.6">0</span>%</b><span>Necesitas</span></div><div class="st"><b style="color:${H.fold ? "#FF4757" : "#3DDC7A"}">${G.ev}</b><span>fichas de media</span></div></div></div>
 <div class="brand">RÍO <i>¿Qué harías tú?</i></div>
 ${H.caps.map((c, i) => `<div class="cap" id="c${i}"><div class="t words">${c.t}</div>${c.sub ? `<div class="s">${c.sub}</div>` : ''}</div>`).join('')}
-<div id="cta"><div class="t words">¿Y tus manos?</div><div class="s">Analízalas <b>gratis</b> en segundos</div><div class="url">rio-poker.vercel.app</div><div class="a">👆 enlace en la bio</div><div class="f">Herramienta de estudio · analiza después de jugar</div></div>
+<div id="cta"><div class="t words">¿Y tus manos?</div><div class="s">Analízalas <b>gratis</b> en segundos</div><div class="url">riopoker.es</div><div class="a">👆 enlace en la bio</div><div class="f">Herramienta de estudio · analiza después de jugar</div></div>
 <div id="flash"></div><div class="pbar"></div>
 <script>
 const H = ${JSON.stringify({ caps: H.caps, END: H.END, TOTAL: H.TOTAL, pots: H.pots, vact: H.vact, fold: H.fold, vstack0: H.vstack0, vstack: H.vstack })};
