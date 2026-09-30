@@ -879,3 +879,26 @@ body.tourney .tourney-show { display: block !important; }
 .free-note { background: var(--ok-soft); color: var(--cream); border: 1px solid rgba(61,220,122,0.35); border-radius: 12px; padding: 11px 13px; font-size: 0.88rem; line-height: 1.4; }
 #restoreHint { font-size: 0.82rem; color: var(--cream-dim); line-height: 1.4; margin-top: 12px !important; }
 .see-plans { color: var(--cream-dim); font-weight: 600; font-size: 0.8rem; text-decoration: underline; }
+
+/* Ordenador (pantallas anchas): dos columnas. A la izquierda los pasos (cartas, mesa, bote);
+   a la derecha, arriba del todo, el ejemplo de cómo analiza RÍO y, al analizar, el resultado en su lugar.
+   En el móvil y la tablet todo sigue en una columna. */
+@media (min-width: 1100px) {
+  .wrap { max-width: 1360px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 26px; align-items: start;
+    grid-template-areas: "hero hero" "cards side" "table side" "bets side" "hist hist" "faq faq" "foot foot"; }
+  .wrap > * { grid-column: 1 / -1; }
+  header.hero { grid-area: hero; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 28px;
+    padding-bottom: 14px; margin-bottom: 18px; }
+  header.hero .brand-row { display: contents; }
+  header.hero .brand { grid-column: 1; grid-row: 1; }
+  header.hero .brand > p:not(.tagline-actions) { display: none; }
+  header.hero .mode-row { grid-column: 2; grid-row: 1; margin-top: 0; }
+  header.hero .menu-btn { grid-column: 3; grid-row: 1; }
+  header.hero .steps-nav, header.hero .steps-labels { grid-column: 1 / -1; }
+  #cardsPanel { grid-area: cards; } #tablePanel { grid-area: table; } #betsPanel { grid-area: bets; }
+  #historyPanel { grid-area: hist; } #faq { grid-area: faq; } footer { grid-area: foot; }
+  #demoPanel, #resultPanel { grid-area: side; }
+  /* El ejemplo también en Avanzado (así la columna derecha nunca está vacía); se quita al salir el resultado. */
+  body.mode-pro #demoPanel { display: block !important; }
+  .wrap:has(#resultPanel.show) #demoPanel { display: none !important; }
+}

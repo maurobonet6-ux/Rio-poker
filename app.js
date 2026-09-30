@@ -3020,6 +3020,8 @@
         `Tienes proyecto de color al as: ganas ~<b>${Math.round(r.eq)}%</b> de las veces y solo necesitas <b>${Math.round(r.needed)}%</b>.`;
     }, 50);
   });
+  // En ordenador el ejemplo ocupa la columna derecha: se enseña abierto desde el principio.
+  if (window.matchMedia && window.matchMedia('(min-width: 1100px)').matches) document.getElementById('demoPanel').open = true;
   document.getElementById('demoLoadBtn').addEventListener('click', loadDemo);
   const backToStart = () => { document.getElementById('resetBtn').click(); document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   document.getElementById('demoOwnBtn').addEventListener('click', backToStart);
