@@ -7,6 +7,7 @@
 .crumbs{font-size:.8rem;color:var(--dim);margin-bottom:8px}.crumbs a{color:var(--dim)}
 h1{font-family:'Bricolage Grotesque',sans-serif;font-size:1.9rem;line-height:1.2;margin:0 0 10px}
 h2{font-size:1.15rem;margin:28px 0 8px}
+.faq h3{font-size:1rem;margin:18px 0 4px;color:var(--cream)}.faq p{margin:0}
 p,li{color:var(--dim)}b{color:var(--cream)}.lead{font-size:1.08rem;color:var(--cream)}
 .ex{background:var(--panel-2);border-left:3px solid var(--gold);border-radius:10px;padding:12px 14px;margin:14px 0;color:var(--dim)}
 .formula{font-family:ui-monospace,Menlo,monospace;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--cream)}
