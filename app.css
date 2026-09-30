@@ -959,3 +959,4 @@ body.tourney .tourney-show { display: block !important; }
 .inapp-btn { background: var(--gold); color: #fff; border: none; border-radius: 999px; padding: 7px 12px; font: inherit; font-weight: 700; font-size: 0.78rem; text-decoration: none; cursor: pointer; white-space: nowrap; }
 .inapp-btn[hidden] { display: none; }
 .inapp-x { background: none; border: none; color: var(--cream-dim); font-size: 1rem; cursor: pointer; padding: 4px 6px; }
+

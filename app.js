@@ -1607,6 +1607,7 @@
           ? `El bote es de <b>${q.pot}</b> y tu rival apuesta <b>${q.call}</b> (ya incluido). ¿Qué haces?`
           : `El bote es de <b>${q.pot}</b> y nadie ha apostado. ¿Qué haces?`}`;
     const body = openModal('🎯 Entrenamiento', `
+      <button type="button" class="link-btn" id="trainToGame" style="display:block; margin:0 0 10px;">🃏 ¿Prefieres una mano completa? Juega una partida de práctica →</button>
       <div class="train-score">Mano ${stats.n + 1} · ${stats.ok}/${stats.n} acertadas${stats.streak > 1 ? ` · 🔥 racha de ${stats.streak}` : ''}</div>
       <div class="train-cards"><div><div class="zone-label">Tu mano</div>${q.hero.map(c => cardHTML(c, true)).join('')}</div>
       ${q.board.length ? `<div><div class="zone-label">Mesa</div>${q.board.map(c => cardHTML(c, true)).join('')}</div>` : ''}</div>
@@ -1614,6 +1615,7 @@
       <div class="train-opts">${opts.map(([v, l]) => `<button type="button" class="btn-secondary" data-ans="${v}">${l}</button>`).join('')}</div>
       <div id="trainResult"></div>`);
     body.querySelectorAll('[data-ans]').forEach(b => b.addEventListener('click', () => answerTrainer(b.dataset.ans)));
+    body.querySelector('#trainToGame').addEventListener('click', openPartida);
   }
   function answerTrainer(act){
     const body = document.getElementById('helpBody');
@@ -1650,6 +1652,12 @@
         document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }, 30);
+  }
+
+  // ---- Partida de práctica (mesa de 6 a pantalla completa, en partida.js) ----
+  function openPartida(){
+    closeSidebar(); closeModal();
+    if (window.RIO_PARTIDA) window.RIO_PARTIDA.open();
   }
 
   // ---- Importar historial de mano (PokerStars / GGPoker) ----
@@ -1803,12 +1811,14 @@
 
   // Menú
   document.getElementById('navTrain').addEventListener('click', openTrainer);
+  document.getElementById('navPartida').addEventListener('click', openPartida);
   document.getElementById('navCharts').addEventListener('click', () => { closeSidebar(); openCharts(); });
   document.getElementById('navStats').addEventListener('click', () => { closeSidebar(); openStats(); });
   document.getElementById('navImport').addEventListener('click', openImport);
   document.getElementById('navInstall').addEventListener('click', installApp);
   document.getElementById('importBtn').addEventListener('click', openImport);
   document.getElementById('trainLink').addEventListener('click', openTrainer);
+  document.getElementById('partidaLink').addEventListener('click', openPartida);
 
   // ---- Cuéntame tu mano (texto o voz → mano rellenada) ----
   const escHTML = (x) => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -1926,7 +1936,7 @@
   // ---- Tus datos en la cuenta (historial, estadísticas, entrenamiento, ajustes) ----
   // Se guardan también en el servidor para no perderlos al cambiar de móvil.
   function syncKeys(){
-    return ['rio_history', 'rio_reviews', 'rio_train', 'rio_train_log', 'rio_profile', 'rio_mode', 'rio_range',
+    return ['rio_history', 'rio_reviews', 'rio_train', 'rio_train_log', 'rio_partidas', 'rio_pp_sesion', 'rio_profile', 'rio_mode', 'rio_range',
             'rio_game', 'rio_bluff', 'rio_unit', 'rio_sim_quality', 'rio_save_history', 'rio_remember_defaults', 'rio_defaults'];
   }
   // "var" y no "let": storageSet() la usa desde el arranque, antes de llegar a esta línea.
@@ -3206,6 +3216,11 @@
     if (d.numRivals){ numRivals = Math.max(1, Math.min(9, d.numRivals)); rivVal.textContent = numRivals; }
     updateOrderHint();
   })();
+
+  // Lo que usa la partida de práctica (partida.js) del motor de RÍO
+  window.RIO_ENGINE = { recommend, runEquity, withBluffs, poolFromSet, topRange, handTopPercent, bestHand, categoryName,
+    fullDeck, drawN, grade, OPEN_PCT, cardHTML, decisionHTML, of20, storageGet, storageSet,
+    cardText: (c) => RANK_LABEL(c.rank) + SUIT_SYMBOL[c.suit] };
 
   render();
   loadSharedHand();
