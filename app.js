@@ -1607,6 +1607,7 @@
           ? `El bote es de <b>${q.pot}</b> y tu rival apuesta <b>${q.call}</b> (ya incluido). ¿Qué haces?`
           : `El bote es de <b>${q.pot}</b> y nadie ha apostado. ¿Qué haces?`}`;
     const body = openModal('🎯 Entrenamiento', `
+      <button type="button" class="link-btn" id="trainToGame" style="display:block; margin:0 0 10px;">🃏 ¿Prefieres una mano completa? Juega una partida de práctica →</button>
       <div class="train-score">Mano ${stats.n + 1} · ${stats.ok}/${stats.n} acertadas${stats.streak > 1 ? ` · 🔥 racha de ${stats.streak}` : ''}</div>
       <div class="train-cards"><div><div class="zone-label">Tu mano</div>${q.hero.map(c => cardHTML(c, true)).join('')}</div>
       ${q.board.length ? `<div><div class="zone-label">Mesa</div>${q.board.map(c => cardHTML(c, true)).join('')}</div>` : ''}</div>
@@ -1614,6 +1615,7 @@
       <div class="train-opts">${opts.map(([v, l]) => `<button type="button" class="btn-secondary" data-ans="${v}">${l}</button>`).join('')}</div>
       <div id="trainResult"></div>`);
     body.querySelectorAll('[data-ans]').forEach(b => b.addEventListener('click', () => answerTrainer(b.dataset.ans)));
+    body.querySelector('#trainToGame').addEventListener('click', openPartida);
   }
   function answerTrainer(act){
     const body = document.getElementById('helpBody');
@@ -1650,6 +1652,194 @@
         document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }, 30);
+  }
+
+  // ---- Partida de práctica: una mano completa contra un rival de RÍO ----
+  // Heads-up con fichas de práctica (sin ningún valor): ciegas 1/2 y 200 fichas cada uno.
+  // Tú decides en cada calle, el rival responde según sus cartas, y al final RÍO repasa
+  // cada decisión tuya con la misma lógica que el analizador.
+  const PP_SB = 1, PP_BB = 2, PP_STACK = 200;
+  let PP = null;                                  // la mano en curso
+  let ppSesion = { heroStack: PP_STACK, botStack: PP_STACK, mano: 0 };
+  const ppAct = (x) => ({ FOLD: 'Tira', CHECK: 'Pasa', CALL: 'Paga', BET: 'Apuesta', RAISE: 'Sube' }[x] || x);
+  function ppNueva(){
+    if (ppSesion.heroStack < PP_BB * 2 || ppSesion.botStack < PP_BB * 2) ppSesion = { heroStack: PP_STACK, botStack: PP_STACK, mano: ppSesion.mano };
+    ppSesion.mano++;
+    const d = drawN(fullDeck(), 9);
+    const heroBtn = ppSesion.mano % 2 === 1;      // os vais turnando el botón
+    const g = { hero: [d[0], d[1]], bot: [d[2], d[3]], board5: d.slice(4, 9), street: 0, pot: 0, heroBtn,
+      stack: { hero: ppSesion.heroStack, bot: ppSesion.botStack }, inn: { hero: 0, bot: 0 }, acted: { hero: false, bot: false },
+      raises: 0, heroPool: poolFromSet(topRange(100)), botPool: poolFromSet(topRange(100)), log: [], dec: [], over: false, res: null };
+    const pon = (w, n) => { const x = Math.min(n, g.stack[w]); g.stack[w] -= x; g.inn[w] += x; };
+    pon(heroBtn ? 'hero' : 'bot', PP_SB); pon(heroBtn ? 'bot' : 'hero', PP_BB);
+    g.turn = heroBtn ? 'hero' : 'bot';            // antes del flop habla primero el botón
+    PP = g;
+    return g;
+  }
+  const ppBoard = (g) => g.board5.slice(0, [0, 3, 4, 5][g.street]);
+  const ppOtro = (w) => (w === 'hero' ? 'bot' : 'hero');
+  const ppBote = (g) => g.pot + g.inn.hero + g.inn.bot;
+  function ppOpciones(g, w){
+    const toCall = g.inn[ppOtro(w)] - g.inn[w], bote = ppBote(g), ops = [];
+    const puedeSubir = g.stack[w] > toCall && g.stack[ppOtro(w)] > 0 && g.raises < 4;
+    if (toCall > 0){
+      ops.push({ a: 'FOLD', l: 'Tirar' }, { a: 'CALL', l: `Pagar ${Math.min(toCall, g.stack[w])}`, n: Math.min(toCall, g.stack[w]) });
+      if (puedeSubir){ const to = Math.min(g.inn[ppOtro(w)] * 3 + (g.street ? 0 : 0), g.inn[w] + g.stack[w]);
+        ops.push({ a: 'RAISE', l: to === g.inn[w] + g.stack[w] ? `Todo (${to})` : `Subir a ${to}`, n: to - g.inn[w] }); }
+    } else {
+      ops.push({ a: 'CHECK', l: 'Pasar' });
+      if (puedeSubir){
+        const tamanos = g.street === 0 ? [Math.max(PP_BB * 3, g.inn[w] * 3) - g.inn[w]] : [Math.round(bote / 2), bote];
+        [...new Set(tamanos.map(x => Math.max(PP_BB, Math.min(x, g.stack[w]))))].forEach((n, i) =>
+          ops.push({ a: 'BET', l: n === g.stack[w] ? `Todo (${n})` : g.street === 0 ? `Subir a ${g.inn[w] + n}` : `Apostar ${n}${i ? ' (bote)' : ' (½ bote)'}`, n }));
+      }
+    }
+    return ops;
+  }
+  // Lo que recomendaría RÍO en este momento (misma lógica que el analizador).
+  function ppRecomienda(g){
+    const toCall = g.inn.bot - g.inn.hero;
+    const heroPos = g.heroBtn ? 'BTN' : 'BB';
+    const pool = toCall > 0 && g.street > 0 ? withBluffs(g.botPool, ppBoard(g), 0.55, 0.1, g.hero) : g.botPool;
+    return recommend({ heroCards: g.hero, boardCards: ppBoard(g), pot: ppBote(g), toCall, rivals: 1, pool,
+      oop: !g.heroBtn && g.street > 0, street: g.street, heroPos, unraised: g.street === 0 && g.raises === 0 && g.heroBtn && !g.acted.hero, iters: 800 });
+  }
+  function ppAplica(g, w, op){
+    const toCall = g.inn[ppOtro(w)] - g.inn[w];
+    const nombre = w === 'hero' ? 'Tú' : 'El rival';
+    if (op.a === 'FOLD'){ g.log.push(`${nombre}: tira`); g.acted[w] = true; return ppFin(g, ppOtro(w)); }
+    const n = Math.min(op.n || 0, g.stack[w]);
+    g.stack[w] -= n; g.inn[w] += n; g.acted[w] = true;
+    if (op.a === 'RAISE' || op.a === 'BET'){ g.raises++; g.acted[ppOtro(w)] = false; }
+    const txt = op.a === 'CHECK' ? 'pasa' : op.a === 'CALL' ? `paga ${n}` : g.street === 0 || toCall > 0 ? `sube a ${g.inn[w]}` : `apuesta ${n}`;
+    g.log.push(`${nombre}: ${txt}${g.stack[w] === 0 ? ' (todo)' : ''}`);
+    // Lo que se aprende del rango de cada uno según cómo juega
+    const pool = w === 'hero' ? 'heroPool' : 'botPool';
+    if (op.a === 'RAISE' || op.a === 'BET') g[pool] = g.street === 0 ? poolFromSet(topRange(g.raises >= 2 ? 12 : 45)) : withBluffs(g[pool], ppBoard(g), 0.6, 0.12, w === 'hero' ? g.bot : g.hero);
+    else if (op.a === 'CALL' && g.street === 0) g[pool] = poolFromSet(topRange(g.raises >= 2 ? 20 : 60));
+    ppAvanza(g, w);
+  }
+  function ppAvanza(g, w){
+    if (g.over) return;
+    // La calle se cierra cuando los dos han hablado y han puesto lo mismo, o cuando el que ha puesto
+    // menos ya no tiene más fichas (pagó todo lo que tenía).
+    const menos = g.inn.hero < g.inn.bot ? 'hero' : g.inn.bot < g.inn.hero ? 'bot' : null;
+    if (g.acted.hero && g.acted.bot && (!menos || g.stack[menos] === 0)){
+      // Si alguien pagó menos por no tener más fichas, se le devuelve lo que sobra al otro
+      const extra = g.inn.hero - g.inn.bot;
+      if (extra > 0){ g.inn.hero -= extra; g.stack.hero += extra; } else if (extra < 0){ g.inn.bot += extra; g.stack.bot -= extra; }
+      g.pot += g.inn.hero + g.inn.bot; g.inn = { hero: 0, bot: 0 }; g.acted = { hero: false, bot: false }; g.raises = 0;
+      if (g.street === 3 || g.stack.hero === 0 || g.stack.bot === 0){ g.street = 3; return ppFin(g, null); }
+      g.street++;
+      g.turn = g.heroBtn ? 'bot' : 'hero';         // después del flop habla primero la ciega grande
+      return;
+    }
+    g.turn = ppOtro(w);
+  }
+  // El rival: decide con sus cartas contra lo que cree que tienes tú (y a veces se tira un farol).
+  function ppRival(g){
+    const ops = ppOpciones(g, 'bot'), toCall = g.inn.hero - g.inn.bot, pick = (a) => ops.find(o => o.a === a);
+    const r = Math.random();
+    if (g.street === 0){
+      const top = handTopPercent(g.bot[0], g.bot[1]);
+      if (toCall === 0) return (top <= 22 || r < 0.08) && pick('BET') ? pick('BET') : pick('CHECK');
+      if (g.raises === 0) return top <= 55 && pick('RAISE') ? pick('RAISE') : top <= 75 || r < 0.1 ? pick('CALL') : pick('FOLD');
+      if (top <= 7 && pick('RAISE') && g.raises < 3) return pick('RAISE');
+      return top <= (g.raises >= 2 ? 14 : 45) ? pick('CALL') : pick('FOLD');
+    }
+    const eqR = runEquity(g.bot, ppBoard(g), 1, 500, g.heroPool), e = eqR.win + eqR.tie / 2;
+    if (toCall === 0){
+      const apuestas = ops.filter(o => o.a === 'BET');
+      if (!apuestas.length) return pick('CHECK');
+      if (e > 70) return apuestas[apuestas.length - 1];
+      if (e > 58 || r < 0.16) return apuestas[0];
+      return pick('CHECK');
+    }
+    const needed = toCall / (ppBote(g) + toCall) * 100;
+    if (e > 78 && r < 0.55 && pick('RAISE')) return pick('RAISE');
+    if (e >= needed - 4 || r < 0.06) return pick('CALL');
+    return pick('FOLD');
+  }
+  function ppFin(g, ganador){
+    g.pot += g.inn.hero + g.inn.bot; g.inn = { hero: 0, bot: 0 };
+    let texto;
+    if (!ganador){
+      const h = bestHand([...g.hero, ...g.board5]), b = bestHand([...g.bot, ...g.board5]);
+      g.showdown = { h, b };
+      ganador = h.score > b.score ? 'hero' : h.score < b.score ? 'bot' : 'empate';
+    }
+    if (ganador === 'empate'){ g.stack.hero += g.pot / 2; g.stack.bot += g.pot / 2; texto = 'Empate: os repartís el bote'; }
+    else { g.stack[ganador] += g.pot; texto = ganador === 'hero' ? `Ganas el bote de ${g.pot} fichas` : `El rival gana el bote de ${g.pot} fichas`; }
+    g.res = { ganador, texto, cambio: g.stack.hero - ppSesion.heroStack };
+    ppSesion.heroStack = g.stack.hero; ppSesion.botStack = g.stack.bot;
+    g.over = true;
+    const st = storageGet('rio_partidas', { manos: 0, dec: 0, ok: 0, fichas: 0 });
+    st.manos++; st.dec += g.dec.length; st.ok += g.dec.filter(x => x.g === 'ok').length; st.fichas += g.res.cambio;
+    storageSet('rio_partidas', st);
+  }
+  function ppCartas(cs, tapadas){
+    return cs.map(c => tapadas ? '<span class="mini-card big pp-back"></span>' : cardHTML(c, true)).join('');
+  }
+  function ppPinta(){
+    const g = PP, body = document.getElementById('helpBody');
+    if (!g || !body) return;
+    const verBot = g.over && g.showdown;
+    const board = ppBoard(g).concat(Array(5 - ppBoard(g).length).fill(null));
+    const ops = !g.over && g.turn === 'hero' ? ppOpciones(g, 'hero') : [];
+    const toCall = g.inn.bot - g.inn.hero;
+    const st = storageGet('rio_partidas', { manos: 0, dec: 0, ok: 0 });
+    body.innerHTML = `
+      <div class="train-score">Mano ${ppSesion.mano} · fichas de práctica, sin valor${st.dec ? ` · aciertos totales ${st.ok}/${st.dec}` : ''}<br>Como en una mesa de 6 cuando los demás se retiran: <b>botón contra ciega grande</b>.</div>
+      <div class="pp-table">
+        <div class="pp-seat"><span class="pp-name">Rival · ${g.heroBtn ? 'ciega grande' : 'botón'}</span><span class="pp-cards">${ppCartas(g.bot, !verBot)}</span><span class="pp-stack">${fmtN(g.stack.bot)} fichas${g.inn.bot ? ` · apuesta ${g.inn.bot}` : ''}</span></div>
+        <div class="pp-mid"><div class="pp-board">${board.map(c => c ? cardHTML(c, true) : '<span class="mini-card big pp-empty"></span>').join('')}</div>
+          <div class="pp-pot">Bote: <b>${fmtN(ppBote(g))}</b> · ${STREET_NAMES[g.street]}</div></div>
+        <div class="pp-seat pp-me"><span class="pp-name">Tú · ${g.heroBtn ? 'botón' : 'ciega grande'}</span><span class="pp-cards">${ppCartas(g.hero)}</span><span class="pp-stack">${fmtN(g.stack.hero)} fichas${g.inn.hero ? ` · apuesta ${g.inn.hero}` : ''}</span></div>
+      </div>
+      <div class="pp-log" id="ppLog">${g.log.slice(-3).map(l => `<div>${escHTML(l)}</div>`).join('') || '<div>Empieza la mano.</div>'}</div>
+      ${g.over ? ppResumen(g) : g.turn === 'hero'
+        ? `<p class="pp-q">${toCall > 0 ? `Te toca: pagar <b>${toCall}</b> para seguir.` : 'Te toca. Nadie ha apostado en esta calle.'}</p>
+           <div class="train-opts">${ops.map((o, i) => `<button type="button" class="btn-secondary" data-pp="${i}">${o.l}</button>`).join('')}</div>`
+        : '<p class="pp-q hint">El rival está pensando…</p>'}`;
+    body.querySelectorAll('[data-pp]').forEach(b => b.addEventListener('click', () => ppHeroJuega(ops[Number(b.dataset.pp)])));
+    const sig = document.getElementById('ppNext'); if (sig) sig.addEventListener('click', () => { ppNueva(); ppPinta(); ppTurnoRival(); });
+  }
+  function ppResumen(g){
+    const MARK = { ok: '✓', meh: '≈', bad: '✗' };
+    const buenas = g.dec.filter(x => x.g === 'ok').length;
+    const mano = (h) => h ? categoryName(h.category, h.tiebreak) : '';
+    return `<div class="pp-res ${g.res.ganador === 'hero' ? 'ok' : g.res.ganador === 'bot' ? 'bad' : ''}">${g.res.texto}${g.showdown ? `<small>Tú: ${mano(g.showdown.h)} · Rival: ${mano(g.showdown.b)}</small>` : ''}</div>
+      ${g.dec.length ? `<div class="pp-rev-t">Tus decisiones: <b>${buenas} de ${g.dec.length}</b> como las recomienda RÍO</div>
+      <div class="pp-rev">${g.dec.map(x => `<div class="tl-row"><div class="tl-mark ${x.g}">${MARK[x.g]}</div><div>
+        <div class="tl-head">${STREET_NAMES[x.s]}</div>
+        <div class="tl-body">Hiciste <b>${decisionHTML(x.act)}</b> · RÍO: <b>${decisionHTML(x.rec)}</b>. ${x.why}</div></div></div>`).join('')}</div>` : ''}
+      <p class="hint">Recuerda: el resultado de una mano depende de la suerte; lo que cuenta es decidir bien.</p>
+      <button type="button" class="btn-primary" id="ppNext" style="width:100%;">Siguiente mano →</button>`;
+  }
+  function ppHeroJuega(op){
+    const g = PP; if (!g || g.over || g.turn !== 'hero') return;
+    const reco = ppRecomienda(g), toCall = g.inn.bot - g.inn.hero;
+    const act = op.a;
+    let why;
+    if (reco.kind === 'open') why = `Tu mano está en el top ${Math.max(1, Math.round(reco.top))}% y desde el botón se suele abrir más o menos el ${OPEN_PCT.BTN}%.`;
+    else if (toCall > 0) why = `Ganabas unas ${of20(reco.eq)} de cada 20 y para pagar necesitabas ${of20(reco.needed)}.`;
+    else why = `Ganabas unas ${of20(reco.eq)} de cada 20 contra lo que suele tener el rival.`;
+    g.dec.push({ s: g.street, act, rec: reco.text, g: grade(reco.text, act), why });
+    ppAplica(g, 'hero', op);
+    ppPinta(); ppTurnoRival();
+  }
+  function ppTurnoRival(){
+    const g = PP; if (!g || g.over || g.turn !== 'bot') return;
+    setTimeout(() => {
+      if (PP !== g || g.over || g.turn !== 'bot' || !document.getElementById('helpModal').classList.contains('show')) return;
+      ppAplica(g, 'bot', ppRival(g));
+      ppPinta(); ppTurnoRival();
+    }, 650);
+  }
+  function openPartida(){
+    closeSidebar();
+    openModal('🃏 Partida de práctica', '');
+    ppNueva(); ppPinta(); ppTurnoRival();
   }
 
   // ---- Importar historial de mano (PokerStars / GGPoker) ----
@@ -1803,12 +1993,14 @@
 
   // Menú
   document.getElementById('navTrain').addEventListener('click', openTrainer);
+  document.getElementById('navPartida').addEventListener('click', openPartida);
   document.getElementById('navCharts').addEventListener('click', () => { closeSidebar(); openCharts(); });
   document.getElementById('navStats').addEventListener('click', () => { closeSidebar(); openStats(); });
   document.getElementById('navImport').addEventListener('click', openImport);
   document.getElementById('navInstall').addEventListener('click', installApp);
   document.getElementById('importBtn').addEventListener('click', openImport);
   document.getElementById('trainLink').addEventListener('click', openTrainer);
+  document.getElementById('partidaLink').addEventListener('click', openPartida);
 
   // ---- Cuéntame tu mano (texto o voz → mano rellenada) ----
   const escHTML = (x) => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -1926,7 +2118,7 @@
   // ---- Tus datos en la cuenta (historial, estadísticas, entrenamiento, ajustes) ----
   // Se guardan también en el servidor para no perderlos al cambiar de móvil.
   function syncKeys(){
-    return ['rio_history', 'rio_reviews', 'rio_train', 'rio_train_log', 'rio_profile', 'rio_mode', 'rio_range',
+    return ['rio_history', 'rio_reviews', 'rio_train', 'rio_train_log', 'rio_partidas', 'rio_profile', 'rio_mode', 'rio_range',
             'rio_game', 'rio_bluff', 'rio_unit', 'rio_sim_quality', 'rio_save_history', 'rio_remember_defaults', 'rio_defaults'];
   }
   // "var" y no "let": storageSet() la usa desde el arranque, antes de llegar a esta línea.

@@ -959,3 +959,25 @@ body.tourney .tourney-show { display: block !important; }
 .inapp-btn { background: var(--gold); color: #fff; border: none; border-radius: 999px; padding: 7px 12px; font: inherit; font-weight: 700; font-size: 0.78rem; text-decoration: none; cursor: pointer; white-space: nowrap; }
 .inapp-btn[hidden] { display: none; }
 .inapp-x { background: none; border: none; color: var(--cream-dim); font-size: 1rem; cursor: pointer; padding: 4px 6px; }
+
+/* Partida de práctica: mesa pequeña dentro de la ventana */
+.pp-table { background: radial-gradient(120% 90% at 50% 50%, #1d5a3a 0%, #123d27 70%, #0c2a1b 100%); border: 6px solid #3a2415;
+  border-radius: 60px / 44px; padding: 14px 12px; display: grid; gap: 12px; box-shadow: inset 0 0 30px rgba(0,0,0,0.45); }
+.pp-seat { display: grid; justify-items: center; gap: 4px; text-align: center; }
+.pp-name { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(245,242,236,0.75); }
+.pp-cards { display: flex; justify-content: center; }
+.pp-stack { font-size: 0.78rem; color: var(--cream); }
+.pp-mid { display: grid; justify-items: center; gap: 6px; padding: 6px 0; border-top: 1px dashed rgba(255,255,255,0.15); border-bottom: 1px dashed rgba(255,255,255,0.15); }
+.pp-board { display: flex; justify-content: center; flex-wrap: wrap; }
+.pp-board .mini-card.big { width: 40px; height: 54px; font-size: 0.95rem; margin: 0 2px; }
+.pp-pot { font-size: 0.8rem; color: var(--cream); }
+.mini-card.pp-back { background: repeating-linear-gradient(45deg, #b3162b 0 6px, #d42a3f 6px 12px); border: 3px solid #fbf8f1; }
+.mini-card.pp-empty { background: rgba(0,0,0,0.18); border: 1px dashed rgba(255,255,255,0.2); box-shadow: none; }
+.pp-log { font-size: 0.8rem; color: var(--cream-dim); margin: 10px 0 4px; min-height: 1.2em; }
+.pp-log div:last-child { color: var(--cream); font-weight: 600; }
+.pp-q { margin: 8px 0 0; }
+.pp-res { font-weight: 800; font-size: 1.05rem; margin: 10px 0 8px; }
+.pp-res small { display: block; font-weight: 500; font-size: 0.8rem; color: var(--cream-dim); margin-top: 2px; }
+.pp-res.ok { color: var(--ok); } .pp-res.bad { color: var(--crimson); }
+.pp-rev-t { font-size: 0.9rem; margin: 6px 0; }
+.pp-rev { margin-bottom: 10px; }

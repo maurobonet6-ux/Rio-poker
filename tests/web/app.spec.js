@@ -416,3 +416,29 @@ test('sin datos en la página pero con la cookie de sesión: recupera la sesión
   expect(llamadas).toContain('session');
   await expect.poll(() => llamadas.includes('check-pro')).toBe(true); // después comprueba la cuenta como siempre
 });
+
+test('partida de práctica: se juegan manos completas contra RÍO y se repasan tus decisiones', async ({ page }) => {
+  test.setTimeout(120_000);
+  await abrir(page);
+  await page.locator('#partidaLink').click();
+  await expect(page.locator('#helpModal.show .pp-table')).toBeVisible();
+  await expect(page.locator('#helpBody')).toContainText('fichas de práctica, sin valor');
+  const fichas = async () => (await page.locator('.pp-stack').allTextContents()).reduce((t, x) => t + parseFloat(x.replace(/\./g, '').replace(',', '.')), 0);
+  for (let mano = 0; mano < 4; mano++){
+    for (let paso = 0; paso < 40; paso++){
+      if (await page.locator('#ppNext').isVisible()) break;
+      const botones = page.locator('[data-pp]');
+      if (await botones.count()){
+        // Unas manos juega tranquilo (pasar/pagar) y otras al azar, para probar subidas y todo
+        const n = await botones.count();
+        await botones.nth(mano % 2 ? Math.floor(Math.random() * n) : Math.min(1, n - 1)).click();
+      } else await page.waitForTimeout(300);
+    }
+    await expect(page.locator('#ppNext')).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator('.pp-res')).toBeVisible();
+    expect(await fichas()).toBeCloseTo(400, 5);                   // las fichas ni se crean ni se pierden
+    await page.locator('#ppNext').click();
+  }
+  const st = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_partidas')));
+  expect(st.manos).toBe(4);
+});
