@@ -889,7 +889,7 @@ body.tourney .tourney-show { display: block !important; }
    En el móvil y la tablet todo sigue en una columna. */
 @media (min-width: 1100px) {
   .wrap { max-width: 1360px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 26px; align-items: start;
-    grid-template-areas: "hero hero" "play play" "cards side" "table side" "bets side" "hist hist" "faq faq" "foot foot"; }
+    grid-template-areas: "hero hero" "cards side" "table side" "bets side" "hist hist" "faq faq" "foot foot"; }
   .wrap > * { grid-column: 1 / -1; }
   header.hero { grid-area: hero; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 28px;
     padding-bottom: 14px; margin-bottom: 18px; }
@@ -899,7 +899,7 @@ body.tourney .tourney-show { display: block !important; }
   header.hero .mode-row { grid-column: 2; grid-row: 1; margin-top: 0; }
   header.hero .menu-btn { grid-column: 3; grid-row: 1; }
   header.hero .steps-nav, header.hero .steps-labels { grid-column: 1 / -1; }
-  #playBanner { grid-area: play; } #cardsPanel { grid-area: cards; } #tablePanel { grid-area: table; } #betsPanel { grid-area: bets; }
+  #cardsPanel { grid-area: cards; } #tablePanel { grid-area: table; } #betsPanel { grid-area: bets; }
   #historyPanel { grid-area: hist; } #faq { grid-area: faq; } footer { grid-area: foot; }
   #demoPanel, #resultPanel { grid-area: side; }
   /* El ejemplo también en Avanzado (así la columna derecha nunca está vacía); se quita al salir el resultado. */
@@ -961,30 +961,10 @@ body.tourney .tourney-show { display: block !important; }
 .inapp-x { background: none; border: none; color: var(--cream-dim); font-size: 1rem; cursor: pointer; padding: 4px 6px; }
 
 
-/* Acceso destacado a la partida de práctica */
-.play-banner { display: flex; align-items: center; gap: 16px; width: 100%; margin: 0 0 18px; padding: 16px 20px; border-radius: 18px; border: 1px solid rgba(61,220,122,0.35); background: radial-gradient(120% 160% at 0% 0%, #1f7a4a 0%, #0f4a2d 45%, #0b2a1c 100%); color: var(--cream); font-family: inherit; text-align: left; cursor: pointer; box-shadow: 0 10px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08); transition: transform .15s ease, box-shadow .15s ease; }
-.play-banner:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(0,0,0,0.45), 0 0 0 1px rgba(61,220,122,0.5); }
-.pb-cards { position: relative; width: 62px; height: 58px; flex-shrink: 0; }
-.pb-cards i { position: absolute; top: 4px; left: 2px; width: 36px; height: 50px; border-radius: 6px; background: #fff; color: #111; font-style: normal; font-weight: 800; font-size: 0.95rem; line-height: 1.1; padding: 4px 0 0 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); transform: rotate(-10deg); }
-.pb-cards i b { display: block; font-size: 1.05rem; }
-.pb-cards i.r { left: 22px; top: 2px; color: #d11a2a; transform: rotate(9deg); }
-.pb-txt { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.pb-tag { font-size: 0.64rem; font-weight: 800; letter-spacing: 0.1em; color: var(--ok); }
-.pb-txt b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.15rem; }
-.pb-txt small { color: rgba(245,242,236,0.78); font-size: 0.82rem; }
-.pb-go { flex-shrink: 0; background: var(--ok); color: #06210f; font-weight: 800; padding: 10px 16px; border-radius: 999px; font-size: 0.92rem; animation: pbPulse 2.4s ease-in-out infinite; }
-@keyframes pbPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(61,220,122,0.5); } 50% { box-shadow: 0 0 0 8px rgba(61,220,122,0); } }
-@media (prefers-reduced-motion: reduce) { .pb-go { animation: none; } }
-@media (max-width: 560px) {
-  .play-banner { padding: 14px; gap: 12px; }
-  .pb-cards { width: 48px; height: 48px; }
-  .pb-cards i { width: 30px; height: 42px; font-size: 0.8rem; }
-  .pb-cards i.r { left: 16px; }
-  .pb-txt b { font-size: 1rem; }
-  .pb-txt small { font-size: 0.76rem; }
-  .pb-go { padding: 8px 12px; font-size: 0.84rem; }
-}
+/* Partida de práctica resaltada en el menú */
 .sidebar-link.nav-hot { background: linear-gradient(90deg, rgba(61,220,122,0.16), rgba(61,220,122,0.04)); border: 1px solid rgba(61,220,122,0.35); }
 .sidebar-link.nav-hot .ic { background: #1f7a4a; }
 .sidebar-link.nav-hot .lbl { font-weight: 800; display: flex; flex-direction: column; }
 .sidebar-link.nav-hot .lbl small { font-weight: 500; font-size: 0.72rem; color: var(--cream-dim); }
+.menu-btn { position: relative; }
+.menu-btn.has-new::after { content: ''; position: absolute; top: 7px; right: 7px; width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 2px var(--panel-2); }

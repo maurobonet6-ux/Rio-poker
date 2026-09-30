@@ -1657,6 +1657,7 @@
   // ---- Partida de práctica (mesa de 6 a pantalla completa, en partida.js) ----
   function openPartida(){
     closeSidebar(); closeModal();
+    storageSet('rio_pp_visto', true); document.getElementById('menuBtn').classList.remove('has-new');
     if (window.RIO_PARTIDA) window.RIO_PARTIDA.open();
   }
 
@@ -1812,6 +1813,7 @@
   // Menú
   document.getElementById('navTrain').addEventListener('click', openTrainer);
   document.getElementById('navPartida').addEventListener('click', openPartida);
+  if (!storageGet('rio_pp_visto', false) && !storageGet('rio_partidas', null)) document.getElementById('menuBtn').classList.add('has-new');
   document.getElementById('navCharts').addEventListener('click', () => { closeSidebar(); openCharts(); });
   document.getElementById('navStats').addEventListener('click', () => { closeSidebar(); openStats(); });
   document.getElementById('navImport').addEventListener('click', openImport);
@@ -1819,7 +1821,6 @@
   document.getElementById('importBtn').addEventListener('click', openImport);
   document.getElementById('trainLink').addEventListener('click', openTrainer);
   document.getElementById('partidaLink').addEventListener('click', openPartida);
-  document.getElementById('playBanner').addEventListener('click', openPartida);
 
   // ---- Cuéntame tu mano (texto o voz → mano rellenada) ----
   const escHTML = (x) => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
