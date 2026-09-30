@@ -6,7 +6,7 @@ const { RAIZ: ROOT, SALIDA, fontRoute } = require('./comun.js');
 const { carta, ponerBote } = require(path.join(ROOT, 'tests', 'web', 'ayuda.js'));
 const ORIGIN = 'http://rio.test';
 const solo = process.argv[2];
-const HANDS = Object.entries(require('./manos.js')).filter(([n]) => !solo || n === solo).map(([n, m]) => ({ n, ...m.analisis }));
+const HANDS = Object.entries(require('./manos-lista.js').cargar()).filter(([n]) => !solo || n === solo).map(([n, m]) => ({ n, ...m.analisis }));
 process.chdir(SALIDA);
 
 async function abrir(b){
