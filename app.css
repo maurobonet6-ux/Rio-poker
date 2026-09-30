@@ -947,3 +947,15 @@ body.tourney .tourney-show { display: block !important; }
   .entry-shot-btn { padding: 9px 22px; font-size: 0.85rem; }
   .entry-shot small { margin-top: 8px; }
 }
+
+/* Aviso cuando se abre RÍO dentro de Instagram, TikTok, Facebook…: ahí la sesión se pierde fácil. */
+.inapp-bar { position: sticky; top: 0; z-index: 45; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 14px 8px; background: #2a1215; border-bottom: 1px solid rgba(232,40,63,0.45);
+  font-size: 0.8rem; line-height: 1.35; color: var(--cream); }
+.inapp-bar[hidden] { display: none; }
+.inapp-txt { flex: 1 1 220px; }
+.inapp-txt b { color: var(--gold); }
+.inapp-acts { display: flex; align-items: center; gap: 6px; }
+.inapp-btn { background: var(--gold); color: #fff; border: none; border-radius: 999px; padding: 7px 12px; font: inherit; font-weight: 700; font-size: 0.78rem; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.inapp-btn[hidden] { display: none; }
+.inapp-x { background: none; border: none; color: var(--cream-dim); font-size: 1rem; cursor: pointer; padding: 4px 6px; }

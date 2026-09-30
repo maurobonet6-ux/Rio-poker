@@ -258,6 +258,7 @@
       try { localStorage.removeItem('rio_uses'); } catch(e){}
       // Sesiones antiguas (solo email, sin código): hay que volver a entrar.
       if (isPro()) logoutPro();
+      restoreFromCookie();
       return;
     }
     recheckPro(true);
@@ -266,6 +267,19 @@
   // Vuelve a preguntar al servidor si eres PRO. Se usa al abrir la página, al volver
   // a RÍO desde otra pestaña (por ejemplo, tras pagar en Stripe) y con el botón
   // "Ya he pagado, comprobar". Devuelve true, false o null (sin respuesta).
+  // Si el navegador borró los datos de la página pero conserva la cookie de sesión, la recuperamos
+  // sin pedir otra vez el código.
+  async function restoreFromCookie(){
+    try {
+      const r = await fetch('/api/session', { credentials: 'same-origin' });
+      if (!r.ok) return;
+      const d = await r.json();
+      if (typeof d.token !== 'string' || !/^[a-f0-9]{64}$/.test(d.token) || !d.email) return;
+      storageSet('rio_token', d.token); storageSet('rio_email', d.email);
+      await recheckPro(true);
+      if (typeof updateUsageBadge === 'function') updateUsageBadge();
+    } catch(e){}
+  }
   var lastProCheck = 0; // "var": revalidateOnLoad() la usa antes de llegar a esta línea
   async function recheckPro(force, deep){
     if (!storageGet('rio_token', '')) return false;
@@ -3020,6 +3034,26 @@
         `Tienes proyecto de color al as: ganas ~<b>${Math.round(r.eq)}%</b> de las veces y solo necesitas <b>${Math.round(r.needed)}%</b>.`;
     }, 50);
   });
+  // Navegadores de dentro de Instagram, TikTok, Facebook…: la sesión se pierde fácil (tienen su propia memoria)
+  // y el pago a veces falla. Avisamos una vez y ofrecemos abrir RÍO en el navegador de verdad.
+  (function avisoNavegadorApp(){
+    const ua = navigator.userAgent || '';
+    const app = /Instagram/i.test(ua) ? 'Instagram' : /TikTok|musical_ly|Bytedance/i.test(ua) ? 'TikTok'
+      : /FBAN|FBAV|FB_IAB/i.test(ua) ? 'Facebook' : /Twitter/i.test(ua) ? 'X' : /\bLine\//i.test(ua) ? 'Line' : '';
+    if (!app || storageGet('rio_inapp_ok', false)) return;
+    const bar = document.getElementById('inappBar'), android = /Android/i.test(ua);
+    document.getElementById('inappTxt').innerHTML = `Estás en el navegador de <b>${app}</b>. Para no perder tu sesión, abre RÍO en ${android ? 'Chrome' : 'Safari'}` +
+      (android ? '.' : ': toca <b>···</b> arriba y elige <b>«Abrir en el navegador»</b>.');
+    if (android){ const a = document.getElementById('inappOpen'); a.hidden = false;
+      a.href = 'intent://' + location.host + location.pathname + location.search + '#Intent;scheme=https;package=com.android.chrome;end'; }
+    document.getElementById('inappCopy').addEventListener('click', (e) => {
+      const b = e.currentTarget, url = location.origin + location.pathname;
+      const ok = () => { b.textContent = '✅ Copiado'; };
+      try { navigator.clipboard.writeText(url).then(ok, () => { b.textContent = url; }); } catch(err){ b.textContent = url; }
+    });
+    document.getElementById('inappClose').addEventListener('click', () => { bar.hidden = true; storageSet('rio_inapp_ok', true); });
+    bar.hidden = false;
+  })();
   // En ordenador el ejemplo ocupa la columna derecha: se enseña abierto desde el principio.
   if (window.matchMedia && window.matchMedia('(min-width: 1100px)').matches) document.getElementById('demoPanel').open = true;
   // "Ver el análisis completo": carga la mano de ejemplo y la analiza (no gasta análisis gratis).
