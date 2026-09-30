@@ -391,3 +391,28 @@ test('ejemplo: "Ver el análisis completo" enseña el resultado entero sin gasta
   await expect(page.locator('#demoNext')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('rio_anon_used'))).toBeNull();
 });
+
+test('dentro de Instagram sale el aviso para abrir RÍO en el navegador; se puede cerrar', async ({ browser }) => {
+  const ctx = await browser.newContext({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 300.0.0', serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  await abrir(page);
+  await expect(page.locator('#inappBar')).toBeVisible();
+  await expect(page.locator('#inappTxt')).toContainText('Instagram');
+  await page.locator('#inappClose').click();
+  await expect(page.locator('#inappBar')).toBeHidden();
+  await page.reload();
+  await expect(page.locator('#inappBar')).toBeHidden(); // no vuelve a salir
+  await ctx.close();
+});
+
+test('en un navegador normal no sale el aviso de Instagram/TikTok', async ({ page }) => {
+  await abrir(page);
+  await expect(page.locator('#inappBar')).toBeHidden();
+});
+
+test('sin datos en la página pero con la cookie de sesión: recupera la sesión sin pedir el código', async ({ page }) => {
+  const { llamadas } = await abrir(page, { api: { session: { token: 'd'.repeat(64), email: 'yo@rio.test' } } });
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('rio_email'))).toBe('"yo@rio.test"');
+  expect(llamadas).toContain('session');
+  await expect.poll(() => llamadas.includes('check-pro')).toBe(true); // después comprueba la cuenta como siempre
+});

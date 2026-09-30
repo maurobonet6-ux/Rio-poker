@@ -9,6 +9,7 @@ const routes = {
   'send-code': require('../lib/routes/send-code'),
   'verify-code': require('../lib/routes/verify-code'),
   'logout': require('../lib/routes/logout'),
+  'session': require('../lib/routes/session'),
   'check-pro': require('../lib/routes/check-pro'),
   'free-use': require('../lib/routes/free-use'),
   'photo-usage': require('../lib/routes/photo-usage'),
