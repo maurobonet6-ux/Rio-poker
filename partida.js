@@ -9,8 +9,12 @@
   const view = $('gameView');
   if (!view) return;
 
-  const SB = 1, BB = 2, START = 200, N = 6;
-  const POS = ['BTN', 'SB', 'BB', 'UTG', 'HJ', 'CO'];           // según la distancia al botón
+  const SB = 1, BB = 2, START = 200;
+  // Posiciones según la distancia al botón, para cada tamaño de mesa (2 a 6 jugadores)
+  const POS_N = { 2: ['BTN', 'BB'], 3: ['BTN', 'SB', 'BB'], 4: ['BTN', 'SB', 'BB', 'CO'], 5: ['BTN', 'SB', 'BB', 'HJ', 'CO'], 6: ['BTN', 'SB', 'BB', 'UTG', 'HJ', 'CO'] };
+  // Dónde se sienta cada uno en la mesa (b = abajo, tú; luego en el sentido de las agujas del reloj)
+  const SLOTS = { 2: ['b', 't'], 3: ['b', 'tl', 'tr'], 4: ['b', 'l', 't', 'r'], 5: ['b', 'bl', 'tl', 'tr', 'br'], 6: ['b', 'bl', 'tl', 't', 'tr', 'br'] };
+  const HU_OPEN = 80;   // mano a mano, el botón abre muchas más manos que en una mesa de 6
   const POS_ES = { BTN: 'Botón', SB: 'Ciega pequeña', BB: 'Ciega grande', UTG: 'Primero', HJ: 'Hijack', CO: 'Cutoff' };
   const STREETS = ['Preflop', 'Flop', 'Turn', 'River'];
   // Rivales ficticios, cada uno con su estilo: cuánto juega, cuánto paga, cuánto farolea y cuánto sube.
@@ -19,8 +23,14 @@
     { name: 'Tony',  av: '🐻', estilo: 'Suelto',    open: 1.35, call: 1.5,  bluff: 0.10, aggr: 0.7 },
     { name: 'Marta', av: '🦉', estilo: 'Paciente',  open: 0.7,  call: 0.9,  bluff: 0.04, aggr: 0.9 },
     { name: 'Kike',  av: '🐯', estilo: 'Agresivo',  open: 1.25, call: 1.0,  bluff: 0.24, aggr: 1.5 },
-    { name: 'Sara',  av: '🐺', estilo: 'Equilibrada', open: 1.0, call: 1.0, bluff: 0.12, aggr: 1.1 }
+    { name: 'Sara',  av: '🐺', estilo: 'Equilibrada', open: 1.0, call: 1.0, bluff: 0.12, aggr: 1.1 },
+    { name: 'Pablo', av: '🦁', estilo: 'Valiente',  open: 1.15, call: 1.2,  bluff: 0.16, aggr: 1.2 },
+    { name: 'Nuria', av: '🐼', estilo: 'Tranquila', open: 0.9,  call: 1.1,  bluff: 0.05, aggr: 0.8 },
+    { name: 'Dani',  av: '🦈', estilo: 'Tiburón',   open: 1.1,  call: 0.95, bluff: 0.18, aggr: 1.35 },
+    { name: 'Elena', av: '🐙', estilo: 'Imprevisible', open: 1.2, call: 1.2, bluff: 0.2, aggr: 1.2 }
   ];
+  // Cuántos jugadores: '2'…'6' o 'var' (varía: de vez en cuando alguien se levanta o se sienta)
+  const modo = () => { const m = String(E.storageGet('rio_pp_jugadores', '6')); return /^[2-6]$|^var$/.test(m) ? m : '6'; };
   const rnd = () => Math.random();
   const esc = (x) => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const fmt = (n) => (Math.round(n * 10) / 10).toLocaleString('es-ES');
@@ -28,29 +38,56 @@
 
   // ---------- Sesión (se guarda: fichas de cada uno, botón y estadísticas) ----------
   let S = null;
+  const hueco = () => RIVALES.filter(r => !S.seats.some(s => s.name === r.name));
   function nuevaSesion(){
-    S = { seats: [{ name: 'Tú', av: '🙂', hero: true, stack: START }].concat(RIVALES.map(r => ({ ...r, stack: START }))),
-      button: Math.floor(rnd() * N), mano: 0, recargas: 0, total: START * N };
+    const m = modo(), n = m === 'var' ? 3 + Math.floor(rnd() * 4) : Number(m);
+    const rivales = [...RIVALES].sort(() => rnd() - 0.5).slice(0, n - 1);
+    S = { seats: [{ name: 'Tú', av: '🙂', hero: true, stack: START }].concat(rivales.map(r => ({ ...r, stack: START }))),
+      button: Math.floor(rnd() * n), mano: 0, recargas: 0, total: START * n };
     guardaSesion();
   }
-  function guardaSesion(){ E.storageSet('rio_pp_sesion', { stacks: S.seats.map(s => s.stack), button: S.button, mano: S.mano, recargas: S.recargas, total: S.total }); }
+  function guardaSesion(){ E.storageSet('rio_pp_sesion', { seats: S.seats.map(s => ({ name: s.name, stack: s.stack })), button: S.button, mano: S.mano, recargas: S.recargas }); }
   function cargaSesion(){
     const g = E.storageGet('rio_pp_sesion', null);
     nuevaSesion();
-    if (g && Array.isArray(g.stacks) && g.stacks.length === N){
-      g.stacks.forEach((v, i) => { S.seats[i].stack = Number(v) || START; });
-      S.button = g.button % N; S.mano = g.mano || 0; S.recargas = g.recargas || 0;
+    const seats = g && Array.isArray(g.seats) ? g.seats : null;
+    if (seats && seats.length >= 2 && seats.length <= 6 && seats[0].name === 'Tú' && seats.slice(1).every(x => RIVALES.some(r => r.name === x.name))){
+      S.seats = seats.map((x, i) => i === 0 ? { name: 'Tú', av: '🙂', hero: true, stack: Number(x.stack) || START } : { ...RIVALES.find(r => r.name === x.name), stack: Number(x.stack) || START });
+      S.button = (g.button || 0) % S.seats.length; S.mano = g.mano || 0; S.recargas = g.recargas || 0;
       S.total = S.seats.reduce((t, s) => t + s.stack, 0);
     }
+  }
+  // Antes de cada mano: la mesa se ajusta al número de jugadores elegido (o cambia sola en «Variable»)
+  function ajustaMesa(){
+    const m = modo(), avisos = [];
+    let objetivo = S.seats.length;
+    if (m !== 'var') objetivo = Number(m);
+    else if (S.mano > 0 && rnd() < 0.22) objetivo = Math.min(6, Math.max(3, objetivo + (rnd() < 0.5 ? -1 : 1)));
+    else objetivo = Math.min(6, Math.max(3, objetivo));
+    while (S.seats.length > objetivo){
+      const i = 1 + Math.floor(rnd() * (S.seats.length - 1)), fuera = S.seats[i];
+      S.seats.splice(i, 1); S.total -= fuera.stack;
+      if (i <= S.button) S.button = (S.button - 1 + S.seats.length) % S.seats.length;
+      avisos.push(`${fuera.name} se levanta de la mesa`);
+    }
+    while (S.seats.length < objetivo){
+      const libres = hueco(), nuevo = libres[Math.floor(rnd() * libres.length)];
+      S.seats.push({ ...nuevo, stack: START }); S.total += START;
+      avisos.push(`${nuevo.name} se sienta en la mesa`);
+    }
+    S.button %= S.seats.length;
+    return avisos;
   }
   const stats = () => E.storageGet('rio_partidas', { manos: 0, dec: 0, ok: 0, fichas: 0, ganadas: 0, mejor: null });
 
   // ---------- Motor de la mano ----------
   let H = null;
-  const posDe = (i) => POS[(i - H.button + N) % N];
+  const nJ = () => H.p.length;
+  const posDe = (i) => POS_N[nJ()][(i - H.button + nJ()) % nJ()];
+  const openPct = (pos) => (nJ() === 2 && pos === 'BTN' ? HU_OPEN : E.OPEN_PCT[pos] || 30);
   const vivos = () => H.p.filter(p => !p.folded);
   const puedenHablar = () => H.p.filter(p => !p.folded && !p.allin);
-  const siguiente = (i, cond) => { for (let k = 1; k <= N; k++){ const j = (i + k) % N; if (cond(H.p[j])) return j; } return -1; };
+  const siguiente = (i, cond) => { const n = nJ(); for (let k = 1; k <= n; k++){ const j = (i + k) % n; if (cond(H.p[j])) return j; } return -1; };
   const bote = () => H.p.reduce((t, p) => t + p.total, 0);
   const tablero = () => H.board5.slice(0, [0, 3, 4, 5][H.street]);
   const apuestaMax = () => Math.max(...H.p.map(p => p.inn));
@@ -58,8 +95,10 @@
   function nuevaMano(){
     // Quien se queda sin fichas recarga (los rivales siempre; tú también, y te lo decimos)
     let aviso = '';
+    const cambios = ajustaMesa();
     S.seats.forEach(s => { if (s.stack < BB * 2){ const extra = START - s.stack; s.stack = START; S.recargas++; S.total += extra; if (s.hero) aviso = 'Te has quedado sin fichas: te recargamos 200 para seguir practicando.'; } });
     S.mano++;
+    const N = S.seats.length;
     S.button = (S.button + 1) % N;
     const deck = E.drawN(E.fullDeck(), N * 2 + 5);
     H = { button: S.button, street: 0, board5: deck.slice(N * 2), raises: 0, lastRaise: BB, log: [], dec: [], over: false, res: null,
@@ -67,9 +106,11 @@
       p: S.seats.map((s, i) => ({ i, name: s.name, av: s.av, hero: !!s.hero, style: s, stack: s.stack, cards: [deck[i * 2], deck[i * 2 + 1]],
         inn: 0, total: 0, folded: false, allin: false, acted: false, bubble: '' })) };
     H.p.forEach(p => { H.rangos[p.i] = E.poolFromSet(E.topRange(100)); });
+    cambios.forEach(t => H.log.push({ t, k: 'info' }));
     if (aviso) H.log.push({ t: aviso, k: 'info' });
-    H.log.push({ t: `Mano ${S.mano} · el botón es ${H.p[H.button].name}`, k: 'calle' });
-    const sb = siguiente(H.button, () => true), bb = siguiente(sb, () => true);
+    H.log.push({ t: `Mano ${S.mano} · ${N} jugadores · el botón es ${H.p[H.button].name}`, k: 'calle' });
+    // Mano a mano, el botón pone la ciega pequeña (y habla primero antes del flop)
+    const sb = N === 2 ? H.button : siguiente(H.button, () => true), bb = siguiente(sb, () => true);
     paga(H.p[sb], SB); H.p[sb].bubble = `Ciega ${SB}`;
     paga(H.p[bb], BB); H.p[bb].bubble = `Ciega ${BB}`;
     H.turn = siguiente(bb, p => !p.folded && !p.allin);
@@ -101,7 +142,7 @@
       H.lastAggr = i;
       // Lo que se deduce del rango de quien sube
       const pos = posDe(i);
-      H.rangos[i] = H.street === 0 ? E.poolFromSet(E.topRange(H.raises >= 2 ? 9 : Math.min(45, E.OPEN_PCT[pos] || 30)))
+      H.rangos[i] = H.street === 0 ? E.poolFromSet(E.topRange(H.raises >= 2 ? (nJ() === 2 ? 18 : 9) : nJ() === 2 ? openPct(pos) : Math.min(45, openPct(pos))))
         : E.withBluffs(H.rangos[i], tablero(), 0.55, 0.12, p.cards);
       txt = (toCall > 0 || H.street === 0 ? `Sube a ${fmt(p.inn)}` : `Apuesta ${fmt(p.inn)}`) + (p.allin ? ' (todo)' : '');
     }
@@ -183,13 +224,18 @@
     const rivales = vivos().length - 1;
     let pool = H.lastAggr !== null && H.lastAggr !== 0 ? H.rangos[H.lastAggr] : E.poolFromSet(E.topRange(H.street === 0 ? 100 : 60));
     if (o.toCall > 0 && H.street > 0 && H.lastAggr !== null && H.lastAggr !== 0) pool = E.withBluffs(pool, tablero(), 0.55, 0.1, hero.cards);
-    const orden = (j) => (j - H.button - 1 + N) % N;           // quién habla antes después del flop
+    const orden = (j) => (j - H.button - 1 + nJ()) % nJ();      // quién habla antes después del flop
     const oop = H.street > 0 && vivos().some(p => !p.hero && orden(p.i) > orden(0));
+    // Mano a mano, abrir desde el botón se juzga con el rango de mano a mano (mucho más amplio)
+    if (nJ() === 2 && H.street === 0 && H.raises === 0 && posDe(0) === 'BTN'){
+      const top = E.handTopPercent(hero.cards[0], hero.cards[1]);
+      return { text: top <= HU_OPEN ? 'RAISE' : 'FOLD', kind: 'open', top, eq: 0, needed: 0 };
+    }
     return E.recommend({ heroCards: hero.cards, boardCards: tablero(), pot: bote(), toCall: o.toCall, rivals: Math.max(1, rivales), pool,
       oop, street: H.street, heroPos: posDe(0), unraised: H.street === 0 && H.raises === 0, iters: 700 });
   }
   function porque(r, toCall){
-    if (r.kind === 'open') return `Tu mano está en el top ${Math.max(1, Math.round(r.top))}% y desde ${POS_ES[posDe(0)].toLowerCase()} se suele abrir más o menos el ${E.OPEN_PCT[posDe(0)]}%.`;
+    if (r.kind === 'open') return `Tu mano está en el top ${Math.max(1, Math.round(r.top))}% y desde ${POS_ES[posDe(0)].toLowerCase()} se suele abrir más o menos el ${openPct(posDe(0))}%${nJ() === 2 ? ' (mano a mano)' : ''}.`;
     if (toCall > 0) return `Ganabas unas ${E.of20(r.eq)} de cada 20 y para pagar necesitabas ${E.of20(r.needed)}.`;
     return `Ganabas unas ${E.of20(r.eq)} de cada 20 contra lo que suelen tener tus rivales.`;
   }
@@ -202,7 +248,7 @@
     const caro = o.toCall > p.stack * 0.45;
     if (H.street === 0){
       const top = E.handTopPercent(p.cards[0], p.cards[1]);
-      const abrir = (E.OPEN_PCT[pos] || 30) * st.open;
+      const abrir = openPct(pos) * st.open;
       if (H.raises === 0){
         if (o.puedePasar) return top <= 14 * st.aggr ? subir(BB * 4) || { a: 'CHECK' } : { a: 'CHECK' };      // ciega grande con cojeadores
         if (top <= abrir || rnd() < st.bluff * 0.3) return subir(BB * 3 + H.p.filter(q => q.inn === BB && !q.folded && q.i !== i && posDe(q.i) !== 'BB').length * BB) || pagarOTirar(true);
@@ -210,7 +256,7 @@
       }
       if (H.raises === 1){
         if (top <= 5 * st.aggr || (rnd() < st.bluff * 0.25 && top <= 40)) return subir(max * 3.2) || pagarOTirar(true);
-        const limite = (pos === 'BB' ? 38 : pos === 'BTN' || pos === 'CO' ? 20 : 14) * st.call;
+        const limite = (pos === 'BB' ? (nJ() === 2 ? 62 : 38) : pos === 'BTN' || pos === 'CO' ? 20 : 14) * st.call;
         return pagarOTirar(top <= (caro ? limite / 2.5 : limite));
       }
       if (top <= 2.5) return subir(o.maxTo) || pagarOTirar(true);
@@ -248,7 +294,7 @@
       const enseña = p.hero || (H.over && H.res.showdown && !p.folded);
       const pos = posDe(p.i);
       const g = H.over ? H.res.ganadores.find(w => w.i === p.i) : null;
-      return `<div class="g-seat s${p.i}${p.folded ? ' fold' : ''}${H.turn === p.i ? ' turn' : ''}${ganan.has(p.i) ? ' win' : ''}${p.hero ? ' hero' : ''}">
+      return `<div class="g-seat sl-${SLOTS[nJ()][p.i]}${p.folded ? ' fold' : ''}${H.turn === p.i ? ' turn' : ''}${ganan.has(p.i) ? ' win' : ''}${p.hero ? ' hero' : ''}">
         <div class="g-cards">${p.cards.map((c, k) => carta(enseña ? c : null, anim.cartas ? `deal d${(p.i * 2 + k) % 12}` : '')).join('')}</div>
         <div class="g-plate">
           <div class="g-av">${p.av}${p.i === H.button ? '<span class="g-dealer">D</span>' : ''}</div>
@@ -393,6 +439,15 @@
     E.storageSet('rio_pp_speed', r); $('gSpeed').textContent = r === 'rapida' ? '⏩ Rápido' : '▶ Normal';
   });
   $('gSpeed').textContent = E.storageGet('rio_pp_speed', 'normal') === 'rapida' ? '⏩ Rápido' : '▶ Normal';
+  const selJ = $('gPlayers');
+  selJ.value = modo();
+  selJ.addEventListener('change', () => {
+    E.storageSet('rio_pp_jugadores', selJ.value);
+    if (H && !H.over){
+      H.log.push({ t: selJ.value === 'var' ? 'Desde la próxima mano, la mesa irá cambiando' : `Desde la próxima mano jugaréis ${selJ.value}`, k: 'info' });
+      pintaPanel();
+    } else if (H){ nuevaMano(); pinta(); turnoRivales(); }
+  });
   document.addEventListener('keydown', (e) => {
     if (view.hidden || e.target.matches('input, textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
     const k = e.key.toLowerCase();

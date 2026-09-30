@@ -452,3 +452,38 @@ test('partida de práctica: mesa de 6 a pantalla completa, manos completas y rep
   await expect(page.locator('#gameView')).toBeHidden();
   expect(page.url()).not.toContain('#partida');
 });
+
+test('partida de práctica: mano a mano, 3 jugadores y mesa variable (las fichas siempre cuadran)', async ({ page }) => {
+  test.setTimeout(240_000);
+  await abrir(page, { storage: { rio_pp_speed: 'rapida', rio_pp_jugadores: '2' } });
+  await page.locator('#partidaLink').click();
+  await expect(page.locator('.g-seat')).toHaveCount(2);
+  // Mano a mano, el botón pone la ciega pequeña
+  await expect(page.locator('.g-seat', { has: page.locator('.g-dealer') }).locator('.g-bubble')).toHaveText(/Ciega 1|Sube|Paga|Tira|Pasa/);
+  const cuadra = () => page.evaluate(() => Math.abs(window.RIO_PARTIDA._fichas() - window.RIO_PARTIDA._esperadas()) < 0.01);
+  const jugarManos = async (n) => {
+    for (let mano = 0; mano < n; mano++){
+      const hasta = Date.now() + 60_000;
+      while (Date.now() < hasta){
+        if (await page.locator('#gNext').isVisible()) break;
+        const acts = page.locator('.g-actions [data-act]:not([data-act="hint"])');
+        const k = await acts.count();
+        if (k){ expect(await cuadra()).toBe(true); await acts.nth(Math.floor(Math.random() * k)).click(); }
+        else await page.waitForTimeout(100);
+      }
+      await expect(page.locator('#gNext')).toBeVisible({ timeout: 30_000 });
+      expect(await cuadra()).toBe(true);
+      await page.locator('#gNext').click();
+    }
+  };
+  await jugarManos(4);
+  await page.selectOption('#gPlayers', '3');                    // con una mano en juego, se aplica en la siguiente
+  await expect(page.locator('#gPanel')).toContainText('Desde la próxima mano jugaréis 3');
+  await jugarManos(1);
+  await expect(page.locator('.g-seat')).toHaveCount(3);
+  await jugarManos(3);
+  await page.selectOption('#gPlayers', 'var');
+  await jugarManos(8);
+  const n = await page.locator('.g-seat').count();
+  expect(n).toBeGreaterThanOrEqual(3); expect(n).toBeLessThanOrEqual(6);
+});

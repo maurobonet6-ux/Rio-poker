@@ -8,9 +8,12 @@ body.game-open { overflow: hidden; }
 /* Cabecera */
 .g-top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
   padding: calc(10px + env(safe-area-inset-top, 0px)) 18px 10px; background: rgba(8,8,10,0.86); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
-.g-back, .g-speed { background: var(--panel-2); border: 1px solid var(--line); color: var(--cream); font: inherit; font-weight: 700; font-size: 0.85rem;
+.g-back, .g-speed, .g-players select { background: var(--panel-2); border: 1px solid var(--line); color: var(--cream); font: inherit; font-weight: 700; font-size: 0.85rem;
   border-radius: 999px; padding: 8px 14px; cursor: pointer; }
-.g-back:hover, .g-speed:hover { border-color: var(--gold); }
+.g-back:hover, .g-speed:hover, .g-players select:hover { border-color: var(--gold); }
+.g-players { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+.g-players select { text-transform: none; letter-spacing: 0; appearance: auto; }
+.g-players option { background: #141416; color: var(--cream); }
 .g-title { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 1.15rem; }
 .g-title small { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.7rem; color: var(--cream-dim); margin-left: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
 .g-stats { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
@@ -56,8 +59,8 @@ body.game-open { overflow: hidden; }
 
 /* Asientos (centro de cada asiento, en % de la mesa) */
 .g-seat { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 2; transition: opacity .3s; }
-.g-seat.s0 { left: 50%; top: 100%; } .g-seat.s1 { left: 11%; top: 84%; } .g-seat.s2 { left: 11%; top: 16%; }
-.g-seat.s3 { left: 50%; top: 0%; }   .g-seat.s4 { left: 89%; top: 16%; } .g-seat.s5 { left: 89%; top: 84%; }
+.g-seat.sl-b { left: 50%; top: 100%; } .g-seat.sl-bl { left: 11%; top: 84%; } .g-seat.sl-l { left: 4%; top: 50%; } .g-seat.sl-tl { left: 11%; top: 16%; }
+.g-seat.sl-t { left: 50%; top: 0%; } .g-seat.sl-tr { left: 89%; top: 16%; } .g-seat.sl-r { left: 96%; top: 50%; } .g-seat.sl-br { left: 89%; top: 84%; }
 .g-plate { display: flex; align-items: center; gap: 8px; background: linear-gradient(180deg, #1f1f24, #121215); border: 2px solid #2c2c33;
   border-radius: 999px; padding: 4px 14px 4px 4px; min-width: 132px; box-shadow: 0 8px 22px rgba(0,0,0,0.55); transition: border-color .2s, box-shadow .2s; }
 .g-av { position: relative; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-size: 1.45rem;
@@ -87,11 +90,10 @@ body.game-open { overflow: hidden; }
 /* Apuestas: las fichas delante de cada asiento, hacia el centro */
 .g-bet { position: absolute; display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.5); border-radius: 999px; padding: 3px 10px 3px 4px;
   font-size: 0.8rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; animation: g-pop .25s ease both; }
-.g-seat.s0 .g-bet { top: -58px; left: 50%; transform: translateX(-50%); }
 .g-seat.hero .g-bet { top: -44px; left: calc(50% + 110px); transform: none; }
-.g-seat.s1 .g-bet { left: calc(100% + 8px); top: 0; } .g-seat.s2 .g-bet { left: calc(100% + 8px); bottom: 0; }
-.g-seat.s3 .g-bet { bottom: -34px; left: 50%; transform: translateX(-50%); }
-.g-seat.s4 .g-bet { right: calc(100% + 8px); bottom: 0; } .g-seat.s5 .g-bet { right: calc(100% + 8px); top: 0; }
+.g-seat.sl-bl .g-bet { left: calc(100% + 8px); top: 0; } .g-seat.sl-l .g-bet { left: calc(100% + 8px); top: 40%; } .g-seat.sl-tl .g-bet { left: calc(100% + 8px); bottom: 0; }
+.g-seat.sl-t .g-bet { bottom: -34px; left: 50%; transform: translateX(-50%); }
+.g-seat.sl-tr .g-bet { right: calc(100% + 8px); bottom: 0; } .g-seat.sl-r .g-bet { right: calc(100% + 8px); top: 40%; } .g-seat.sl-br .g-bet { right: calc(100% + 8px); top: 0; }
 
 /* Final de la mano */
 .g-fin { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4; text-align: center; min-width: 260px;
@@ -161,7 +163,8 @@ body.game-open { overflow: hidden; }
   .g-title { font-size: 1rem; } .g-title small { display: none; }
   .g-stats { order: 3; width: 100%; margin-left: 0; justify-content: center; }
   .g-stats span { font-size: 0.72rem; padding: 4px 9px; }
-  .g-speed { margin-left: auto; font-size: 0.75rem; padding: 6px 10px; }
+  .g-speed { font-size: 0.75rem; padding: 6px 10px; }
+  .g-players { margin-left: auto; } .g-players span { display: none; } .g-players select { font-size: 0.75rem; padding: 6px 8px; }
   .g-main { padding: 8px 10px 16px; gap: 12px; }
   .g-table { width: calc(100% - 64px); aspect-ratio: 0.72; margin: 62px auto 80px; }
   .g-felt { border-width: 11px; }
@@ -171,8 +174,8 @@ body.game-open { overflow: hidden; }
   .g-board { gap: 4px; }
   .g-seat:not(.hero) .g-card { width: 28px; height: 39px; font-size: 0.68rem; }
   .g-seat.hero .g-card { width: 50px; height: 70px; font-size: 1.1rem; }
-  .g-seat.s1 { left: 2%; top: 74%; } .g-seat.s2 { left: 2%; top: 30%; } .g-seat.s3 { left: 50%; top: 1%; }
-  .g-seat.s4 { left: 98%; top: 30%; } .g-seat.s5 { left: 98%; top: 74%; }
+  .g-seat.sl-bl { left: 2%; top: 74%; } .g-seat.sl-l { left: 2%; top: 52%; } .g-seat.sl-tl { left: 2%; top: 30%; } .g-seat.sl-t { left: 50%; top: 1%; }
+  .g-seat.sl-tr { left: 98%; top: 30%; } .g-seat.sl-r { left: 98%; top: 52%; } .g-seat.sl-br { left: 98%; top: 74%; }
   .g-plate { min-width: 0; padding: 3px 9px 3px 3px; gap: 5px; }
   .g-av { width: 30px; height: 30px; font-size: 1.05rem; }
   .g-info b { font-size: 0.7rem; } .g-info span { font-size: 0.72rem; }
@@ -181,10 +184,10 @@ body.game-open { overflow: hidden; }
   .g-bubble { font-size: 0.64rem; padding: 3px 7px; top: -20px; }
   .g-bet { font-size: 0.7rem; padding: 2px 8px 2px 3px; }
   .g-pot i, .g-bet i { width: 11px; height: 11px; border-width: 2px; }
-  .g-seat.s1 .g-bet, .g-seat.s2 .g-bet { left: calc(100% + 2px); }
-  .g-seat.s4 .g-bet, .g-seat.s5 .g-bet { right: calc(100% + 2px); }
+  .g-seat.sl-bl .g-bet, .g-seat.sl-l .g-bet, .g-seat.sl-tl .g-bet { left: calc(100% + 2px); }
+  .g-seat.sl-tr .g-bet, .g-seat.sl-r .g-bet, .g-seat.sl-br .g-bet { right: calc(100% + 2px); }
   .g-seat.hero .g-bet { top: -40px; left: calc(50% + 70px); }
-  .g-seat.s3 .g-bet { bottom: -28px; }
+  .g-seat.sl-t .g-bet { bottom: -28px; }
   .g-actions { position: sticky; bottom: 0; z-index: 6; border-radius: 16px 16px 0 0; margin: 0 -10px; width: auto; padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
   .g-btns { grid-template-columns: 1fr 1.15fr 1.35fr auto; gap: 6px; }
   .g-b { padding: 13px 6px; font-size: 0.88rem; border-radius: 12px; }
