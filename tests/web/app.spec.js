@@ -417,28 +417,38 @@ test('sin datos en la página pero con la cookie de sesión: recupera la sesión
   await expect.poll(() => llamadas.includes('check-pro')).toBe(true); // después comprueba la cuenta como siempre
 });
 
-test('partida de práctica: se juegan manos completas contra RÍO y se repasan tus decisiones', async ({ page }) => {
-  test.setTimeout(120_000);
-  await abrir(page);
+test('partida de práctica: mesa de 6 a pantalla completa, manos completas y repaso de decisiones', async ({ page }) => {
+  test.setTimeout(150_000);
+  await abrir(page, { storage: { rio_pp_speed: 'rapida' } });
   await page.locator('#partidaLink').click();
-  await expect(page.locator('#helpModal.show .pp-table')).toBeVisible();
-  await expect(page.locator('#helpBody')).toContainText('fichas de práctica, sin valor');
-  const fichas = async () => (await page.locator('.pp-stack').allTextContents()).reduce((t, x) => t + parseFloat(x.replace(/\./g, '').replace(',', '.')), 0);
-  for (let mano = 0; mano < 4; mano++){
-    for (let paso = 0; paso < 40; paso++){
-      if (await page.locator('#ppNext').isVisible()) break;
-      const botones = page.locator('[data-pp]');
-      if (await botones.count()){
-        // Unas manos juega tranquilo (pasar/pagar) y otras al azar, para probar subidas y todo
-        const n = await botones.count();
-        await botones.nth(mano % 2 ? Math.floor(Math.random() * n) : Math.min(1, n - 1)).click();
-      } else await page.waitForTimeout(300);
+  await expect(page.locator('#gameView')).toBeVisible();
+  await expect(page.locator('.g-seat')).toHaveCount(6);
+  await expect(page.locator('.g-seat.hero .g-card:not(.g-back)')).toHaveCount(2);   // tus cartas, boca arriba
+  expect(page.url()).toContain('#partida');
+  const cuadra = () => page.evaluate(() => Math.abs(window.RIO_PARTIDA._fichas() - window.RIO_PARTIDA._esperadas()) < 0.01);
+  for (let mano = 0; mano < 5; mano++){
+    const hasta = Date.now() + 60_000;
+    for (let paso = 0; Date.now() < hasta; paso++){
+      if (await page.locator('#gNext').isVisible()) break;
+      const acts = page.locator('.g-actions [data-act]:not([data-act="hint"])');
+      if (await acts.count()){
+        expect(await cuadra()).toBe(true);                       // en mitad de la mano tampoco se pierden fichas
+        const n = await acts.count();
+        if (paso === 0 && mano === 1) await page.locator('[data-act="hint"]').click();   // la pista
+        await acts.nth(mano % 2 ? Math.floor(Math.random() * n) : 1).click();
+      } else await page.waitForTimeout(120);
     }
-    await expect(page.locator('#ppNext')).toBeVisible({ timeout: 20_000 });
-    await expect(page.locator('.pp-res')).toBeVisible();
-    expect(await fichas()).toBeCloseTo(400, 5);                   // las fichas ni se crean ni se pierden
-    await page.locator('#ppNext').click();
+    await expect(page.locator('#gNext')).toBeVisible({ timeout: 30_000 });
+    expect(await cuadra()).toBe(true);
+    await page.locator('.g-tabs [data-tab="repaso"]').click();
+    await expect(page.locator('#gPanel')).not.toBeEmpty();
+    await page.locator('#gNext').click();
   }
   const st = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_partidas')));
-  expect(st.manos).toBe(4);
+  expect(st.manos).toBe(5);
+  await page.locator('.g-tabs [data-tab="sesion"]').click();
+  await expect(page.locator('#gPanel')).toContainText('manos jugadas');
+  await page.locator('#gClose').click();
+  await expect(page.locator('#gameView')).toBeHidden();
+  expect(page.url()).not.toContain('#partida');
 });

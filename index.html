@@ -64,6 +64,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/app.css">
+<link rel="stylesheet" href="/partida.css">
 </head>
 <body>
 <div class="inapp-bar" id="inappBar" hidden>
@@ -701,6 +702,37 @@
   </div>
 </div>
 
+<!-- Partida de práctica: mesa de 6 a pantalla completa (partida.js) -->
+<section class="game-view" id="gameView" hidden aria-label="Partida de práctica">
+  <header class="g-top">
+    <button type="button" class="g-back" id="gClose" aria-label="Volver a RÍO">← <span>Volver</span></button>
+    <div class="g-title">🃏 Partida de práctica <small>fichas sin valor</small></div>
+    <div class="g-stats" id="gStats"></div>
+    <button type="button" class="g-speed" id="gSpeed" title="Velocidad de los rivales">▶ Normal</button>
+  </header>
+  <div class="g-main">
+    <div class="g-stage">
+      <div class="g-table">
+        <div class="g-felt">
+          <div class="g-logo">RÍO</div>
+          <div class="g-center">
+            <div class="g-street" id="gStreet"></div>
+            <div class="g-board" id="gBoard"></div>
+            <div class="g-pot" id="gPot"></div>
+          </div>
+        </div>
+        <div id="gSeats"></div>
+        <div class="g-fin" id="gFin" hidden></div>
+      </div>
+      <div class="g-actions" id="gActions"></div>
+    </div>
+    <aside class="g-side">
+      <div class="g-tabs"><button type="button" data-tab="mano">Mano</button><button type="button" data-tab="repaso">Repaso</button><button type="button" data-tab="sesion">Sesión</button></div>
+      <div class="g-panel" id="gPanel"></div>
+    </aside>
+  </div>
+</section>
 <script defer src="/app.js"></script>
+<script defer src="/partida.js"></script>
 </body>
 </html>
