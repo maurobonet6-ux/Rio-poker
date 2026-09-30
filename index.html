@@ -119,18 +119,21 @@
   <section class="panel" id="cardsPanel">
     <div class="panel-head"><div class="panel-num">1</div><h2><small class="step-lbl easy-only">Paso 1 de 3</small>Tus cartas</h2></div>
     <div class="entry-q">¿Cómo quieres introducir tu mano?</div>
+    <div class="entry-row">
     <label class="entry-shot" for="screenshotInput" id="uploadBox">
-      <span class="entry-shot-title">📸 Analiza desde una captura <span class="pro-badge" id="uploadProBadge">PRO</span></span>
+      <span class="tile-lbl" aria-hidden="true"><span class="t-ic">📸</span><span class="t-tit">Captura</span></span>
+      <span class="entry-shot-title"><span class="es-long">📸 Analiza desde una captura</span> <span class="pro-badge" id="uploadProBadge">PRO</span></span>
       <span class="entry-shot-sub">Sube una captura y RÍO detectará cartas, board, bote, apuestas y posiciones.</span>
       <span class="entry-shot-btn">Subir captura</span>
       <small id="uploadSub">1 crédito de IA</small>
       <input type="file" id="screenshotInput" accept="image/*" hidden>
     </label>
     <div class="quick-fill">
-      <button type="button" class="quick-btn story-btn" id="storyBtn">🎙️ Cuéntame tu mano<small>Díctala o escríbela como a un amigo</small><span class="quick-foot"><span class="pro-badge" id="storyProBadge">PRO</span> 1 crédito de IA</span></button>
-      <button type="button" class="quick-btn pro-only" id="importBtn">📋 Importar historial<small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
+      <button type="button" class="quick-btn story-btn" id="storyBtn"><span class="tile-lbl" aria-hidden="true"><span class="t-ic">🎙️</span><span class="t-tit">Cuéntamela</span></span><span class="es-long">🎙️ Cuéntame tu mano</span><small>Díctala o escríbela como a un amigo</small><span class="quick-foot"><span class="pro-badge" id="storyProBadge">PRO</span> 1 crédito de IA</span></button>
+      <button type="button" class="quick-btn pro-only" id="importBtn"><span class="tile-lbl" aria-hidden="true"><span class="t-ic">📋</span><span class="t-tit">Historial</span></span><span class="es-long">📋 Importar historial</span><small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
     </div>
-    <button type="button" class="entry-manual" id="manualBtn"><span class="em-ic">✍️</span><span class="em-txt"><b>Introducir manualmente</b><small>Elige tus cartas paso a paso · gratis</small></span><span class="em-go">Empezar ↓</span></button>
+    <button type="button" class="entry-manual" id="manualBtn"><span class="tile-lbl" aria-hidden="true"><span class="t-ic">✍️</span><span class="t-tit">A mano</span><span class="t-sub">Gratis</span></span><span class="em-ic">✍️</span><span class="em-txt"><b>Introducir manualmente</b><small>Elige tus cartas paso a paso · gratis</small></span><span class="em-go">Empezar ↓</span></button>
+    </div>
     <div class="shared-banner" id="sharedBanner" style="display:none;"></div>
     <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
     <div class="table-grid">

@@ -370,3 +370,14 @@ test('estadísticas: una guía también guarda de dónde llega la persona (y no 
   await page.goto('http://rio.test/manos/aks/?utm_source=otra');
   expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('pokerred');
 });
+
+test('móvil: las formas de meter la mano van en una fila y tus cartas se ven sin bajar', async ({ page }) => {
+  test.skip(page.viewportSize().width > 680, 'solo en el móvil');
+  await abrir(page);
+  const y = async (sel) => (await page.locator(sel).boundingBox()).y;
+  const fila = await y('#uploadBox');
+  expect(Math.abs(await y('#storyBtn') - fila)).toBeLessThan(3);
+  expect(Math.abs(await y('#manualBtn') - fila)).toBeLessThan(3);
+  await expect(page.locator('#holeRow')).toBeInViewport();
+  await page.locator('#manualBtn').click(); // sigue funcionando como antes
+});
