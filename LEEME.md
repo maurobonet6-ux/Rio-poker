@@ -113,6 +113,21 @@ Las carpetas `glosario/` y `tablas/`, `seo.css`, `sitemap.xml` y `robots.txt` se
 
 Vuelve a ejecutarlo si cambias los textos del glosario o los rangos (están en ese mismo archivo) y sube los cambios. Cuando la web esté publicada, puedes dar de alta `https://rio-poker.vercel.app/sitemap.xml` en Google Search Console para que Google las encuentre antes.
 
+## Canal de Telegram (pregunta del día)
+
+`api/telegram.js` publica cada día, sobre las 19:00 (hora de España en verano; 18:00 en invierno),
+una encuesta tipo cuestionario en el canal y un mensaje con el enlace a la página que la explica.
+Las preguntas están en `lib/telegram-quizzes.js`; al acabar la lista vuelve a empezar. La hora
+está en `vercel.json` → `crons` (en UTC).
+
+1. En Telegram, habla con **@BotFather** → `/newbot` y guarda el token que te da.
+2. Añade el bot como **administrador** de tu canal (con permiso para publicar).
+3. En Vercel → Settings → Environment Variables añade:
+   - `TELEGRAM_BOT_TOKEN`: el token del paso 1.
+   - `TELEGRAM_CHANNEL`: el canal con @, por ejemplo `@riopoker`.
+   - `CRON_SECRET`: cualquier clave larga inventada (Vercel la usa para lanzar el cron).
+4. Vuelve a desplegar. Para probarlo sin esperar: Vercel → Settings → Cron Jobs → **Run**.
+
 ## Pruebas automáticas
 
 En `tests/` están las pruebas de RÍO:
