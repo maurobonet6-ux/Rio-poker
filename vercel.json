@@ -10,6 +10,9 @@
     { "source": "/api/track", "destination": "/api/account?action=track" },
     { "source": "/api/stats", "destination": "/api/account?action=stats" }
   ],
+  "crons": [
+    { "path": "/api/telegram", "schedule": "0 17 * * *" }
+  ],
   "redirects": [
     { "source": "/ig", "destination": "/?utm_source=instagram", "permanent": false },
     { "source": "/yt", "destination": "/?utm_source=youtube", "permanent": false },
