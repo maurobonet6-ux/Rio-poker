@@ -47,6 +47,7 @@ Este proyecto tiene estas partes:
    | `GMAIL_APP_PASSWORD` | Contraseña de aplicación de esa cuenta (16 letras) | Ver abajo |
    | `CREDIT_PACKS` | (Opcional) Reconocer los packs por su Price ID: `priceId:créditos`, p. ej. `price_AAA:100`. Si no se pone, se reconocen por importe: 2,99 € → 100, 6,99 € → 300, 17,99 € → 1.000 (`CREDIT_PACK_AMOUNTS` para cambiarlo) | Stripe → Catálogo de productos → cada pack → Price ID (`price_...`) |
    | `CREDIT_PACK_PRICE_ID` y `CREDITS_PER_PACK` | (Antiguo) el pack de 50 créditos; se sigue reconociendo | — |
+   | `STATS_KEY` | (Opcional) clave larga (16+ caracteres) para que n8n lea `/api/stats` con la cabecera `x-api-key` | — |
    | `ADMIN_EMAILS` | (Opcional) emails con PRO gratis, separados por comas | — |
 
    - Guarda y ve a Deployments → vuelve a desplegar (Redeploy) para que las variables se apliquen.
