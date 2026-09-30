@@ -138,6 +138,7 @@ test('sin cuenta: 1 análisis de prueba y después pide crear la cuenta gratis',
   await ponerBote(page, 9, 4);
   await analizar(page);
   await expect(page.locator('#trialNudge')).toBeVisible();
+  await expect(page.locator('#trialNudge')).toContainText('10 análisis más');
   await page.locator('#resetBtn').click();
   await ponerMano(page, ['Js', 'Jh']);
   await ponerBote(page, 9, 4);
@@ -380,4 +381,13 @@ test('móvil: las formas de meter la mano van en una fila y tus cartas se ven si
   expect(Math.abs(await y('#manualBtn') - fila)).toBeLessThan(3);
   await expect(page.locator('#holeRow')).toBeInViewport();
   await page.locator('#manualBtn').click(); // sigue funcionando como antes
+});
+
+test('ejemplo: "Ver el análisis completo" enseña el resultado entero sin gastar análisis', async ({ page }) => {
+  await abrir(page);
+  if (page.viewportSize().width < 1100) await page.locator('#demoPanel summary').click();
+  await page.locator('#demoLoadBtn').click();
+  await expect(page.locator('#resultPanel.show')).toBeVisible();
+  await expect(page.locator('#demoNext')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('rio_anon_used'))).toBeNull();
 });

@@ -10,7 +10,7 @@
   const RANK_PLURAL = {14:'Ases',13:'Reyes',12:'Reinas',11:'Jotas',10:'Dieces',9:'Nueves',8:'Ochos',7:'Sietes',6:'Seises',5:'Cincos',4:'Cuatros',3:'Treses',2:'Doses'};
   const SLOT_ORDER = [{zone:'hole',idx:0},{zone:'hole',idx:1},{zone:'board',idx:0},{zone:'board',idx:1},{zone:'board',idx:2},{zone:'board',idx:3},{zone:'board',idx:4}];
 
-  const FREE_LIMIT = 5;
+  const FREE_LIMIT = 10; // análisis gratis con cuenta (lo cuenta el servidor)
   const MONTHLY_CREDITS = 200;           // créditos de IA incluidos en PRO cada mes (igual que lib/quota.js)
   const PHOTOS_INCLUDED = MONTHLY_CREDITS;
   const APP_VERSION = 'v1.4'; // única versión de la app: se muestra en el menú y en Tu plan
@@ -747,8 +747,8 @@
     storageSet('rio_mode', pro ? 'pro' : 'facil');
     document.querySelectorAll('.mode-switch button').forEach(b => b.classList.toggle('active', b.dataset.mode === (pro ? 'pro' : 'facil')));
     document.getElementById('modeNote').innerHTML = pro
-      ? '<b>Modo Avanzado:</b> rango del rival, stacks, EV, SPR y todas las estadísticas.'
-      : '<b>Modo Fácil:</b> te lo explicamos en palabras sencillas. Toca los <b>?</b> para aprender cada término.';
+      ? '<span class="mn-long"><b>Modo Avanzado:</b> rango del rival, stacks, EV, SPR y todas las estadísticas.</span><span class="mn-short">Rango del rival, stacks, EV y SPR</span>'
+      : '<span class="mn-long"><b>Modo Fácil:</b> te lo explicamos en palabras sencillas. Toca los <b>?</b> para aprender cada término.</span><span class="mn-short">Todo explicado en palabras sencillas</span>';
   }
   document.querySelectorAll('.mode-switch button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
   setMode(storageGet('rio_mode', 'facil'));
@@ -2672,7 +2672,7 @@
     const sharedRun = freeRun || isDemoHand(); freeRun = false; // manos compartidas y la de ejemplo no gastan análisis
     let trialRun = false;
     if (!isPro() && !sharedRun && !storageGet('rio_token', '')){
-      // Sin cuenta: 1 análisis de prueba; después, cuenta gratis para 5 más.
+      // Sin cuenta: 1 análisis de prueba; después, cuenta gratis para 10 más.
       if (storageGet('rio_anon_used', false)){ openPaywall('free'); pendingAnalyze = true; return; }
       storageSet('rio_anon_used', true); trialRun = true;
     }
@@ -3022,7 +3022,8 @@
   });
   // En ordenador el ejemplo ocupa la columna derecha: se enseña abierto desde el principio.
   if (window.matchMedia && window.matchMedia('(min-width: 1100px)').matches) document.getElementById('demoPanel').open = true;
-  document.getElementById('demoLoadBtn').addEventListener('click', loadDemo);
+  // "Ver el análisis completo": carga la mano de ejemplo y la analiza (no gasta análisis gratis).
+  document.getElementById('demoLoadBtn').addEventListener('click', () => { loadDemo(); setTimeout(() => document.getElementById('analyzeBtn').click(), 300); });
   const backToStart = () => { document.getElementById('resetBtn').click(); document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   document.getElementById('demoOwnBtn').addEventListener('click', backToStart);
   document.getElementById('againBtn').addEventListener('click', backToStart);
