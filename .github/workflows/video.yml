@@ -7,8 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       mano:
-        description: 'Mano en JSON: {"id":"ajo-utg","mano":["Ah","Jd"],"mesa":["Jc","7s","2d"],"bote":24,"pagar":12}'
-        required: true
+        description: 'auto (mano al azar) o una mano en JSON: {"id":"ajo-utg","mano":["Ah","Jd"],"mesa":["Jc","7s","2d"],"bote":24,"pagar":12}'
+        required: false
+        default: 'auto'
         type: string
       texto:
         description: 'Texto que acompaña al vídeo en Telegram (opcional)'
