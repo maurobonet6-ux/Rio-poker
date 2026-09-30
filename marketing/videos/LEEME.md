@@ -75,6 +75,7 @@ node generar.js '{"id":"fd-turn","mano":["Ah","5h"],"mesa":["Kh","9h","4c","2s"]
 - `bote` = lo que había **más** la apuesta del rival · `pagar` = la apuesta · `stack` (opcional) = fichas del rival (si es ≤ `pagar`, all-in).
 - `gancho`, `nota0`, `nota1` (opcionales, sin HTML): el título y las frases del vídeo. Si no se ponen, se usan textos genéricos.
 - Si los datos no cuadran, o RÍO recomienda subir/pasar en vez de pagar/tirar, termina con código 2 y un mensaje claro: hay que probar otra mano.
+- `node generar.js auto` (o sin argumentos) elige manos al azar hasta que RÍO recomiende pagar o tirar (máximo 8 intentos), sin gastar nada de IA.
 - Tarda ~2 minutos. `construir.js` valida los datos y monta el guion; `manos-lista.js` junta estas manos con las de `manos.js`.
 
 El workflow `.github/workflows/video.yml` ejecuta todo en GitHub Actions y manda el mp4 a Telegram. Necesita los secretos
