@@ -536,13 +536,17 @@ body:not(.mode-pro) section.step-done .panel-num::after { content: '✓'; font-s
 .more-nudge .more-btns button { flex: 1; min-width: 140px; }
 body:not(.mode-pro) .stat-grid { grid-template-columns: 1fr 1fr; }
 .mode-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
-.mode-switch { display: flex; flex-shrink: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
+.mode-switch { display: flex; flex-shrink: 0; background: var(--panel-2); border: 1px solid rgba(232,40,63,0.45); box-shadow: 0 0 0 3px rgba(232,40,63,0.08); border-radius: 12px; padding: 3px; }
 .mode-switch button {
   border: none; background: none; color: var(--cream-dim); font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700; font-size: 0.85rem; padding: 9px 14px; border-radius: 9px; cursor: pointer; transition: background .15s, color .15s;
+  font-weight: 700; font-size: 0.95rem; padding: 11px 18px; border-radius: 9px; cursor: pointer; transition: background .15s, color .15s;
 }
 .mode-switch button.active { background: var(--gold); color: #fff; }
 .mode-note { font-size: 0.78rem; color: var(--cream-dim); line-height: 1.4; }
+.mode-note .mn-short { display: none; }
+.mode-lbl { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cream-dim); }
+.demo-more { font-size: 0.82rem; color: var(--cream); line-height: 1.4; margin: 12px 0 8px; }
+.demo-more b { color: var(--gold); }
 .mode-note b { color: var(--cream); }
 
 /* ---- Botón de ayuda (?) ---- */
@@ -912,8 +916,10 @@ body.tourney .tourney-show { display: block !important; }
   .brand h1 .h1-sub { font-size: 0.82rem; margin-top: 6px; }
   .brand > p:not(.tagline-actions) { display: none; }
   .tagline-actions { margin: 4px 0 0; font-size: 0.8rem; }
-  .mode-row { margin-top: 10px; }
-  .mode-note { display: none; }
+  .mode-row { margin-top: 10px; flex-wrap: wrap; row-gap: 6px; }
+  .mode-note { flex-basis: 100%; }
+  .mode-note .mn-long { display: none; }
+  .mode-note .mn-short { display: inline; }
   .demo-panel { padding: 10px 14px; margin-bottom: 12px; }
   #cardsPanel { padding-top: 16px; }
   .entry-q { margin-bottom: 10px; }
@@ -931,4 +937,13 @@ body.tourney .tourney-show { display: block !important; }
   .entry-row .entry-shot-title { font-size: 0; margin: 0; }
   .entry-row .quick-foot { font-size: 0; margin-top: 0; }
   .entry-row .pro-badge { font-size: 0.55rem; padding: 1px 5px; margin: 0; vertical-align: 0; }
+}
+
+/* La caja de la captura, algo más compacta (en el móvil ya es un botón de la fila). */
+@media (min-width: 681px) {
+  .entry-shot { padding: 14px 16px 12px; }
+  .entry-shot-title { font-size: 0.95rem; }
+  .entry-shot-sub { font-size: 0.8rem; margin: 6px auto 10px; }
+  .entry-shot-btn { padding: 9px 22px; font-size: 0.85rem; }
+  .entry-shot small { margin-top: 8px; }
 }
