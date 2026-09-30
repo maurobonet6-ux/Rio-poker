@@ -63,3 +63,20 @@ Para «Qué es RÍO», `WARP=0:0,2.05:3.35,3.95:5.55,5.45:7.85 node video-que-es
 
 `mezclar-voz.py` corta la voz por sus silencios, limpia la voz, baja los efectos mientras se habla y deja
 el volumen a -14 LUFS (el de TikTok e Instagram).
+
+## Vídeos automáticos desde datos (n8n → GitHub → Telegram)
+
+`generar.js` hace un vídeo «¿Qué harías tú?» a partir de una mano en JSON, sin tocar `manos.js`:
+
+```bash
+node generar.js '{"id":"fd-turn","mano":["Ah","5h"],"mesa":["Kh","9h","4c","2s"],"bote":30,"pagar":10,"gancho":"Proyecto de color en el turn"}'
+```
+
+- `bote` = lo que había **más** la apuesta del rival · `pagar` = la apuesta · `stack` (opcional) = fichas del rival (si es ≤ `pagar`, all-in).
+- `gancho`, `nota0`, `nota1` (opcionales, sin HTML): el título y las frases del vídeo. Si no se ponen, se usan textos genéricos.
+- Si los datos no cuadran, o RÍO recomienda subir/pasar en vez de pagar/tirar, termina con código 2 y un mensaje claro: hay que probar otra mano.
+- Tarda ~2 minutos. `construir.js` valida los datos y monta el guion; `manos-lista.js` junta estas manos con las de `manos.js`.
+
+El workflow `.github/workflows/video.yml` ejecuta todo en GitHub Actions y manda el mp4 a Telegram. Necesita los secretos
+`TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID` (Settings → Secrets and variables → Actions). n8n lo lanza con la API de GitHub
+(`POST /repos/<dueño>/Rio-poker/actions/workflows/video.yml/dispatches`, con `ref: main` e `inputs.mano` = el JSON como texto).

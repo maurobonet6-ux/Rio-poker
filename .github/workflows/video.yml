@@ -1,0 +1,66 @@
+# Genera el vídeo «¿Qué harías tú?» de una mano y lo manda al Telegram del dueño.
+# Lo lanza n8n (o a mano desde la pestaña Actions) pasando la mano como JSON.
+# Necesita dos secretos del repositorio: TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID.
+name: Generar vídeo
+
+on:
+  workflow_dispatch:
+    inputs:
+      mano:
+        description: 'Mano en JSON: {"id":"ajo-utg","mano":["Ah","Jd"],"mesa":["Jc","7s","2d"],"bote":24,"pagar":12}'
+        required: true
+        type: string
+      texto:
+        description: 'Texto que acompaña al vídeo en Telegram (opcional)'
+        required: false
+        type: string
+
+jobs:
+  video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Instalar el navegador
+        run: npx playwright install --with-deps chromium
+      - name: Instalar numpy (para el sonido)
+        run: pip install numpy
+      - name: Generar el vídeo y mandarlo a Telegram
+        env:
+          MANO: ${{ inputs.mano }}
+          TEXTO: ${{ inputs.texto }}
+          BOT: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          set +e
+          node marketing/videos/generar.js "$MANO" 2>&1 | tee log.txt
+          estado=${PIPESTATUS[0]}
+          if [ -z "$BOT" ] || [ -z "$CHAT" ]; then
+            echo "::warning::Faltan los secretos TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID: el vídeo solo queda como artefacto."
+            [ "$estado" -eq 0 ] || exit "$estado"
+            exit 0
+          fi
+          if [ "$estado" -eq 0 ]; then
+            video=$(ls marketing/videos/salida/rio-*.mp4 | head -n1)
+            curl -sS -f "https://api.telegram.org/bot${BOT}/sendVideo" \
+              -F chat_id="$CHAT" -F video=@"$video" -F supports_streaming=true \
+              -F caption="${TEXTO:0:1000}" > /dev/null
+          else
+            aviso=$(grep -E 'Mano no válida|no es válido' log.txt | tail -n1)
+            curl -sS -f "https://api.telegram.org/bot${BOT}/sendMessage" \
+              -d chat_id="$CHAT" --data-urlencode "text=⚠️ No se pudo hacer el vídeo: ${aviso:-error inesperado, mira los registros de GitHub Actions}" > /dev/null
+            exit "$estado"
+          fi
+      - name: Guardar el vídeo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: video
+          path: marketing/videos/salida/rio-*.mp4
+          retention-days: 3
+          if-no-files-found: ignore
