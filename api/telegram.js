@@ -64,6 +64,7 @@ async function handler(req, res){
     });
   } catch(e){
     try { await redisCmd(['DEL', `telegram:publicado:${day}`]); if (number) await redisCmd(['DECR', 'telegram:numero']); } catch(_){} // así se puede reintentar
+    console.error('No se pudo publicar en Telegram:', e.message); // se ve en Vercel → Logs
     res.status(502).json({ error: e.message }); return;
   }
   res.status(200).json({ ok: true, day, number: quiz.number });
