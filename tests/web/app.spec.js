@@ -90,8 +90,10 @@ test('resultado: decisión, resumen, por qué, análisis completo y qué pasa si
 
 test('mano de ejemplo: se carga, se analiza y no gasta el análisis de prueba', async ({ page }) => {
   const { llamadas } = await abrir(page);
-  await expect(page.locator('#demoCard')).toBeHidden(); // el panel empieza cerrado
-  await page.locator('#demoPanel summary').click();
+  if (page.viewportSize().width < 1100){ // en el móvil el panel empieza cerrado; en ordenador ya está abierto a la derecha
+    await expect(page.locator('#demoCard')).toBeHidden();
+    await page.locator('#demoPanel summary').click();
+  }
   await expect(page.locator('#demoCard')).toBeVisible();
   await expect(page.locator('#demoDec .decision-badge')).toContainText('PAGA');
   await page.locator('#demoLoadBtn').click();
@@ -103,11 +105,31 @@ test('mano de ejemplo: se carga, se analiza y no gasta el análisis de prueba', 
   await expect(page.locator('#holeRow .cardslot.empty')).toHaveCount(2);
 });
 
-test('el ejemplo solo aparece en modo Fácil', async ({ page }) => {
+test('el ejemplo: en el móvil solo en modo Fácil; en ordenador también en Avanzado (columna derecha)', async ({ page }) => {
   await abrir(page);
   await expect(page.locator('#demoPanel')).toBeVisible();
   await page.locator('.mode-switch [data-mode="pro"]').click();
-  await expect(page.locator('#demoPanel')).toBeHidden();
+  if (page.viewportSize().width < 1100) await expect(page.locator('#demoPanel')).toBeHidden();
+  else await expect(page.locator('#demoPanel')).toBeVisible();
+});
+
+test('ordenador: dos columnas, pasos a la izquierda y ejemplo o resultado a la derecha; móvil: una columna', async ({ page }) => {
+  await abrir(page);
+  const caja = async (sel) => page.locator(sel).boundingBox();
+  const cartas = await caja('#cardsPanel'), ejemplo = await caja('#demoPanel');
+  if (page.viewportSize().width >= 1100){
+    expect(ejemplo.x).toBeGreaterThan(cartas.x + cartas.width - 1);   // al lado
+    expect(Math.abs(ejemplo.y - cartas.y)).toBeLessThan(5);           // a la misma altura
+    expect((await caja('#tablePanel')).x).toBe(cartas.x);             // los pasos, uno debajo de otro
+    await page.locator('#demoLoadBtn').click();
+    await analizar(page);
+    await expect(page.locator('#demoPanel')).toBeHidden();            // el resultado ocupa su sitio
+    const res = await caja('#resultPanel');
+    expect(res.x).toBeGreaterThan(cartas.x + cartas.width - 1);
+  } else {
+    expect(Math.abs(ejemplo.x - cartas.x)).toBeLessThan(5);
+    expect(cartas.y).toBeGreaterThan(ejemplo.y + ejemplo.height - 1); // uno debajo de otro
+  }
 });
 
 test('sin cuenta: 1 análisis de prueba y después pide crear la cuenta gratis', async ({ page }) => {
@@ -347,4 +369,15 @@ test('estadísticas: una guía también guarda de dónde llega la persona (y no 
   expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('pokerred');
   await page.goto('http://rio.test/manos/aks/?utm_source=otra');
   expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('pokerred');
+});
+
+test('móvil: las formas de meter la mano van en una fila y tus cartas se ven sin bajar', async ({ page }) => {
+  test.skip(page.viewportSize().width > 680, 'solo en el móvil');
+  await abrir(page);
+  const y = async (sel) => (await page.locator(sel).boundingBox()).y;
+  const fila = await y('#uploadBox');
+  expect(Math.abs(await y('#storyBtn') - fila)).toBeLessThan(3);
+  expect(Math.abs(await y('#manualBtn') - fila)).toBeLessThan(3);
+  await expect(page.locator('#holeRow')).toBeInViewport();
+  await page.locator('#manualBtn').click(); // sigue funcionando como antes
 });
