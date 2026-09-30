@@ -879,3 +879,56 @@ body.tourney .tourney-show { display: block !important; }
 .free-note { background: var(--ok-soft); color: var(--cream); border: 1px solid rgba(61,220,122,0.35); border-radius: 12px; padding: 11px 13px; font-size: 0.88rem; line-height: 1.4; }
 #restoreHint { font-size: 0.82rem; color: var(--cream-dim); line-height: 1.4; margin-top: 12px !important; }
 .see-plans { color: var(--cream-dim); font-weight: 600; font-size: 0.8rem; text-decoration: underline; }
+
+/* Ordenador (pantallas anchas): dos columnas. A la izquierda los pasos (cartas, mesa, bote);
+   a la derecha, arriba del todo, el ejemplo de cómo analiza RÍO y, al analizar, el resultado en su lugar.
+   En el móvil y la tablet todo sigue en una columna. */
+@media (min-width: 1100px) {
+  .wrap { max-width: 1360px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 26px; align-items: start;
+    grid-template-areas: "hero hero" "cards side" "table side" "bets side" "hist hist" "faq faq" "foot foot"; }
+  .wrap > * { grid-column: 1 / -1; }
+  header.hero { grid-area: hero; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 28px;
+    padding-bottom: 14px; margin-bottom: 18px; }
+  header.hero .brand-row { display: contents; }
+  header.hero .brand { grid-column: 1; grid-row: 1; }
+  header.hero .brand > p:not(.tagline-actions) { display: none; }
+  header.hero .mode-row { grid-column: 2; grid-row: 1; margin-top: 0; }
+  header.hero .menu-btn { grid-column: 3; grid-row: 1; }
+  header.hero .steps-nav, header.hero .steps-labels { grid-column: 1 / -1; }
+  #cardsPanel { grid-area: cards; } #tablePanel { grid-area: table; } #betsPanel { grid-area: bets; }
+  #historyPanel { grid-area: hist; } #faq { grid-area: faq; } footer { grid-area: foot; }
+  #demoPanel, #resultPanel { grid-area: side; }
+  /* El ejemplo también en Avanzado (así la columna derecha nunca está vacía); se quita al salir el resultado. */
+  body.mode-pro #demoPanel { display: block !important; }
+  .wrap:has(#resultPanel.show) #demoPanel { display: none !important; }
+}
+
+/* Móvil: cabecera más corta y las formas de meter la mano en una fila de botones,
+   para que al entrar ya se vean las casillas de tus cartas. */
+.tile-lbl { display: none; }
+@media (max-width: 680px) {
+  header.hero { padding-bottom: 12px; margin-bottom: 14px; }
+  .brand h1 { font-size: 2.3rem; }
+  .brand h1 .h1-sub { font-size: 0.82rem; margin-top: 6px; }
+  .brand > p:not(.tagline-actions) { display: none; }
+  .tagline-actions { margin: 4px 0 0; font-size: 0.8rem; }
+  .mode-row { margin-top: 10px; }
+  .mode-note { display: none; }
+  .demo-panel { padding: 10px 14px; margin-bottom: 12px; }
+  #cardsPanel { padding-top: 16px; }
+  .entry-q { margin-bottom: 10px; }
+  .entry-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+  body.mode-pro .entry-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .entry-row .quick-fill { display: contents; }
+  .entry-row .entry-shot, .entry-row .quick-btn, .entry-row .entry-manual { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    gap: 4px; text-align: center; padding: 12px 6px 10px; border-radius: 14px; min-height: 104px; }
+  .entry-row .tile-lbl { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .entry-row .t-ic { font-size: 1.6rem; line-height: 1; }
+  .entry-row .t-tit { font-weight: 800; font-size: 0.82rem; line-height: 1.15; text-transform: none; letter-spacing: 0; }
+  .entry-row .t-sub { font-size: 0.66rem; color: var(--cream-dim); }
+  .entry-row .es-long, .entry-row .entry-shot-sub, .entry-row .entry-shot-btn, .entry-row #uploadSub, .entry-row .quick-btn small,
+  .entry-row .em-ic, .entry-row .em-txt, .entry-row .em-go { display: none; }
+  .entry-row .entry-shot-title { font-size: 0; margin: 0; }
+  .entry-row .quick-foot { font-size: 0; margin-top: 0; }
+  .entry-row .pro-badge { font-size: 0.55rem; padding: 1px 5px; margin: 0; vertical-align: 0; }
+}
