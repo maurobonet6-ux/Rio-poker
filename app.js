@@ -1819,6 +1819,7 @@
   document.getElementById('importBtn').addEventListener('click', openImport);
   document.getElementById('trainLink').addEventListener('click', openTrainer);
   document.getElementById('partidaLink').addEventListener('click', openPartida);
+  document.getElementById('playBanner').addEventListener('click', openPartida);
 
   // ---- Cuéntame tu mano (texto o voz → mano rellenada) ----
   const escHTML = (x) => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -1931,7 +1932,6 @@
     return (Array.isArray(d.notes) ? d.notes : []).filter(n => typeof n === 'string' && n.trim()).slice(0, 5);
   }
   document.getElementById('storyBtn').addEventListener('click', openStory);
-  document.getElementById('navStory').addEventListener('click', openStory);
 
   // ---- Tus datos en la cuenta (historial, estadísticas, entrenamiento, ajustes) ----
   // Se guardan también en el servidor para no perderlos al cambiar de móvil.
