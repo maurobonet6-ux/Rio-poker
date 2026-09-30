@@ -28,8 +28,8 @@ jobs:
       - run: npm ci
       - name: Instalar el navegador
         run: npx playwright install --with-deps chromium
-      - name: Instalar numpy (para el sonido)
-        run: pip install numpy
+      - name: Instalar numpy (sonido) y ffmpeg (vídeo)
+        run: pip install numpy imageio-ffmpeg
       - name: Generar el vídeo y mandarlo a Telegram
         env:
           MANO: ${{ inputs.mano }}
