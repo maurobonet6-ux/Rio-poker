@@ -1094,3 +1094,10 @@ body.view-open { overflow: hidden; }
 .hh-why { margin: 0 0 12px; color: var(--cream); }
 .hh-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-top: 6px; }
 .hh-actions .btn-primary, .hh-actions .btn-secondary { width: 100%; min-width: 0; }
+/* Entrenamiento por temas */
+.train-topics { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 14px; }
+.tt-chip { border: 1px solid var(--line); background: var(--panel-2); color: var(--cream-dim); font: inherit; font-weight: 700; font-size: 0.8rem; border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+.tt-chip:hover { color: var(--cream); border-color: rgba(232,40,63,0.5); }
+.tt-chip.on { color: var(--cream); border-color: var(--gold); background: var(--gold-soft); }
+.train-locked { padding: 16px; border-radius: 14px; border: 1px dashed var(--line); background: var(--panel-2); }
+.train-locked p { color: var(--cream-dim); }

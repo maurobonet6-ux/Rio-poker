@@ -1663,12 +1663,15 @@
       <button type="button" class="pr-card hot" data-pr="train"><span class="pr-ic">🎯</span><b>Entrenamiento</b>
         <span>Situaciones sueltas: ¿pagas, subes o tiras? RÍO te corrige al momento.</span>
         <small>${t.n ? `${t.n} situaciones · ${Math.round(t.ok / t.n * 100)}% acertadas` : 'Empieza ahora · gratis'}</small></button>
+      <button type="button" class="pr-card" data-pr="errores"><span class="pr-ic">🧠</span><b>Entrenar mis errores</b>
+        <span>Situaciones del tipo que más fallas, sacadas de tus manos y de tu entrenamiento.</span>
+        <small>${errorSpots().length >= ERR_MIN ? `${errorSpots().length} decisiones mejorables tuyas` : 'Se desbloquea al analizar más manos'}</small></button>
       <button type="button" class="pr-card" data-pr="partida"><span class="pr-ic">🃏</span><b>Partida de práctica</b>
         <span>Manos completas contra 2 a 6 rivales con estilos distintos. Al acabar, RÍO repasa tus decisiones.</span><small>Fichas sin valor</small></button>
       <button type="button" class="pr-card" data-pr="tablas"><span class="pr-ic">📊</span><b>Tablas de manos</b><span>Qué manos abrir desde cada posición, en cash y torneo.</span></button>
       <button type="button" class="pr-card" data-pr="glosario"><span class="pr-ic">📖</span><b>Glosario de póker</b><span>Equity, pot odds, outs, SPR… explicados fácil.</span></button>
     </div>`;
-    const act = { train: () => openTrainer(), partida: () => openPartida(), tablas: () => openCharts(), glosario: () => openGlossary() };
+    const act = { train: () => openTrainer(), errores: () => openTrainer('errores'), partida: () => openPartida(), tablas: () => openCharts(), glosario: () => openGlossary() };
     body.querySelectorAll('[data-pr]').forEach(b => b.addEventListener('click', () => act[b.dataset.pr]()));
   }
 
@@ -1731,22 +1734,81 @@
   const TRAIN_SPOTS = [['BTN','BB'],['CO','BB'],['BB','BTN'],['SB','BB'],['UTG','BB'],['BTN','SB'],['HJ','BTN'],['BB','CO'],['CO','BTN']];
   let trainQ = null;
   const pickRand = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  function newTrainQ(){
+  // Temas del entrenamiento: solo cambian qué situaciones salen; la corrección es la de siempre (recommend).
+  const TRAIN_TOPICS = [['todo', 'Todo'], ['preflop', 'Preflop'], ['flop', 'Flop'], ['turn', 'Turn'], ['river', 'River'],
+    ['3bet', '3-bet'], ['cbet', 'C-bet'], ['bluff', 'Faroles'], ['potodds', 'Pot odds'], ['errores', '🎯 Mis errores']];
+  // Abrió el rival (vp) y te toca a ti (hp): pagar, resubir (3-bet) o tirar.
+  const VSOPEN_SPOTS = [['BTN','CO'],['BTN','HJ'],['CO','HJ'],['BB','BTN'],['SB','BTN'],['BB','CO'],['HJ','UTG'],['BTN','UTG'],['SB','CO']];
+  const CBET_SPOTS = [['BTN','BB'],['CO','BB'],['HJ','BB'],['UTG','BB'],['BTN','SB']];
+  // Una situación de un tipo concreto: open (abrir o tirar), vsopen (te abren), facing (te apuestan), checked (nadie ha apostado).
+  function makeTrainQ(s, kind, spots){
     const deck = drawN(fullDeck(), 7);
     const hero = [deck[0], deck[1]];
-    const r = Math.random();
-    const s = r < 0.2 ? 0 : r < 0.5 ? 1 : r < 0.75 ? 2 : 3;
-    if (s === 0) return { s, hero, board: [], hp: pickRand(['UTG','HJ','CO','BTN','SB']), vp: null, pot: 3, call: 0, kind: 'open' };
-    const [hp, vp] = pickRand(TRAIN_SPOTS);
+    if (kind === 'open') return { s: 0, hero, board: [], hp: pickRand(['UTG','HJ','CO','BTN','SB']), vp: null, pot: 3, call: 0, kind };
+    if (kind === 'vsopen'){
+      const [hp, vp] = pickRand(VSOPEN_SPOTS);
+      const posted = hp === 'SB' ? 0.5 : hp === 'BB' ? 1 : 0;
+      return { s: 0, hero, board: [], hp, vp, pot: 4, call: 2.5 - posted, kind };
+    }
+    const [hp, vp] = pickRand(spots || TRAIN_SPOTS);
     const potBefore = Math.round(6 + Math.random() * 54);
-    const facing = Math.random() < 0.6;
-    const bet = facing ? Math.max(1, Math.round(potBefore * pickRand([0.33, 0.5, 0.66, 1]))) : 0;
-    return { s, hero, board: deck.slice(2, 2 + [0, 3, 4, 5][s]), hp, vp, pot: potBefore + bet, call: bet, kind: facing ? 'facing' : 'checked' };
+    const bet = kind === 'facing' ? Math.max(1, Math.round(potBefore * pickRand([0.33, 0.5, 0.66, 1]))) : 0;
+    return { s, hero, board: deck.slice(2, 2 + [0, 3, 4, 5][s]), hp, vp, pot: potBefore + bet, call: bet, kind };
+  }
+  const randStreet = () => 1 + Math.floor(Math.random() * 3);
+  const postflopKind = () => Math.random() < 0.6 ? 'facing' : 'checked';
+  // Tus errores (de tus manos y del entrenamiento) convertidos en tipos de situación, para repetir las que fallas.
+  function errorSpots(){
+    const rows = [...Object.values(storageGet('rio_reviews', {})).flatMap(x => x.rows), ...storageGet('rio_train_log', [])].filter(r => r.g && r.g !== 'ok');
+    return rows.map(r => {
+      const both = [r.rec, r.act];
+      if (r.k) return { s: r.s, kind: r.k };
+      if (both.includes('CHECK') || both.includes('BET')) return { s: Math.max(1, r.s), kind: 'checked' };
+      if (r.s === 0) return { s: 0, kind: both.includes('CALL') ? 'vsopen' : 'open' };
+      return { s: r.s, kind: 'facing' };
+    });
+  }
+  const ERR_MIN = 3; // con menos errores no hay base para personalizar
+  function newTrainQ(topic){
+    switch (topic){
+      case 'preflop': return makeTrainQ(0, Math.random() < 0.5 ? 'open' : 'vsopen');
+      case 'flop': return makeTrainQ(1, postflopKind());
+      case 'turn': return makeTrainQ(2, postflopKind());
+      case 'river': return makeTrainQ(3, postflopKind());
+      case '3bet': return makeTrainQ(0, 'vsopen');
+      case 'cbet': return makeTrainQ(1, 'checked', CBET_SPOTS);
+      case 'bluff': { // situaciones sin apuesta en las que tu mano va por detrás: ¿farol o pasar?
+        let q;
+        for (let i = 0; i < 12; i++){ q = makeTrainQ(randStreet(), 'checked'); if (runEquity(q.hero, q.board, 1, 300, poolFromSet(topRange(55))).win < 45) break; }
+        return q;
+      }
+      case 'potodds': { // te apuestan y la decisión de pagar está ajustada
+        let q;
+        for (let i = 0; i < 10; i++){
+          q = makeTrainQ(randStreet(), 'facing');
+          const r = runEquity(q.hero, q.board, 1, 300, poolFromSet(topRange(55))), needed = q.call / (q.pot + q.call) * 100;
+          if (Math.abs(r.win + r.tie / 2 - needed) <= 12) break;
+        }
+        return q;
+      }
+      case 'errores': { const sp = pickRand(errorSpots()); return makeTrainQ(sp.s, sp.kind); }
+      default: {
+        const r = Math.random();
+        const s = r < 0.2 ? 0 : r < 0.5 ? 1 : r < 0.75 ? 2 : 3;
+        return s === 0 ? makeTrainQ(0, Math.random() < 0.7 ? 'open' : 'vsopen') : makeTrainQ(s, postflopKind());
+      }
+    }
   }
   function solveTrainQ(q){
     if (q.kind === 'open'){
       const top = handTopPercent(q.hero[0], q.hero[1]), lim = OPEN_PCT[q.hp];
       return { rec: top <= lim ? 'RAISE' : 'FOLD', top, lim, close: Math.abs(top - lim) <= 3 };
+    }
+    if (q.kind === 'vsopen'){
+      const pool = poolFromSet(topRange(OPEN_PCT[q.vp] || 30));
+      const oop = POSITION_ORDER.indexOf(q.hp) <= POSITION_ORDER.indexOf(q.vp);
+      const reco = recommend({ heroCards: q.hero, boardCards: [], pot: q.pot, toCall: q.call, rivals: 1, pool, oop, street: 0, heroPos: q.hp, unraised: false, iters: 1500 });
+      return { rec: reco.text, eq: reco.eq, needed: reco.needed, oop, close: Math.abs(reco.eq - reco.needed) <= 3 };
     }
     let pool = poolFromSet(topRange(q.vp === 'BB' ? 55 : (OPEN_PCT[q.vp] || 30)));
     if (q.kind === 'facing') pool = withBluffs(pool, q.board, 0.55, 0.1, q.hero);
@@ -1758,19 +1820,35 @@
     const bluff = reco.kind === 'bluff' ? reco.bc : null;
     return { rec: reco.text, eq, needed, oop, bluff, downgraded: reco.downgraded, close: q.call > 0 && Math.abs(eq - needed) <= 3 };
   }
-  function openTrainer(){
+  function openTrainer(topic){
     closeSidebar();
-    trainQ = newTrainQ();
+    if (typeof topic === 'string' && TRAIN_TOPICS.some(([k]) => k === topic)) storageSet('rio_train_topic', topic);
+    const cur = storageGet('rio_train_topic', 'todo');
+    const chips = `<div class="train-topics" role="group" aria-label="Tema">${TRAIN_TOPICS.map(([k, l]) => `<button type="button" class="tt-chip${k === cur ? ' on' : ''}" data-topic="${k}">${l}</button>`).join('')}</div>`;
+    const bindChips = (body) => body.querySelectorAll('[data-topic]').forEach(b => b.addEventListener('click', () => openTrainer(b.dataset.topic)));
+    // Entrenar mis errores: solo con errores reales tuyos; si no hay bastantes, se dice.
+    if (cur === 'errores' && errorSpots().length < ERR_MIN){
+      const body = openModal('🎯 Entrenamiento', `${chips}<div class="train-locked"><b>🔒 Entrenamiento personalizado</b>
+        <p>Analiza más manos para desbloquear entrenamiento personalizado. Necesitamos al menos ${ERR_MIN} decisiones tuyas mejorables (de tus manos, diciendo qué hiciste, o del entrenamiento).</p>
+        <p class="hint">Ahora tienes ${errorSpots().length}.</p><button type="button" class="btn-primary" id="trainGoAnalyze" style="width:100%;">Analizar una mano</button></div>`, { wide: true });
+      bindChips(body);
+      body.querySelector('#trainGoAnalyze').addEventListener('click', () => { closeModal(); showView(null); });
+      return;
+    }
+    trainQ = newTrainQ(cur);
     const q = trainQ, stats = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
     const opts = q.kind === 'open' ? [['FOLD', 'Tirar'], ['RAISE', 'Subir']]
+      : q.kind === 'vsopen' ? [['FOLD', 'Tirar'], ['CALL', 'Pagar'], ['RAISE', 'Resubir (3-bet)']]
       : q.kind === 'facing' ? [['FOLD', 'Tirar'], ['CALL', 'Pagar'], ['RAISE', 'Subir']]
       : [['CHECK', 'Pasar'], ['BET', 'Apostar']];
     const question = q.kind === 'open'
       ? `Estás en <b>${q.hp}</b> y nadie ha entrado antes que tú. ¿Abres (subes) o tiras?`
-      : `Estás en <b>${q.hp}</b> contra <b>${q.vp}</b>, en el <b>${STREET_NAMES[q.s].toLowerCase()}</b>. ${q.kind === 'facing'
+      : q.kind === 'vsopen'
+      ? `Estás en <b>${q.hp}</b>. <b>${q.vp}</b> abre subiendo a <b>2,5 ciegas</b> y los demás se retiran. Te cuesta <b>${fmtN(q.call)}</b> ciegas pagar. ¿Qué haces?`
+      : `Estás en <b>${q.hp}</b> contra <b>${q.vp}</b>, en el <b>${STREET_NAMES[q.s].toLowerCase()}</b>. ${cur === 'cbet' && q.kind === 'checked' ? 'Subiste antes del flop, te pagaron y ahora tu rival pasa. ' : ''}${q.kind === 'facing'
           ? `El bote es de <b>${q.pot}</b> y tu rival apuesta <b>${q.call}</b> (ya incluido). ¿Qué haces?`
           : `El bote es de <b>${q.pot}</b> y nadie ha apostado. ¿Qué haces?`}`;
-    const body = openModal('🎯 Entrenamiento', `
+    const body = openModal('🎯 Entrenamiento', `${chips}
       <button type="button" class="link-btn" id="trainToGame" style="display:block; margin:0 0 10px;">🃏 ¿Prefieres una mano completa? Juega una partida de práctica →</button>
       <div class="train-score">Mano ${stats.n + 1} · ${stats.ok}/${stats.n} acertadas${stats.streak > 1 ? ` · 🔥 racha de ${stats.streak}` : ''}</div>
       <div class="train-cards"><div><div class="zone-label">Tu mano</div>${q.hero.map(c => cardHTML(c, true)).join('')}</div>
@@ -1779,6 +1857,7 @@
       <div class="train-opts">${opts.map(([v, l]) => `<button type="button" class="btn-secondary" data-ans="${v}">${l}</button>`).join('')}</div>
       <div id="trainResult"></div>`, { wide: true });
     body.querySelectorAll('[data-ans]').forEach(b => b.addEventListener('click', () => answerTrainer(b.dataset.ans)));
+    bindChips(body);
     body.querySelector('#trainToGame').addEventListener('click', openPartida);
   }
   function answerTrainer(act){
@@ -1793,9 +1872,10 @@
       const stats = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
       stats.n++; if (g === 'ok'){ stats.ok++; stats.streak++; } else stats.streak = 0;
       storageSet('rio_train', stats);
-      const log = storageGet('rio_train_log', []); log.push({ s: q.s, rec: sol.rec, act, g }); storageSet('rio_train_log', log.slice(-300));
+      const log = storageGet('rio_train_log', []); log.push({ s: q.s, rec: sol.rec, act, g, k: q.kind }); storageSet('rio_train_log', log.slice(-300));
       let why;
-      if (q.kind === 'open') why = `Tu mano está en el <b>top ${Math.max(1, Math.round(sol.top))}%</b> y desde ${q.hp} se suele abrir aproximadamente el <b>${sol.lim}%</b> de las manos.`;
+      if (q.kind === 'vsopen') why = `Contra lo que suele abrir ${q.vp} (~${OPEN_PCT[q.vp]}% de las manos) ganas unas <b>${of20(sol.eq)} de cada 20</b> y para pagar necesitas <b>${of20(sol.needed)}</b>.${sol.rec === 'RAISE' ? ' Tu mano es lo bastante fuerte para <b>resubir (3-bet)</b>.' : ''}`;
+      else if (q.kind === 'open') why = `Tu mano está en el <b>top ${Math.max(1, Math.round(sol.top))}%</b> y desde ${q.hp} se suele abrir aproximadamente el <b>${sol.lim}%</b> de las manos.`;
       else if (sol.bluff && sol.bluff.better) why = `Tu mano no es la mejor (ganas unas ${of20(sol.eq)} de cada 20), pero si apuestas el rival se retira unas <b>${of20(sol.bluff.f * 100)} de cada 20</b> veces: el farol compensa.`;
       else if (q.kind === 'facing' && sol.downgraded) why = `Vas por delante de buena parte de su rango (ganas unas ${of20(sol.eq)} de cada 20), pero si subes solo te pagarían las manos que te ganan: <b>paga</b>.`;
       else if (q.kind === 'facing') why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces y para que pagar compense necesitas <b>${of20(sol.needed)}</b>.<span class="pro-only"> (Equity ${sol.eq.toFixed(1).replace('.', ',')}% · necesitas ${sol.needed.toFixed(1).replace('.', ',')}%)</span>`;
@@ -1810,7 +1890,7 @@
         ${funnel ? `<div class="train-funnel">🎯 <b>Ya llevas ${stats.n} situaciones.</b> ¿Quieres analizar tus propias manos?
           <button type="button" class="btn-primary" id="trainToAnalyzer" style="width:100%; margin-top:10px;">Ir al analizador →</button></div>` : ''}
         <button type="button" class="${funnel ? 'btn-secondary' : 'btn-primary'}" id="trainNext" style="width:100%;">Siguiente mano →</button>`;
-      document.getElementById('trainNext').addEventListener('click', openTrainer);
+      document.getElementById('trainNext').addEventListener('click', () => openTrainer());
       if (funnel) document.getElementById('trainToAnalyzer').addEventListener('click', () => {
         helpModal.classList.remove('show');
         document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' });

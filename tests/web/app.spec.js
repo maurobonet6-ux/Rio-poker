@@ -569,3 +569,25 @@ test('historial interactivo: abrir una mano, ver su ficha y reanalizarla sin dup
   await expect(page.locator('#resultPanel')).toHaveClass(/show/);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history')).length)).toBe(1);
 });
+
+test('entrenamiento por temas: 3-bet pregunta si resubir y "mis errores" pide datos reales', async ({ page }) => {
+  await abrir(page);
+  await page.evaluate(() => document.getElementById('navTrain').click());
+  await page.locator('[data-topic="3bet"]').click();
+  await expect(page.locator('#helpBody')).toContainText('abre subiendo a');
+  await expect(page.locator('[data-ans="RAISE"]')).toContainText('3-bet');
+  await page.locator('[data-ans="CALL"]').click();
+  await expect(page.locator('.train-verdict')).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('rio_train_log')).pop().k)).toBe('vsopen');
+  await page.locator('[data-topic="errores"]').click();
+  await expect(page.locator('#helpBody')).toContainText('Analiza más manos para desbloquear entrenamiento personalizado');
+});
+
+test('entrenar mis errores: con errores reales saca situaciones de ese tipo', async ({ page }) => {
+  const rows = [1, 2, 3].map(i => ({ s: 3, rec: 'FOLD', act: 'CALL', g: 'bad', pos: 'BTN vs BB', pt: '', bc: 1, loss: 1 }));
+  await abrir(page, { storage: { rio_reviews: { x: { t: Date.now(), rows } } } });
+  await page.evaluate(() => document.getElementById('navTrain').click());
+  await page.locator('[data-topic="errores"]').click();
+  await expect(page.locator('#helpBody')).toContainText('river');
+  await expect(page.locator('[data-ans="CALL"]')).toBeVisible();
+});
