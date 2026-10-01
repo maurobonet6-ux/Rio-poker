@@ -162,7 +162,7 @@ section.panel {
   padding-right: 34px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
 }
 /* Las dos posiciones ocupan media fila cada una: con 4 columnas el texto salía cortado. */
-@media (min-width: 781px) { #tablePanel .inputs-row > .field:nth-child(-n+2) { grid-column: span 2; } #tablePanel .inputs-row { align-items: end; } }
+@media (min-width: 781px) { #tablePanel .inputs-row > .field:nth-child(-n+2) { grid-column: span 2; align-self: end; } }
 .field label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--cream-dim); margin-bottom: 7px; font-weight: 700; }
 .field-wide { grid-column: 1 / -1; }
 .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
