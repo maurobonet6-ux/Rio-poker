@@ -72,6 +72,19 @@ async function renderizarMudo({ archivoHtml, total, salida, tiempo = t => t, fon
 // html: página completa con window.setup() (opcional) y window.render(t).
 // eventos: sonidos [{ t, tipo }] (whoosh, tick, ding, riser, pop). snap: segundos de los que sacar una captura en vez del vídeo.
 // narracion: [{ id, texto, en, limite }] frases de la voz en off (en = cuándo empieza, limite = el siguiente momento que no debe pisar).
+// Si una frase dura más que su hueco, se acelera un poco (sin cambiar el tono) en vez de congelar la imagen esperándola.
+// Así el vídeo fluye con cualquier voz, también con las más lentas. Lo que aun así no quepa (más de ACELERA_MAX) sí hace pausa.
+const ACELERA_MAX = 1.35;
+function acomodar(sintesis, narracion, margen = 0.35){
+  for (const f of narracion){
+    const d = sintesis.dur[f.id], hueco = f.limite - f.en - margen;
+    if (d == null || hueco <= 0.3 || d <= hueco * 1.02) continue;
+    const t = Math.min(d / hueco, ACELERA_MAX), wav = sintesis.archivo(f.id), tmp = wav + '.tmp.wav';
+    try { execFileSync(ffmpeg(), ['-y', '-loglevel', 'error', '-i', wav, '-filter:a', `atempo=${t.toFixed(3)}`, '-c:a', 'pcm_s16le', tmp]); fs.renameSync(tmp, wav); sintesis.dur[f.id] = +(d / t).toFixed(3); }
+    catch (e){ /* se queda como estaba y el hueco se resuelve con una pausa */ }
+  }
+}
+
 async function grabar({ html, nombre, total, eventos = [], snap, narracion = null }){
   const f = path.join(SALIDA, nombre + '.html');
   fs.writeFileSync(f, html);
@@ -94,13 +107,14 @@ async function grabar({ html, nombre, total, eventos = [], snap, narracion = nul
       let vel = +process.env.VELOCIDAD || voz.VELOCIDAD_BASE;
       for (;;){
         sintesis = voz.sintetizar(narracion, nombre, vel);
+        acomodar(sintesis, narracion);
         ajuste = ajustar(narracion, sintesis.dur, total);
         if (ajuste.total <= MAX || vel >= voz.VELOCIDAD_MAX) break;
         console.log(`Voz en off: ${ajuste.total.toFixed(1)} s con velocidad ${vel.toFixed(2)}; pruebo más rápido`);
         vel = Math.min(voz.VELOCIDAD_MAX, +(vel + 0.1).toFixed(2));
       }
       if (process.env.DEBUG_VOZ) for (const fr of narracion) console.log(`[voz] ${fr.id}: empieza en ${ajuste.inicios[fr.id].toFixed(2)} s, dura ${sintesis.dur[fr.id]} s → termina ${(ajuste.inicios[fr.id] + sintesis.dur[fr.id]).toFixed(2)} s`);
-      console.log(`Voz en off: ${narracion.length} frases, ${ajuste.pausas.length} pausa(s) añadida(s), el vídeo dura ${ajuste.total.toFixed(1)} s`);
+      console.log(`Voz en off: ${narracion.length} frases, ${ajuste.pausas.length} pausa(s) añadida(s) (${ajuste.pausas.reduce((s, p) => s + p.dur, 0).toFixed(1)} s), el vídeo dura ${ajuste.total.toFixed(1)} s`);
     } catch (e){ console.warn('Sin voz en off: ' + e.message); sintesis = null; }
   }
 
