@@ -8,7 +8,8 @@
     { "source": "/api/free-use", "destination": "/api/account?action=free-use" },
     { "source": "/api/photo-usage", "destination": "/api/account?action=photo-usage" },
     { "source": "/api/track", "destination": "/api/account?action=track" },
-    { "source": "/api/stats", "destination": "/api/account?action=stats" }
+    { "source": "/api/stats", "destination": "/api/account?action=stats" },
+    { "source": "/api/content", "destination": "/api/account?action=content" }
   ],
   "crons": [
     { "path": "/api/telegram", "schedule": "0 17 * * *" }
@@ -16,6 +17,7 @@
   "redirects": [
     { "source": "/descubre", "destination": "/", "permanent": true },
     { "source": "/descubre/", "destination": "/", "permanent": true },
+    { "source": "/v/:id", "destination": "/app/?utm_source=contenido&c=:id", "permanent": false },
     { "source": "/ig", "destination": "/?utm_source=instagram", "permanent": false },
     { "source": "/yt", "destination": "/?utm_source=youtube", "permanent": false },
     { "source": "/tt", "destination": "/?utm_source=tiktok", "permanent": false },

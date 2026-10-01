@@ -18,7 +18,7 @@ test('/descubre y /descubre/ redirigen con 301 a la portada', () => {
 
 test('portada: título, canonical, og, JSON-LD WebSite y verificación de Google', () => {
   const h = leer('index.html');
-  assert.match(h, /<title>RÍO Poker — Tu coach de póker con IA, en español<\/title>|<title>RÍO — Tu coach de póker con IA, en español<\/title>/);
+  assert.match(h, /<title>RÍO — Coach de póker con IA y calculadora en español<\/title>/); // «coach IA y calculadora», como pidió el dueño
   assert.match(h, /<link rel="canonical" href="https:\/\/riopoker\.es\/">/);
   assert.match(h, /<meta property="og:url" content="https:\/\/riopoker\.es\/">/);
   assert.match(h, /<meta property="og:site_name" content="RÍO Poker">/);

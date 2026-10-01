@@ -613,3 +613,70 @@ test('portada: la atribución de la visita (utm_source) se guarda ya en la landi
   expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('instagram');
   await expect(page.locator('h1')).toContainText('Tu coach de póker'); // sigue siendo la landing
 });
+
+test('analítica: avisa de lo que hace el usuario con un identificador anónimo, sin email', async ({ page }) => {
+  const eventos = [];
+  page.on('request', (req) => { if (new URL(req.url()).pathname === '/api/track') eventos.push(JSON.parse(req.postData() || '{}')); });
+  await abrir(page, { pro: true, storage: { rio_email: 'yo@rio.test' }, path: '/app/?utm_source=contenido&c=v42' });
+  await ponerMano(page, ['7c', '2d'], ['As', 'Kd', 'Qh']);
+  await ponerBote(page, 20, 20);
+  await analizar(page);
+  await page.locator('#youDid [data-yd="CALL"]').click();
+  await page.goto('http://rio.test/app/#/progreso');
+  await expect.poll(() => eventos.map(e => e.e)).toEqual(expect.arrayContaining(['app_open', 'analysis_started', 'analysis_completed', 'manual_analysis', 'user_action_recorded', 'progress_viewed']));
+  const an = eventos.find(e => e.e === 'analysis_completed');
+  expect(an.aid).toMatch(/^[a-z0-9]{8,32}$/);
+  expect(an.c).toBe('v42'); // llegó por el contenido v42
+  expect(an.p).toMatchObject({ via: 'manual', n: 1 });
+  expect(eventos.find(e => e.e === 'user_action_recorded').p).toMatchObject({ act: 'CALL' });
+  expect(JSON.stringify(eventos)).not.toContain('yo@rio.test');
+  // Con ?sinestadisticas no se manda nada
+  const antes = eventos.length;
+  await page.goto('http://rio.test/app/?sinestadisticas=1');
+  await page.goto('http://rio.test/app/#/progreso');
+  await page.waitForTimeout(300);
+  expect(eventos.length).toBe(antes);
+});
+
+test('administrador: ve el uso de RÍO (embudo, retención, errores) y la cola de contenidos, y aprueba una pieza', async ({ page }) => {
+  const { errores } = await abrir(page, { pro: true, admin: true, storage: { rio_admin: true, rio_email: 'admin@rio.test' } });
+  const hoy = new Date().toISOString().slice(0, 10);
+  const embudo = [['app_open', 'Abrieron RÍO', 40], ['signup_completed', 'Crearon cuenta o entraron', 12], ['analysis_completed', 'Analizaron una mano', 10]].map(([evento, nombre, usuarios]) => ({ evento, nombre, usuarios }));
+  const producto = { dias: [], embudo7: embudo, embudo30: embudo, usos7: { screenshot_analysis: 3 }, activos: { hoy: 5, semana: 40, mes: 90 },
+    retencion: [{ dia: hoy, nuevos: 10, d1: 4 }], contenidos: [{ id: '17', usuarios: 9, cuentas: 3, analizaron: 2, pro: 1 }],
+    errores: { semana: { '3|BB|CALL>FOLD': 6 }, anterior: {} } };
+  const pieza = { id: '17', status: 'READY_FOR_REVIEW', platform: 'tiktok', format: 'video', category: 'decision', hook: '¿Pagas aquí en el river?', link: 'https://riopoker.es/v/17', metrics: {}, resultados: { usuarios: 9, cuentas: 3, analizaron: 2, pro: 1 } };
+  const cambios = [];
+  await page.route('**/api/stats**', r => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify(r.request().url().includes('vista=producto') ? producto : { dias: [], porOrigen: {}, cuentasTotales: 0 }) }));
+  await page.route('**/api/content**', r => {
+    const u = new URL(r.request().url());
+    if (r.request().method() === 'POST'){ cambios.push(JSON.parse(r.request().postData())); return r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }); }
+    const body = u.searchParams.get('vista') === 'resumen'
+      ? { porEstado: { READY_FOR_REVIEW: 1 }, porCategoria: {}, porPlataforma: {}, creadasSemana: 1, publicadasSemana: 0, mejores: [pieza] }
+      : (u.searchParams.get('status') === 'READY_FOR_REVIEW' ? [pieza] : []);
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+  });
+  await page.waitForFunction(() => !!document.getElementById('navAdminContent'));
+  await page.evaluate(() => document.getElementById('navAdminStats').click());
+  await expect(page.locator('#prodStats')).toContainText('Abrieron RÍO');
+  await expect(page.locator('#prodStats')).toContainText('Pagas cuando convenía retirarse');
+  await expect(page.locator('#prodStats')).toContainText('40%'); // 4 de 10 volvieron al día siguiente
+  await page.evaluate(() => document.getElementById('navAdminContent').click());
+  await expect(page.locator('#helpBody')).toContainText('¿Pagas aquí en el river?');
+  await expect(page.locator('#helpBody')).toContainText('9 usuarios');
+  await page.locator('#helpBody [data-ok="17"]').click();
+  await expect.poll(() => cambios).toEqual([{ accion: 'actualizar', id: '17', status: 'APPROVED' }]);
+  expect(errores).toEqual([]);
+});
+
+test('portada (landing): avisa de la visita y guarda el contenido de origen; al volver de pagar en Stripe se abre la app', async ({ page }) => {
+  const eventos = [];
+  page.on('request', (req) => { if (new URL(req.url()).pathname === '/api/track') eventos.push(JSON.parse(req.postData() || '{}')); });
+  await abrir(page, { path: '/?utm_source=contenido&c=v7' });
+  await expect.poll(() => eventos.map(e => e.e)).toContain('landing_view');
+  expect(eventos.find(e => e.e === 'landing_view').c).toBe('v7');
+  expect(page.url()).not.toContain('/app/');
+  await page.goto('http://rio.test/', { referer: 'https://checkout.stripe.com/c/pay/cs_test' });
+  await page.waitForURL(/\/app\/$/);
+});

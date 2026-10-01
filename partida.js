@@ -216,6 +216,7 @@
     if (H.res.showdown && hero.mano && H.res.ganadores.some(w => w.i === 0) && (!st.mejor || hero.mano.score > st.mejor.score))
       st.mejor = { score: hero.mano.score, txt: E.categoryName(hero.mano.category, hero.mano.tiebreak) };
     E.storageSet('rio_partidas', st);
+    if (window.RIO_TRACK) window.RIO_TRACK('practice_completed', { n: H.dec.length, ok: H.dec.filter(d => d.g === 'ok').length });
   }
 
   // ---------- Lo que haría RÍO en tu lugar ----------
@@ -419,6 +420,7 @@
   // ---------- Abrir y cerrar ----------
   function abrir(){
     if (!S) cargaSesion();
+    if (window.RIO_TRACK) window.RIO_TRACK('practice_started');
     view.hidden = false; document.body.classList.add('game-open');
     if (location.hash !== '#partida') history.pushState(null, '', '#partida');
     if (!H || H.over) nuevaMano();

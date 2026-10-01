@@ -42,6 +42,9 @@
       var q = new URLSearchParams(location.search);
       if (q.has('sinestadisticas')) localStorage.setItem('rio_sin_estadisticas', '1');
       if (q.has('conestadisticas')) localStorage.removeItem('rio_sin_estadisticas');
+      // Llegó por un contenido (riopoker.es/v/<id>): se guarda para saber qué vídeo o post trae usuarios.
+      var cid = (q.get('c') || '').toLowerCase();
+      if (/^[a-z0-9-]{1,24}$/.test(cid)) localStorage.setItem('rio_c', cid);
       if (!localStorage.getItem('rio_src')){
         var src = q.get('utm_source') || '', ref = '';
         try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch(e){}

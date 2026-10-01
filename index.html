@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>/* Enlaces viejos (cuando la app estaba en «/»): #/practicar, #m=… y la app instalada en el móvil abren la app en /app/ sin enseñar la landing. */
+<script>/* Enlaces viejos (cuando la app estaba en «/»): #/practicar, #m=…, la app instalada en el móvil y la vuelta de un pago de Stripe abren la app en /app/ sin enseñar la landing. */
 (function(){var h=location.hash,s=false;try{s=!!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))}catch(e){}
-if(h.indexOf('#/')===0||h.indexOf('#m=')===0||s)location.replace('/app/'+location.search+h)})();</script>
-<title>RÍO — Tu coach de póker con IA, en español</title>
-<meta name="description" content="Analiza tus manos de póker, entiende tus errores y descubre cómo jugar mejor. Con captura, voz o historial. Gratis para empezar.">
+var st=false;try{st=/(^|\.)stripe\.com$/.test(new URL(document.referrer).hostname)}catch(e){}
+if(h.indexOf('#/')===0||h.indexOf('#m=')===0||s||st)location.replace('/app/'+location.search+h)})();</script>
+<title>RÍO — Coach de póker con IA y calculadora en español</title>
+<meta name="description" content="Coach de póker con IA y calculadora en español: analiza tus manos por captura, voz o a mano, entiende tus errores y entrena. Gratis para empezar.">
 <link rel="canonical" href="https://riopoker.es/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RÍO Poker">
@@ -30,6 +31,7 @@ if(h.indexOf('#/')===0||h.indexOf('#m=')===0||s)location.replace('/app/'+locatio
 {"@context":"https://schema.org","@type":"WebSite","name":"RÍO Poker","alternateName":["riopoker","RÍO"],"url":"https://riopoker.es/"}
 </script>
 <script>(function(){try{if(localStorage.getItem('rio_sin_estadisticas')==='1')return}catch(e){}window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};var s=document.createElement('script');s.defer=true;s.src='/_vercel/insights/script.js';document.head.appendChild(s)})();try{if(!localStorage.getItem('rio_src')){var q=new URLSearchParams(location.search),src=q.get('utm_source')||'',ref='';try{ref=document.referrer?new URL(document.referrer).hostname:''}catch(e){}if(!src&&ref&&ref!==location.hostname){var r={instagram:'instagram',youtube:'youtube',youtu:'youtube',tiktok:'tiktok',facebook:'facebook',google:'google',chatgpt:'chatgpt',reddit:'reddit',t:'telegram',telegram:'telegram',discord:'discord',x:'x',twitter:'x'},p=ref.replace(/^(www|m|l|lm)\./,'').split('.');src=r[p[0]]||p[0]}localStorage.setItem('rio_src',(src||'directo').toLowerCase().slice(0,40))}}catch(e){}</script>
+<script>/* Visita a la landing (analítica sin datos personales, ver lib/eventos.js) */(function(){try{var L=localStorage,q=new URLSearchParams(location.search),c=(q.get('c')||'').toLowerCase();if(/^[a-z0-9-]{1,24}$/.test(c))L.setItem('rio_c',c);if(L.getItem('rio_sin_estadisticas')==='1')return;var a=L.getItem('rio_aid')||'';if(!/^[a-z0-9]{8,32}$/.test(a)){a=Array.from(crypto.getRandomValues(new Uint8Array(12)),function(b){return(b%36).toString(36)}).join('');L.setItem('rio_aid',a);L.setItem('rio_fd',new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()))}navigator.sendBeacon('/api/track',new Blob([JSON.stringify({e:'landing_view',aid:a,fd:L.getItem('rio_fd')||undefined,c:L.getItem('rio_c')||undefined})],{type:'text/plain'}))}catch(e){}})();</script>
 </head>
 <body>
 <!-- Landing pública de RÍO (para quien llega de fuera). La app está en riopoker.es/app/.

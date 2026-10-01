@@ -22,7 +22,8 @@
   // cuenta aunque pagues con otro email (por ejemplo, con Apple Pay). Ver lib/stripe.js.
   let pendingPayment = null;
   function openPayment(link){
-    trackEvent('pago');
+    track('checkout_started');
+    try { localStorage.setItem('rio_checkout_t', String(Date.now())); } catch(e){}
     // Sin cuenta, el pago no se podría asociar a nadie: primero entrar o crear la cuenta gratis.
     if (!storageGet('rio_token', '')){
       pendingPayment = link;
@@ -61,10 +62,45 @@
   }
   // Valores guardados como texto simple (no JSON), p. ej. los que pone el script de estadísticas del <head>.
   function rawStorage(key){ try { return localStorage.getItem(key) || ''; } catch(e){ return ''; } }
-  // Avisa al servidor para las estadísticas del administrador (sin datos personales).
-  function trackEvent(ev){
+  // Analítica de producto (sin datos personales; ver lib/eventos.js). Cada navegador tiene un identificador
+  // anónimo y aleatorio (rio_aid) y el día en que llegó (rio_fd): así se miden el embudo y la retención.
+  // rio_c = el contenido (vídeo, post…) por el que llegó, si entró por un enlace riopoker.es/v/<id>.
+  function hoyMadrid(){
+    try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
+    catch(e){ return new Date().toISOString().slice(0, 10); }
+  }
+  function anonId(){
+    let a = rawStorage('rio_aid');
+    if (!/^[a-z0-9]{8,32}$/.test(a)){
+      a = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => (b % 36).toString(36)).join('');
+      try { localStorage.setItem('rio_aid', a); localStorage.setItem('rio_fd', hoyMadrid()); } catch(e){}
+    }
+    return a;
+  }
+  function track(e, p){
     if (rawStorage('rio_sin_estadisticas') === '1') return;
-    try { navigator.sendBeacon('/api/track?e=' + encodeURIComponent(ev)); } catch(e){}
+    try {
+      const body = JSON.stringify({ e, aid: anonId(), fd: rawStorage('rio_fd') || undefined, c: rawStorage('rio_c') || undefined, p: p || undefined });
+      navigator.sendBeacon('/api/track', new Blob([body], { type: 'text/plain' }));
+    } catch(err){}
+  }
+  window.RIO_TRACK = track; // la partida de práctica (partida.js) también avisa
+  try {
+    if (!sessionStorage.getItem('rio_open')){
+      sessionStorage.setItem('rio_open', '1');
+      track('app_open', { route: (location.hash.match(/^#\/([a-z]+)/) || [])[1] || 'analizar' });
+    }
+  } catch(e){}
+  // Cómo se metió la mano que se va a analizar: a mano, por captura, por voz o importada.
+  let inputVia = 'manual';
+  // Se hizo PRO en este navegador: solo cuenta si antes fue a pagar desde aquí (no al entrar con una cuenta PRO de antes).
+  function setPro(pro){
+    const before = isPro();
+    storageSet('rio_pro', pro);
+    if (pro && !before && Date.now() - (parseInt(rawStorage('rio_checkout_t'), 10) || 0) < 3 * 86400000){
+      track('subscription_created');
+      try { localStorage.removeItem('rio_checkout_t'); } catch(e){}
+    }
   }
   function storageSet(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} onStoredKey(key); }
 
@@ -176,6 +212,14 @@
       statsBtn.addEventListener('click', () => openAdminStats());
       document.getElementById('navInbox').insertAdjacentElement('beforebegin', statsBtn);
     } else if (!admin && statsBtn) statsBtn.remove();
+    let contentBtn = document.getElementById('navAdminContent');
+    if (admin && !contentBtn){
+      contentBtn = document.createElement('button');
+      contentBtn.type = 'button'; contentBtn.className = 'sidebar-link'; contentBtn.id = 'navAdminContent';
+      contentBtn.innerHTML = '<span class="ic">📬</span><span class="lbl">Contenidos</span><span class="admin-badge">ADMIN</span>';
+      contentBtn.addEventListener('click', () => openAdminContent());
+      document.getElementById('navInbox').insertAdjacentElement('beforebegin', contentBtn);
+    } else if (!admin && contentBtn) contentBtn.remove();
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
     document.getElementById('sidebarAccount').textContent = logged ? storageGet('rio_email', '') : 'Sin cuenta · tus datos solo en este navegador';
@@ -289,7 +333,7 @@
     const pro = await verifyProSession(deep);
     if (pro === null) return null; // sin respuesta del servidor: no tocamos nada
     if (pro === 'logout'){ logoutPro(); return false; }
-    storageSet('rio_pro', pro);
+    setPro(pro);
     refreshFreeLeft(); pullSync(); updateAccountUI();
     if (typeof updateUsageBadge === 'function') updateUsageBadge();
     refreshPhotoUsage();
@@ -1354,6 +1398,7 @@
       const hist = getHistory(), h = hist.find(x => x.t === c.t);
       if (h){ h.g = g2; h.act = act; storageSet('rio_history', hist); }
       saveReviews([{ s: c.s, rec: c.rec, act, g: g2, pos: c.pos, pt: c.pt, bc: c.river, loss: youDidLoss(c, act) }], c.sig);
+      track('user_action_recorded', { s: c.s, pos: c.pos, rec: c.rec, act, g: g2, loss: youDidLoss(c, act) });
       renderHistory();
       renderYouDid(c, act);
     }));
@@ -1653,6 +1698,7 @@
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
     if (v){ closeModal(); closeSidebar(); VIEWS[v].render(); document.getElementById(VIEWS[v].el).scrollTop = 0; }
+    if (v === 'progreso') track('progress_viewed'); else if (v === 'historial') track('history_viewed');
     updateSticky();
   }
   // La barra de navegación usa enlaces con # normales; solo hace falta saber que el cambio viene de dentro.
@@ -1828,6 +1874,7 @@
     closeSidebar();
     if (typeof topic === 'string' && TRAIN_TOPICS.some(([k]) => k === topic)) storageSet('rio_train_topic', topic);
     const cur = storageGet('rio_train_topic', 'todo');
+    track('training_started', { topic: cur });
     const chips = `<div class="train-topics" role="group" aria-label="Tema">${TRAIN_TOPICS.map(([k, l]) => `<button type="button" class="tt-chip${k === cur ? ' on' : ''}" data-topic="${k}">${l}</button>`).join('')}</div>`;
     const bindChips = (body) => body.querySelectorAll('[data-topic]').forEach(b => b.addEventListener('click', () => openTrainer(b.dataset.topic)));
     // Entrenar mis errores: solo con errores reales tuyos; si no hay bastantes, se dice.
@@ -1877,6 +1924,7 @@
       stats.n++; if (g === 'ok'){ stats.ok++; stats.streak++; } else stats.streak = 0;
       storageSet('rio_train', stats);
       const log = storageGet('rio_train_log', []); log.push({ s: q.s, rec: sol.rec, act, g, k: q.kind }); storageSet('rio_train_log', log.slice(-300));
+      track('training_completed', { topic: storageGet('rio_train_topic', 'todo'), s: q.s, rec: sol.rec, act, g });
       let why;
       if (q.kind === 'vsopen') why = `Contra lo que suele abrir ${q.vp} (~${OPEN_PCT[q.vp]}% de las manos) ganas unas <b>${of20(sol.eq)} de cada 20</b> y para pagar necesitas <b>${of20(sol.needed)}</b>.${sol.rec === 'RAISE' ? ' Tu mano es lo bastante fuerte para <b>resubir (3-bet)</b>.' : ''}`;
       else if (q.kind === 'open') why = `Tu mano está en el <b>top ${Math.max(1, Math.round(sol.top))}%</b> y desde ${q.hp} se suele abrir aproximadamente el <b>${sol.lim}%</b> de las manos.`;
@@ -2008,6 +2056,7 @@
         document.getElementById('seqBox').open = true;
         updateOrderHint(); render();
         closeModal();
+        inputVia = 'import'; track('history_import');
         const status = document.getElementById('screenshotStatus');
         status.style.display = 'block'; status.style.color = 'var(--ok)';
         status.textContent = `✅ Mano importada: tú (${h.heroPos}) contra ${h.villName} (${h.villPos}). Elige la calle y pulsa Analizar.`;
@@ -2133,6 +2182,7 @@
         if (r.status === 403 && data.error === 'LIMIT_REACHED'){ closeModal(); openCreditsModal(true); return; }
         if (!r.ok) throw new Error(data.error || 'No se pudo entender la mano.');
         const notes = applyStory(data);
+        inputVia = 'voice';
         closeModal();
         const status = document.getElementById('screenshotStatus');
         status.style.display = 'block'; status.style.color = 'var(--ok)';
@@ -2306,8 +2356,106 @@
           <thead><tr><th>Origen</th><th>Cuentas</th><th>PRO</th><th>Packs</th></tr></thead>
           <tbody>${origenes.map(([o, v]) => `<tr><td>${escHTML(o)}</td><td>${v.cuentas || 0}</td><td>${v.pro || 0}</td><td>${v.packs || 0}</td></tr>`).join('')}</tbody>
         </table></div>` : '<p class="hint">Todavía no hay cuentas nuevas con origen.</p>'}
-        <p class="hint" style="margin-top:12px;">Enlaces cortos para tus bios y mensajes (cada uno cuenta para su red): <b>riopoker.es/ig</b> (Instagram) · <b>/yt</b> (YouTube) · <b>/tg</b> (Telegram) · <b>/dc</b> (Discord) · <b>/fb</b> (Facebook) · <b>/rd</b> (Reddit) · <b>/wa</b> (WhatsApp) · <b>/tt</b> (TikTok)</p>`;
+        <p class="hint" style="margin-top:12px;">Enlaces cortos para tus bios y mensajes (cada uno cuenta para su red): <b>riopoker.es/ig</b> (Instagram) · <b>/yt</b> (YouTube) · <b>/tg</b> (Telegram) · <b>/dc</b> (Discord) · <b>/fb</b> (Facebook) · <b>/rd</b> (Reddit) · <b>/wa</b> (WhatsApp) · <b>/tt</b> (TikTok) · <b>/v/&lt;id&gt;</b> (un contenido concreto)</p>
+        <div id="prodStats"><p class="hint">Cargando el uso de RÍO…</p></div>`;
+      renderProductStats(document.getElementById('prodStats'));
     } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar las estadísticas.')}</p>`; }
+  }
+  // ---- Contenidos (cola del Content Engine; solo administrador) ----
+  // Lo normal es aprobar en Telegram a las 12:00; aquí se ve todo junto y se puede aprobar o descartar también.
+  const CT_ESTADOS = [['READY_FOR_REVIEW', 'Por revisar'], ['APPROVED', 'Aprobados'], ['SCHEDULED', 'Programados'], ['PUBLISHED', 'Publicados'],
+    ['IDEA', 'Ideas'], ['REJECTED', 'Descartados'], ['FAILED', 'Fallidos']];
+  const CT_RED = { tiktok: '🎵 TikTok', instagram: '📸 Instagram', youtube: '▶️ YouTube', telegram: '💬 Telegram', seo: '🔎 Web/SEO', otro: 'Otro' };
+  async function openAdminContent(estado){
+    closeSidebar();
+    const body = openModal('📬 Contenidos', '<p class="hint">Cargando…</p>', { wide: true });
+    const ver = estado || 'READY_FOR_REVIEW';
+    try {
+      const [rr, rl] = await Promise.all([fetch('/api/content?vista=resumen', { headers: authHeaders() }), fetch('/api/content?limit=40&status=' + ver, { headers: authHeaders() })]);
+      const r = await rr.json(), lista = await rl.json();
+      if (!rr.ok) throw new Error(r.error);
+      if (!rl.ok) throw new Error(lista.error);
+      const chips = CT_ESTADOS.map(([k, l]) => `<button type="button" class="tt-chip${k === ver ? ' on' : ''}" data-ct="${k}">${l} · ${r.porEstado[k] || 0}</button>`).join('');
+      const res = (p) => p.resultados ? `${p.resultados.usuarios} usuarios · ${p.resultados.cuentas} cuentas · ${p.resultados.analizaron} analizaron · ${p.resultados.pro} PRO` : '';
+      const met = (m) => m && m.views !== undefined ? ` · ${m.views} visualizaciones${m.likes !== undefined ? ', ' + m.likes + ' me gusta' : ''}` : '';
+      const piezas = lista.map(p => `<div class="ct-item">
+          <div class="ct-top"><b>#${escHTML(p.id)}</b> · ${CT_RED[p.platform] || escHTML(p.platform)} · ${escHTML(p.format)} · ${escHTML(p.category)}</div>
+          ${p.hook ? `<div class="ct-hook">${escHTML(p.hook)}</div>` : ''}
+          ${p.caption ? `<details><summary>Texto</summary><p class="hint" style="white-space:pre-wrap;">${escHTML(p.caption)}</p></details>` : ''}
+          ${p.script ? `<details><summary>Guion</summary><p class="hint" style="white-space:pre-wrap;">${escHTML(p.script)}</p></details>` : ''}
+          ${p.why ? `<p class="hint">Por qué: ${escHTML(p.why)}</p>` : ''}
+          <p class="hint">${escHTML(p.link)}${res(p) ? ' · ' + res(p) : ''}${met(p.metrics)}</p>
+          ${p.status === 'READY_FOR_REVIEW' ? `<div style="display:flex; gap:8px;"><button type="button" class="btn-primary" data-ok="${escHTML(p.id)}">✅ Aprobar</button><button type="button" class="btn-secondary" data-no="${escHTML(p.id)}">❌ Descartar</button></div>` : ''}
+        </div>`).join('');
+      body.innerHTML = `
+        <p class="hint">Esta semana: <b>${r.creadasSemana}</b> creados · <b>${r.publicadasSemana}</b> publicados. Cada pieza lleva su enlace <b>riopoker.es/v/&lt;id&gt;</b> para saber qué trae usuarios.</p>
+        <div class="train-topics" role="group" aria-label="Estado">${chips}</div>
+        ${piezas || '<p class="hint">No hay contenidos en este estado.</p>'}
+        ${r.mejores.length ? `<div class="sub-title" style="margin-top:16px;">Los que más usuarios traen</div>
+          <div class="stats-scroll"><table class="stats-tbl"><thead><tr><th>#</th><th>Red</th><th>Gancho</th><th>Usuarios</th><th>Analizaron</th><th>PRO</th></tr></thead>
+          <tbody>${r.mejores.map(p => `<tr><td>${escHTML(p.id)}</td><td>${CT_RED[p.platform] || escHTML(p.platform)}</td><td>${escHTML(p.hook || '')}</td><td>${p.resultados.usuarios}</td><td>${p.resultados.analizaron}</td><td>${p.resultados.pro}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
+      body.querySelectorAll('[data-ct]').forEach(b => b.addEventListener('click', () => openAdminContent(b.dataset.ct)));
+      const cambiar = async (id, status) => {
+        await fetch('/api/content', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ accion: 'actualizar', id, status }) });
+        openAdminContent(ver);
+      };
+      body.querySelectorAll('[data-ok]').forEach(b => b.addEventListener('click', () => cambiar(b.dataset.ok, 'APPROVED')));
+      body.querySelectorAll('[data-no]').forEach(b => b.addEventListener('click', () => cambiar(b.dataset.no, 'REJECTED')));
+    } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar los contenidos.')}</p>`; }
+  }
+
+  // Uso de RÍO (analítica de producto, sin datos personales): embudo, activos, retención, contenidos y errores comunes.
+  const EV_ES = { app_open: 'Abre RÍO', landing_view: 'Ve la landing', signup_started: 'Pide código', signup_completed: 'Entra en su cuenta',
+    analysis_started: 'Pulsa Analizar', analysis_completed: 'Analiza una mano', manual_analysis: '…a mano', screenshot_analysis: '…por captura',
+    voice_analysis: '…contándola', history_import: 'Importa un historial', user_action_recorded: 'Dice qué hizo', training_started: 'Abre el entrenamiento',
+    training_completed: 'Responde un ejercicio', practice_started: 'Abre la partida', practice_completed: 'Juega una mano de partida',
+    progress_viewed: 'Mira su progreso', history_viewed: 'Mira su historial', pro_clicked: 'Mira PRO', checkout_started: 'Va a pagar',
+    subscription_created: 'Se hace PRO', credit_pack_viewed: 'Mira packs', credit_pack_purchased: 'Compra un pack', share_clicked: 'Comparte una mano' };
+  async function renderProductStats(box){
+    try {
+      const r = await fetch('/api/stats?vista=producto', { headers: authHeaders() });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+      const base = (d.embudo7[0] || {}).usuarios || 0;
+      const embudo = d.embudo7.map((x, i) => `<tr><td>${escHTML(x.nombre)}</td><td>${x.usuarios}</td><td>${i ? pct(x.usuarios, base) : ''}</td><td>${d.embudo30[i].usuarios}</td></tr>`).join('');
+      const usos = Object.entries(d.usos7).map(([k, v]) => `<tr><td>${escHTML(EV_ES[k] || k)}</td><td>${v}</td></tr>`).join('');
+      const ret = d.retencion.filter(x => x.nuevos).map(x => `<tr><td>${escHTML(x.dia.slice(5))}</td><td>${x.nuevos}</td><td>${x.d1 === undefined ? '…' : pct(x.d1, x.nuevos)}</td><td>${x.d7 === undefined ? '…' : pct(x.d7, x.nuevos)}</td></tr>`).join('');
+      const cont = d.contenidos.slice(0, 15).map(x => `<tr><td>${escHTML(x.id)}</td><td>${x.usuarios}</td><td>${x.cuentas}</td><td>${x.analizaron}</td><td>${x.pro}</td></tr>`).join('');
+      const errs = Object.entries(d.errores.semana || {}).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, n]) => {
+        const [st, pos, tipo] = k.split('|');
+        return `<tr><td>${escHTML(LEAKS[tipo] || tipo)}</td><td>${escHTML((STREET_NAMES[+st] || '') + (pos !== '-' ? ' · ' + pos : ''))}</td><td>${n}</td></tr>`;
+      }).join('');
+      const tabla = (cab, filas, vacio) => filas ? `<div class="stats-scroll"><table class="stats-tbl"><thead><tr>${cab.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>${filas}</tbody></table></div>` : `<p class="hint">${vacio}</p>`;
+      box.innerHTML = `
+        <div class="sub-title" style="margin-top:16px;">Uso de RÍO</div>
+        <p class="hint">Usuarios activos: hoy <b>${d.activos.hoy}</b> · 7 días <b>${d.activos.semana}</b> · 30 días <b>${d.activos.mes}</b>. Cuenta navegadores (sin datos personales).</p>
+        ${tabla(['Embudo', '7 días', '% del 1.º', '30 días'], embudo, '')}
+        <div class="sub-title" style="margin-top:16px;">Qué usan (7 días)</div>
+        ${tabla(['Función', 'Usuarios'], usos, '')}
+        <div class="sub-title" style="margin-top:16px;">¿Vuelven? (por día de llegada)</div>
+        ${tabla(['Llegaron', 'Nuevos', 'Al día siguiente', 'A los 7 días'], ret, 'Todavía no hay datos de retención.')}
+        <div class="sub-title" style="margin-top:16px;">Contenidos que traen usuarios (/v/&lt;id&gt;)</div>
+        ${tabla(['Contenido', 'Usuarios', 'Cuentas', 'Analizaron', 'PRO'], cont, 'Todavía nadie ha llegado por un enlace /v/.')}
+        <div class="sub-title" style="margin-top:16px;">Errores más comunes esta semana (anónimos)</div>
+        ${tabla(['Error', 'Dónde', 'Veces'], errs, 'Aún no hay errores registrados esta semana.')}
+        <div class="sub-title" style="margin-top:16px;">Qué hacen en sus primeros minutos</div>
+        <div class="pp-actions" style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="btn-secondary" data-rec="nuevos">Ver usuarios nuevos</button><button type="button" class="btn-secondary" data-rec="pagaron">Ver los que pagaron</button></div>
+        <div id="recBox"></div>`;
+      box.querySelectorAll('[data-rec]').forEach(b => b.addEventListener('click', async () => {
+        const out = document.getElementById('recBox');
+        out.innerHTML = '<p class="hint">Cargando…</p>';
+        try {
+          const rr = await fetch('/api/stats?vista=recorridos&tipo=' + b.dataset.rec, { headers: authHeaders() });
+          const lista = await rr.json();
+          if (!rr.ok) throw new Error(lista.error);
+          const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+          out.innerHTML = lista.length ? lista.map(u => `<details class="stats-rec"><summary>${escHTML(u.usuario)} · ${u.eventos.length} pasos</summary><ol>${u.eventos.map(ev =>
+            `<li><b>${mmss(ev.seg)}</b> ${escHTML(EV_ES[ev.e] || ev.e)}${ev.p && ev.p.via ? ' (' + escHTML(ev.p.via) + ')' : ''}${ev.p && ev.p.topic ? ' (' + escHTML(ev.p.topic) + ')' : ''}</li>`).join('')}</ol></details>`).join('')
+            : '<p class="hint">Todavía no hay recorridos de este tipo.</p>';
+        } catch(err){ out.innerHTML = `<p class="hint">${escHTML(err.message || 'No se pudieron cargar.')}</p>`; }
+      }));
+    } catch(e){ box.innerHTML = `<p class="hint">${escHTML(e.message || 'No se pudo cargar el uso de RÍO.')}</p>`; }
   }
 
   // ---- Compartir una mano por enlace ----
@@ -2399,6 +2547,7 @@
   async function shareHand(code){
     const url = typeof code === 'string' ? `${location.origin}/app/#m=${code}` : shareUrl();
     const text = `¿Tú qué harías con ${lastHandLabel || 'esta mano'}? Mírala en RÍO:`;
+    track('share_clicked');
     const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
     if (navigator.share && touch){
       try { await navigator.share({ title: 'RÍO — mano de póker', text, url }); return; } catch(e){ if (e && e.name === 'AbortError') return; }
@@ -2563,6 +2712,7 @@
   ['hfStreet', 'hfDec', 'hfEv', 'hfErr'].forEach(id => document.getElementById(id).addEventListener('change', renderHistory));
 
   function openPaywall(mode){
+    if (mode !== 'login' && mode !== 'free') track('pro_clicked', { plan: mode || 'limite' });
     if (mode === 'login'){
       document.getElementById('paywallTitle').textContent = 'Entra o crea tu cuenta gratis';
       document.getElementById('paywallCopy').innerHTML = 'Escribe tu email para entrar <b>en este dispositivo</b>. No hace falta contraseña: te enviamos un código. Tus manos y estadísticas se guardan en tu cuenta.';
@@ -2598,6 +2748,7 @@
     document.getElementById('creditsCopy').innerHTML = (out ? `Has gastado tus créditos. Los <b>${MONTHLY_CREDITS} de RÍO PRO</b> se renuevan cada mes; si no quieres esperar, compra un pack. ` : `RÍO PRO incluye <b>${MONTHLY_CREDITS} créditos de IA al mes</b>. Si necesitas más, compra un pack. `) +
       'Los análisis manuales siguen siendo <b>ilimitados</b>.';
     const packs = activePacks();
+    track('credit_pack_viewed', { plan: out ? 'sin_creditos' : 'ver' });
     document.getElementById('packList').innerHTML = packs.map((pk, i) => `
       <button type="button" class="pack ${pk.best ? 'best' : ''}" data-pack="${i}">
         ${pk.best ? '<span class="pack-tag">⭐ El más popular</span>' : ''}
@@ -2623,6 +2774,7 @@
       btn.disabled = false; btn.textContent = 'Ya los compré, actualizar créditos';
       if (!r.ok || data.error){ throw new Error(data.error || 'No se pudo comprobar la compra'); }
       if (data.added > 0){
+        track('credit_pack_purchased', { credits: data.added });
         msg.textContent = `¡Añadidos ${data.added} créditos! Créditos extra: ${data.balance}.`;
         msg.className = 'restore-msg ok';
         refreshPhotoUsage();
@@ -2657,6 +2809,7 @@
   // ---- Panel de Plan ----
   const planPanel = document.getElementById('planPanel');
   function openPlanPanel(){
+    track('pro_clicked', { plan: 'panel' });
     renderPlanInfo();
     refreshPhotoUsage();
     planPanel.classList.add('show');
@@ -2831,6 +2984,7 @@
       }
       if (!resp.ok || data.error) throw new Error(data.error || `No se pudo analizar la captura (error ${resp.status}).`);
       const missing = applyScreenshotData(data);
+      inputVia = 'screenshot';
       statusEl.style.color = 'var(--ok)';
       const missText = missing.length ? ` No he podido leer: <b>${missing.join(', ')}</b>. Revísalo y complétalo a mano.` : '';
       if (hole[0] && hole[1]){
@@ -2930,6 +3084,7 @@
         const { ok, data } = await postJson('/api/send-code', { email });
         if (!ok){ fail(data.error || 'No se pudo enviar el código. Inténtalo de nuevo.'); return; }
         pendingLoginEmail = email;
+        track('signup_started');
         msg.textContent = 'Código enviado. Revisa tu correo (y la carpeta de spam).';
         msg.className = 'restore-msg ok';
       } else {
@@ -2943,7 +3098,8 @@
         }
         storageSet('rio_token', data.token);
         storageSet('rio_email', data.email);
-        storageSet('rio_pro', !!data.pro);
+        setPro(!!data.pro);
+        track('signup_completed');
         pendingLoginEmail = null;
         document.getElementById('proCode').value = '';
         refreshPhotoUsage(); refreshFreeLeft(); pullSync();
@@ -2977,6 +3133,7 @@
   const analyzeBtn = document.getElementById('analyzeBtn');
   analyzeBtn.addEventListener('click', async () => {
     if (!hole[0] || !hole[1]){ alert('Elige tus dos cartas antes de analizar.'); return; }
+    track('analysis_started', { via: inputVia });
     if (analysisStreet() >= cardStreets()){
       alert(`Para analizar el ${STREET_NAMES[analysisStreet()].toLowerCase()} añade antes sus cartas.`);
       const idx = board.findIndex(c => !c); if (idx !== -1) openPicker('board', idx);
@@ -2999,12 +3156,16 @@
         let d = {}; try { d = await r.json(); } catch(e){}
         if (r.status === 401){ logoutPro(); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano'; updateUsageBadge(); openPaywall('free'); pendingAnalyze = true; return; }
         if (r.status === 402){ storageSet('rio_free_left', 0); analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano'; updateUsageBadge(); openPaywall(); return; }
-        if (d.pro) storageSet('rio_pro', true);
+        if (d.pro) setPro(true);
         else if (typeof d.left === 'number') storageSet('rio_free_left', d.left);
       } catch(e){ /* sin conexión: dejamos analizar */ }
     }
     analyzeBtn.disabled = true; analyzeBtn.textContent = 'Calculando…';
-    trackEvent('analisis');
+    const nAn = (parseInt(rawStorage('rio_n_an'), 10) || 0) + 1;
+    try { localStorage.setItem('rio_n_an', String(nAn)); } catch(e){}
+    track('analysis_completed', { via: inputVia, n: nAn });
+    track(inputVia === 'screenshot' ? 'screenshot_analysis' : inputVia === 'voice' ? 'voice_analysis' : 'manual_analysis');
+    inputVia = 'manual';
     setTimeout(() => {
       const pot = Math.max(0, Number(document.getElementById('potInput').value) || 0);
       const call = Math.max(0, Number(document.getElementById('callInput').value) || 0);
