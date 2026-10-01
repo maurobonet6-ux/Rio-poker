@@ -674,6 +674,17 @@ body:not(.mode-pro) .stat-grid { grid-template-columns: 1fr 1fr; }
 .field input.auto { border-color: rgba(216,166,59,0.55); }
 
 /* ---- Plan y repaso ---- */
+.you-did { margin-top: 14px; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); }
+.you-did .yd-title { font-weight: 800; font-size: 0.98rem; margin-bottom: 10px; }
+.yd-btns { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; margin-bottom: 10px; }
+.yd-btn { padding: 12px 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--cream); font: inherit; font-weight: 700; cursor: pointer; transition: border-color .15s, background .15s; }
+.yd-btn:hover { border-color: var(--gold); }
+.yd-btn.on { border-color: var(--gold); background: var(--gold-soft); }
+.yd-cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.yd-cmp > div:not(.yd-verdict) { background: var(--panel); border-radius: 10px; padding: 8px 10px; display: grid; gap: 2px; }
+.yd-cmp small { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cream-dim); }
+.yd-verdict { grid-column: 1 / -1; font-weight: 700; }
+.yd-cmp.ok .yd-verdict { color: var(--ok); } .yd-cmp.meh .yd-verdict { color: #ffd34d; } .yd-cmp.bad .yd-verdict { color: var(--crimson); }
 .plan { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: var(--panel-2); border-left: 3px solid var(--lavender); font-size: 0.9rem; line-height: 1.55; color: var(--cream-dim); }
 .plan:empty { display: none; }
 .plan b { color: var(--cream); }

@@ -1320,6 +1320,44 @@
     }).join('');
   }
 
+  // ---- ¿Tú qué hiciste? ----
+  // Después de cada análisis (si no apuntaste tu jugada en la secuencia), un toque para decir qué hiciste.
+  // Se guarda en los mismos sitios que la secuencia: la mano del historial (g, act) y rio_reviews,
+  // con el mismo EV perdido que reviewDecisions(). Así alimenta "Tus patrones" y "Tu progreso".
+  function youDidLoss(c, act){
+    let loss = null;
+    if (c.toCall > 0 && (c.rec === 'CALL' || c.rec === 'RAISE') && act === 'FOLD') loss = Math.max(0, c.evCall);
+    else if (c.toCall > 0 && c.rec === 'FOLD' && act === 'CALL') loss = Math.max(0, -c.evCall);
+    else if (c.toCall === 0 && c.bc && c.rec === 'BET' && act === 'CHECK') loss = Math.max(0, c.bc.evBet - c.bc.evCheck);
+    else if (c.toCall === 0 && c.bc && c.rec === 'CHECK' && act === 'BET') loss = Math.max(0, c.bc.evCheck - c.bc.evBet);
+    else if (c.rec === act) loss = 0;
+    return loss === null ? null : Math.round(loss / c.bb * 10) / 10;
+  }
+  function renderYouDid(c, chosen){
+    const box = document.getElementById('youDid');
+    if (!c){ box.hidden = true; box.innerHTML = ''; return; }
+    const opts = c.toCall > 0 ? [['FOLD', 'Tiré'], ['CALL', 'Pagué'], ['RAISE', 'Subí']]
+      : c.isOpen ? [['FOLD', 'Tiré'], ['RAISE', 'Subí']] : [['CHECK', 'Pasé'], ['BET', 'Aposté']];
+    box.hidden = false;
+    const g = chosen ? grade(c.rec, chosen) : null;
+    const loss = chosen ? youDidLoss(c, chosen) : null;
+    const VERD = { ok: '✓ Bien jugado', meh: '≈ Aceptable', bad: '✗ Mejorable' };
+    box.innerHTML = `<div class="yd-title">¿Tú qué hiciste?</div>
+      <div class="yd-btns">${opts.map(([v, l]) => `<button type="button" class="yd-btn${chosen === v ? ' on' : ''}" data-yd="${v}">${l}</button>`).join('')}</div>
+      ${chosen ? `<div class="yd-cmp ${g}"><div><small>RÍO recomienda</small><b>${decisionHTML(c.rec)}</b></div><div><small>Tú hiciste</small><b>${decisionHTML(chosen)}</b></div>
+        <div class="yd-verdict">${VERD[g]}${loss > 0 ? ` · unas <b>−${String(loss).replace('.', ',')} BB</b> de media (estimado)` : ''}</div></div>
+        <div class="hint">Guardado en tu historial y en <b>Tu progreso</b>: así RÍO detecta tus errores más repetidos.</div>`
+      : '<div class="hint">Un toque y RÍO lo compara con su consejo para detectar tus errores más repetidos.</div>'}`;
+    box.querySelectorAll('[data-yd]').forEach(b => b.addEventListener('click', () => {
+      const act = b.dataset.yd, g2 = grade(c.rec, act);
+      const hist = getHistory(), h = hist.find(x => x.t === c.t);
+      if (h){ h.g = g2; h.act = act; storageSet('rio_history', hist); }
+      saveReviews([{ s: c.s, rec: c.rec, act, g: g2, pos: c.pos, pt: c.pt, bc: c.river, loss: youDidLoss(c, act) }], c.sig);
+      renderHistory();
+      renderYouDid(c, act);
+    }));
+  }
+
   // ---- Recomendación (la usan el análisis, el repaso y el entrenamiento) ----
   // c = { heroCards, boardCards, pot, toCall, rivals, pool, oop, street, heroPos, unraised, premium, eq?, iters? }
   function recommend(c){
@@ -1473,10 +1511,10 @@
 
   // ---- Estadísticas ----
   function handSignature(){ return JSON.stringify([hole, board, seq]); }
-  function saveReviews(rows){
+  function saveReviews(rows, sig){
     if (!rows.length) return;
     const all = storageGet('rio_reviews', {});
-    all[handSignature()] = { t: Date.now(), rows: rows.map(r => ({ s: r.s, rec: r.rec, act: r.act, g: r.g, pos: r.pos, pt: r.pt, bc: r.bc, loss: r.loss })) };
+    all[sig || handSignature()] = { t: Date.now(), rows: rows.map(r => ({ s: r.s, rec: r.rec, act: r.act, g: r.g, pos: r.pos, pt: r.pt, bc: r.bc, loss: r.loss })) };
     const keys = Object.keys(all).sort((a, b) => all[b].t - all[a].t).slice(0, 100);
     storageSet('rio_reviews', Object.fromEntries(keys.map(k => [k, all[k]])));
   }
@@ -2992,9 +3030,10 @@
 
       // Tu jugada en esa mano (solo si apuntaste lo que hiciste en la secuencia): la peor nota.
       const worst = reviewRows.reduce((w, r) => (!w || ['ok', 'meh', 'bad'].indexOf(r.g) > ['ok', 'meh', 'bad'].indexOf(w.g)) ? r : w, null);
+      const historyT = Date.now();
       pushHistory({
         hand: handLabel, equity: win.toFixed(1), rivals: numRivals,
-        decision: text, cls: cls, t: Date.now(), st: aStreet,
+        decision: text, cls: cls, t: historyT, st: aStreet,
         ev: evShown === null ? null : Math.round((inBB ? evShown / bbSize() : evShown) * 10) / 10, evU: inBB ? 'BB' : unitLabel,
  g: worst ? worst.g : null, act: worst ? worst.act : null,
         hp: heroPos, vp: villPos, game: tourney ? 'torneo' : 'cash',
@@ -3002,6 +3041,11 @@
       });
       updateUsageBadge();
       renderHistory();
+      renderYouDid(reviewRows.length || demo ? null : {
+        t: historyT, sig: handSignature(), s: aStreet, rec: text, toCall: call, pot, isOpen,
+        evCall: call > 0 ? ev : null, bc: bluff, bb: bbSize(), pos: `${heroPos} vs ${villPos}`,
+        pt: aStreet > 0 && seq[0].length && replay(0).raises >= 2 ? '3bet' : '', river: aStreet === 3 && call > 0 ? 1 : 0
+      });
 
       if (storageGet('rio_remember_defaults', true)){
         storageSet('rio_defaults', { heroPos, villPos, numRivals });

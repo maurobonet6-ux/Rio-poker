@@ -487,3 +487,25 @@ test('partida de práctica: mano a mano, 3 jugadores y mesa variable (las fichas
   const n = await page.locator('.g-seat').count();
   expect(n).toBeGreaterThanOrEqual(3); expect(n).toBeLessThanOrEqual(6);
 });
+
+test('¿Tú qué hiciste?: se guarda en el historial y en tus errores, y se puede cambiar', async ({ page }) => {
+  await abrir(page, { pro: true });
+  await ponerMano(page, ['7c', '2d'], ['As', 'Kd', 'Qh']);
+  await ponerBote(page, 20, 20);
+  await analizar(page);
+  await expect(page.locator('#youDid')).toBeVisible();
+  const rec = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history'))[0].decision);
+  const otra = rec === 'CALL' ? 'FOLD' : 'CALL';
+  await page.locator(`#youDid [data-yd="${otra}"]`).click();
+  await expect(page.locator('#youDid .yd-cmp')).toContainText('Tú hiciste');
+  let h = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history'))[0]);
+  expect(h.act).toBe(otra);
+  expect(['meh', 'bad']).toContain(h.g);
+  const rows = await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('rio_reviews'))).flatMap(x => x.rows));
+  expect(rows).toHaveLength(1);
+  expect(rows[0].act).toBe(otra);
+  await page.locator(`#youDid [data-yd="${rec}"]`).click();
+  h = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history'))[0]);
+  expect(h.g).toBe('ok');
+  expect(await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('rio_reviews'))).flatMap(x => x.rows).length)).toBe(1);
+});
