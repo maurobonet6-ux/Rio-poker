@@ -12,7 +12,7 @@ const { validar } = require('./construir.js');
 const { AUTO } = require('./manos-lista.js');
 const { SALIDA } = require('./comun.js');
 
-const node = (...a) => execFileSync('node', a, { cwd: __dirname, stdio: ['ignore', 'inherit', 'inherit'] });
+const node = (...a) => execFileSync('node', a, { cwd: __dirname, stdio: ['ignore', 'inherit', 'inherit'], env: { ...process.env, SOLO_ANALISIS: '1' } });
 const azar = (n) => Math.floor(Math.random() * n);
 const elige = (xs) => xs[azar(xs.length)];
 
@@ -85,7 +85,7 @@ function elegirFormato(){
 }
 
 // "auto", "5", "color", "concurso 3", "color 3"… → { formato, tema, cantidad }
-function pedido(texto){
+function pedido(texto, cantidadPorDefecto = process.argv[3]){
   const t = texto.toLowerCase().split(/\s+/).filter(w => w && w !== 'auto');
   const num = t.find(w => /^\d+$/.test(w));
   const tema = t.find(w => TEMAS[w]);
@@ -93,7 +93,21 @@ function pedido(texto){
   const raro = t.filter(w => w !== num && w !== tema && !FORMATOS[w]);
   if (raro.length) throw new Error('no entiendo "' + raro.join(' ') + '". Formatos: ' + [...new Set(Object.values(FORMATOS))].join(', ') + '. Temas de mesa: ' + Object.keys(TEMAS).join(', ') + '. O una mano como: Ah Kd | Qs 8c 3h | 18 8');
   if (tema && formato && formato !== 'mesa') throw new Error('los temas (' + tema + ') solo valen para el formato mesa');
-  return { formato, tema, cantidad: Math.min(20, Math.max(1, parseInt(num || process.argv[3], 10) || 1)) };
+  return { formato, tema, cantidad: Math.min(20, Math.max(1, parseInt(num || cantidadPorDefecto, 10) || 1)) };
+}
+
+// Modo reparto: node generar.js --plan "<pedido>" [cantidad] → escribe {"include":[{"n":1,"pedido":"mito"}, …]}, un vídeo por elemento.
+// Lo usa el workflow para hacer cada vídeo en su propia máquina, todas a la vez.
+if (process.argv[2] === '--plan'){
+  const texto = (process.argv[3] || 'auto').trim();
+  let include;
+  if (texto.startsWith('{') || texto.includes('|')) include = [{ n: 1, pedido: texto }];
+  else {
+    let p; try { p = pedido(texto, process.argv[4]); } catch (e){ console.error('Mano no válida: ' + e.message); process.exit(2); }
+    include = Array.from({ length: p.cantidad }, (_, i) => ({ n: i + 1, pedido: p.tema || p.formato || elegirFormato() }));
+  }
+  console.log(JSON.stringify({ include }));
+  process.exit(0);
 }
 
 let pide = null;

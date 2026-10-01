@@ -137,3 +137,12 @@ Los textos de mito y lista salen de las páginas de la web.
 **Lote diario con aprobación:** `.github/workflows/video.yml` se lanza cada día (cron `0 7 * * *` = 9:00 en España en verano), hace
 `VIDEOS_AL_DIA` vídeos (variable del repositorio; por defecto 5) y los manda a tu chat privado, cada uno con botones ✅ Aprobar / ❌ Descartar.
 Nada llega al canal sin que lo apruebes. Para cambiar la hora, edita el `cron` (está en UTC); para cambiar la cantidad, la variable `VIDEOS_AL_DIA`.
+
+## Velocidad
+
+- **Varios navegadores a la vez** (`motor.js`, `renderizarMudo`): los fotogramas de un vídeo se reparten entre tantos navegadores como núcleos tenga la máquina
+  (`TRABAJADORES=1` para ir de uno en uno). El resultado es visualmente idéntico (similitud 0,9999) y tarda entre 1,5 y 2 veces menos.
+- **Análisis rápido de la mano**: `generar.js` usa `SOLO_ANALISIS=1`, que se salta las capturas carta a carta (solo las necesita el vídeo «Qué es RÍO»).
+- **Cada vídeo en su máquina**: el workflow `video.yml` tiene tres tareas. `preparar` reparte el pedido (`node generar.js --plan "<pedido>" <cantidad>`),
+  `generar` hace un vídeo por máquina, todas a la vez (hasta 20), y `enviar` los manda juntos a Telegram. Un lote de 10 tarda casi lo mismo que uno solo.
+  Si alguno falla, se avisa en tu chat privado con el motivo y los demás llegan igualmente.

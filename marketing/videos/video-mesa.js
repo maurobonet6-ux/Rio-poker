@@ -3,6 +3,7 @@
 const { chromium } = require('@playwright/test');
 const fs = require('fs'), path = require('path'), { spawn, execFileSync } = require('child_process');
 const { SALIDA, ffmpeg, unirAudio, fontRoute } = require('./comun.js');
+const { renderizarMudo } = require('./motor.js');
 const FF = ffmpeg(), FPS = 30, HERE = SALIDA;
 process.chdir(SALIDA);
 
@@ -228,12 +229,9 @@ function render(t){
   await p.route('**/*', r => fontRoute(r) || r.continue());
   await p.goto('file://' + f); await p.evaluate(() => document.fonts.ready); await p.evaluate(() => setup());
   if (process.env.SNAP){ fs.mkdirSync(path.join(HERE, 'snap'), { recursive: true }); for (const t of process.env.SNAP.split(',')){ await p.evaluate(x => render(x), +t); await p.screenshot({ path: path.join(HERE, 'snap', 'm-' + HN + '-' + t + '.png') }); } await b.close(); return; }
+  await b.close();
   const out = path.join(HERE, 'rio-' + HN + '-mudo.mp4');
-  const ff = spawn(FF, ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-i', '-', '-vf', 'format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
-  const frames = Math.round(H.TOTAL*FPS);
-  for (let i = 0; i < frames; i++){ await p.evaluate(x => render(x), i/FPS);
-    const buf = await p.screenshot({ type: 'jpeg', quality: 94 }); if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r)); }
-  ff.stdin.end(); await new Promise(r => ff.on('close', r)); await b.close();
+  await renderizarMudo({ archivoHtml: f, total: H.TOTAL, salida: out });
   fs.rmSync(f);
   const wav = path.join(HERE, HN + '.wav'), final = path.join(HERE, 'rio-' + HN + '.mp4');
   execFileSync('python3', [path.join(__dirname, 'audio_mesa.py'), String(H.board.length), wav, String(H.TOTAL), String(H.END)]);

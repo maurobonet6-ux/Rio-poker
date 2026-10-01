@@ -1,5 +1,7 @@
 // Analiza cada mano de manos.js con la web real de RÍO (en móvil) y guarda sus números y capturas.
 // Uso: node capturas-manos.js [mano]
+// Con SOLO_ANALISIS=1 se salta el paso a paso con capturas de cada carta (solo las necesita el vídeo «Qué es RÍO») y analiza
+// directamente la mano completa: es mucho más rápido y da el mismo veredicto.
 const { chromium } = require('@playwright/test');
 const path = require('path');
 const { RAIZ: ROOT, SALIDA, fontRoute } = require('./comun.js');
@@ -46,7 +48,7 @@ async function poner(p, cards, nHole){
   const b = await chromium.launch();
   for (const h of HANDS){
     const all = [...h.mano, ...h.mesa];
-    for (let k = 0; k <= all.length; k++){
+    for (let k = process.env.SOLO_ANALISIS === '1' ? all.length : 0; k <= all.length; k++){
       const p = await abrir(b);
       await poner(p, all.slice(0, k), 2);
       await p.locator('#cardsPanel .table-grid').screenshot({ path: `${h.n}-cards${k}.png` });
