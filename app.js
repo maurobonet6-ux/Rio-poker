@@ -1647,7 +1647,11 @@
     shownView = v;
     Object.entries(VIEWS).forEach(([k, def]) => { document.getElementById(def.el).hidden = k !== v; });
     document.body.classList.toggle('view-open', !!v);
-    document.querySelectorAll('#appNav [data-route]').forEach(a => a.classList.toggle('on', a.dataset.route === (v || '') && !a.classList.contains('an-brand')));
+    document.querySelectorAll('#appNav [data-route]').forEach(a => {
+      const on = a.dataset.route === (v || '') && !a.classList.contains('an-brand');
+      a.classList.toggle('on', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
     if (v){ closeModal(); closeSidebar(); VIEWS[v].render(); document.getElementById(VIEWS[v].el).scrollTop = 0; }
     updateSticky();
   }
