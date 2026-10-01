@@ -19,6 +19,11 @@ on:
         description: 'Texto que acompaña al vídeo en Telegram (opcional)'
         required: false
         type: string
+      cantidad:
+        description: 'Cuántos vídeos al azar hacer (solo con mano = auto, máximo 20)'
+        required: false
+        default: '1'
+        type: string
       destino:
         description: 'Dónde mandar el vídeo'
         required: false
@@ -29,7 +34,7 @@ on:
 jobs:
   video:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,6 +49,7 @@ jobs:
       - name: Generar el vídeo y mandarlo a Telegram
         env:
           MANO: ${{ inputs.mano || 'auto' }}
+          CANTIDAD: ${{ inputs.cantidad || '1' }}
           TEXTO: ${{ inputs.texto }}
           BOT: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -51,7 +57,11 @@ jobs:
           DESTINO: ${{ github.event_name == 'schedule' && 'canal' || inputs.destino }}
         run: |
           set +e
-          node marketing/videos/generar.js "$MANO" 2>&1 | tee log.txt
+          if [ "$MANO" = "auto" ]; then
+            node marketing/videos/generar.js auto "$CANTIDAD" 2>&1 | tee log.txt
+          else
+            node marketing/videos/generar.js "$MANO" 2>&1 | tee log.txt
+          fi
           estado=${PIPESTATUS[0]}
           if [ -z "$BOT" ] || [ -z "$CHAT" ]; then
             echo "::warning::Faltan los secretos TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID: el vídeo solo queda como artefacto."
@@ -59,15 +69,17 @@ jobs:
             exit 0
           fi
           if [ "$estado" -eq 0 ]; then
-            video=$(ls marketing/videos/salida/rio-*.mp4 | head -n1)
             destino="$CHAT"; pie="$TEXTO"
             if [ "$DESTINO" = "canal" ]; then
               destino="$CANAL"
               [ -n "$pie" ] || pie="🃏 ¿Qué harías tú? Mira qué dice RÍO y analiza tus manos gratis 👉 https://riopoker.es/tg"
             fi
-            curl -sS -f "https://api.telegram.org/bot${BOT}/sendVideo" \
-              -F chat_id="$destino" -F video=@"$video" -F supports_streaming=true \
-              -F caption="${pie:0:1000}" > /dev/null
+            for video in marketing/videos/salida/rio-*.mp4; do
+              curl -sS -f "https://api.telegram.org/bot${BOT}/sendVideo" \
+                -F chat_id="$destino" -F video=@"$video" -F supports_streaming=true \
+                -F caption="${pie:0:1000}" > /dev/null
+              sleep 2
+            done
           else
             aviso=$(grep -E 'Mano no válida|no es válido' log.txt | tail -n1)
             curl -sS -f "https://api.telegram.org/bot${BOT}/sendMessage" \

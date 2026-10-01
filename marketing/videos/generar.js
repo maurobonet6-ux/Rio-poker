@@ -1,8 +1,9 @@
 // Genera el vídeo de una mano a partir de un JSON sencillo (lo que escribe Claude desde n8n), o de una mano al azar.
-// Uso: node generar.js '<json>'   ·   node generar.js mano.json   ·   node generar.js auto
+// Uso: node generar.js '<json>'   ·   node generar.js mano.json   ·   node generar.js auto [cantidad]
 // Escribe en salida/ el vídeo rio-<id>.mp4 y termina con código 0. Si la mano no vale (datos mal,
 // o RÍO no recomienda pagar ni tirar) termina con código 2 y un mensaje claro en español.
-// Con "auto" prueba manos al azar hasta que RÍO recomiende pagar o tirar (máximo 8 intentos).
+// Con "auto" prueba manos al azar hasta que RÍO recomiende pagar o tirar (máximo 8 intentos por vídeo);
+// "auto 10" hace un lote de 10 vídeos distintos.
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const { validar } = require('./construir.js');
 const { AUTO } = require('./manos-lista.js');
@@ -45,13 +46,18 @@ function intentar(datos){
 
 const arg = process.argv[2] || 'auto';
 if (arg === 'auto'){
-  for (let i = 1; i <= 8; i++){
-    const d = validar(manoAlAzar());
-    console.log(`Intento ${i}: ${d.mano.join(' ')} | ${d.mesa.join(' ') || 'sin mesa'} | bote ${d.bote}, pagar ${d.pagar}`);
-    if (intentar(d).ok) process.exit(0);
+  const cantidad = Math.min(20, Math.max(1, parseInt(process.argv[3], 10) || 1));
+  let hechos = 0;
+  for (let v = 1; v <= cantidad; v++){
+    for (let i = 1; i <= 8; i++){
+      const d = validar(manoAlAzar());
+      console.log(`Vídeo ${v}/${cantidad} · intento ${i}: ${d.mano.join(' ')} | ${d.mesa.join(' ') || 'sin mesa'} | bote ${d.bote}, pagar ${d.pagar}`);
+      if (intentar(d).ok){ hechos++; break; }
+    }
   }
-  console.error('Mano no válida: no salió ninguna mano de pagar o tirar en 8 intentos. Vuelve a probar.');
-  process.exit(2);
+  if (hechos === 0){ console.error('Mano no válida: no salió ninguna mano de pagar o tirar. Vuelve a probar.'); process.exit(2); }
+  console.log(`LOTE ${hechos}/${cantidad}`);
+  process.exit(0);
 }
 
 let datos;
