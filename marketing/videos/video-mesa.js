@@ -10,7 +10,8 @@ process.chdir(SALIDA);
 const HN = process.argv[2] || 'ak';
 const infoFull = JSON.parse(fs.readFileSync(HN + '-info.json', 'utf8')), info = infoFull.why;
 const n = (s, re) => (s.match(re) || [])[1];
-const fz = info.find(x => x.startsWith('⚠️'));
+// El aviso «contra sus manos fuertes» (antes empezaba por ⚠️; la web ya no pone emojis).
+const fz = info.find(x => x.startsWith('⚠️') || x.startsWith('Contra sus manos fuertes'));
 const G = { badge: infoFull.badge, ganas: n(info[0], /Ganas ~(\d+)%/), nec: n(info[0], /necesitas (\d+)%/), fz: fz && n(fz, /ganas ~(\d+)%/),
   ev: (/pierde/.test(info[1]) ? '−' : '+') + n(info[1], /de media ([\d,]+)/) };
 // FIN: cuándo empieza el final (por defecto 13.5 s). Con voz en off se alarga para que dé tiempo a decirlo todo.

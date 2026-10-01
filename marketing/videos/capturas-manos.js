@@ -27,7 +27,7 @@ async function abrir(b){
     const file = url.pathname.endsWith('/') ? url.pathname + 'index.html' : url.pathname;
     return route.fulfill({ path: path.join(ROOT, file) });
   });
-  await p.goto(ORIGIN + '/');
+  await p.goto(ORIGIN + '/app/');
   await p.evaluate(() => document.fonts.ready);
   await p.addStyleTag({ content: '*{transition:none!important;animation:none!important} .current-hand{display:none!important}' });
   return p;
@@ -51,11 +51,12 @@ async function poner(p, cards, nHole){
     for (let k = process.env.SOLO_ANALISIS === '1' ? all.length : 0; k <= all.length; k++){
       const p = await abrir(b);
       await poner(p, all.slice(0, k), 2);
-      await p.locator('#cardsPanel .table-grid').screenshot({ path: `${h.n}-cards${k}.png` });
+      // Las capturas de las cartas y del bote solo las usa el vídeo «Qué es RÍO» (no hacen falta con SOLO_ANALISIS).
+      if (process.env.SOLO_ANALISIS !== '1') await p.locator('#cardsPanel .mesa').screenshot({ path: `${h.n}-cards${k}.png` });
       if (k === all.length){
         await ponerBote(p, h.bote, h.pagar);
         await p.waitForTimeout(200);
-        await p.locator('#betsPanel').screenshot({ path: `${h.n}-bets.png` });
+        if (process.env.SOLO_ANALISIS !== '1') await p.locator('#cardsPanel .pot-fields').screenshot({ path: `${h.n}-bets.png` });
         await p.evaluate(() => document.getElementById('analyzeBtn').click());
         await p.locator('#resultPanel.show').waitFor();
         await p.waitForTimeout(600);
@@ -66,7 +67,7 @@ async function poner(p, cards, nHole){
           r.querySelector('.panel-head').style.display = 'none';
         });
         await p.locator('#resultPanel').screenshot({ path: `${h.n}-result.png` });
-        const why = await p.evaluate(() => [...document.querySelectorAll('#whyList li')].map(li => li.innerText.trim()));
+        const why = await p.evaluate(() => [...document.querySelectorAll('#whyList li')].map(li => li.textContent.replace(/\s+/g, ' ').trim()));
         require('fs').writeFileSync(`${h.n}-info.json`, JSON.stringify({ badge: (await p.locator('#decisionBadge').innerText()).trim(), why }, null, 1));
         console.log(h.n, (await p.locator('#decisionBadge').innerText()).trim());
       }
