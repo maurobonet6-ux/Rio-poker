@@ -15,7 +15,7 @@ async function abrir(b){
     if (url.pathname.startsWith('/_vercel/')) return route.fulfill({ status: 200, contentType: 'application/javascript', body: '' });
     if (url.pathname.startsWith('/api/')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ pro: true, used: 10, limit: 200, extra: 0 }) });
     return route.fulfill({ path: path.join(ROOT, url.pathname.endsWith('/') ? url.pathname + 'index.html' : url.pathname) }); });
-  await p.goto(ORIGIN + '/'); await p.evaluate(() => document.fonts.ready);
+  await p.goto(ORIGIN + '/app/'); await p.evaluate(() => document.fonts.ready);
   await p.addStyleTag({ content: '*{transition:none!important;animation:none!important}' });
   return p;
 }
