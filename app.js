@@ -2078,7 +2078,6 @@
   }
   function openImport(){
     closeSidebar();
-    if (!isPro()){ openPaywall('plans'); return; }
     const body = openModal('Importar historial de mano', `
       <p style="margin-top:0;">En PokerStars o GGPoker, abre el historial de la mano, <b>cópialo entero</b> y pégalo aquí.</p>
       <textarea id="hhText" rows="9" placeholder="PokerStars Hand #…&#10;Table '…' 6-max Seat #1 is the button&#10;…" style="width:100%; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); padding:10px; font-family:monospace; font-size:0.78rem;"></textarea>
@@ -2649,7 +2648,6 @@
     uploadBox.classList.toggle('locked', !pro);
     uploadProBadge.style.display = pro ? 'none' : 'inline-block';
     document.getElementById('uploadSub').textContent = '1 crédito de IA';
-    document.getElementById('importProBadge').style.display = pro ? 'none' : 'inline-block';
     document.getElementById('storyProBadge').style.display = pro ? 'none' : 'inline-block';
   }
   document.getElementById('manualBtn').addEventListener('click', () => {

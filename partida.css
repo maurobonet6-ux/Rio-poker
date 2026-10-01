@@ -43,12 +43,12 @@ body.game-open { overflow: hidden; }
 .g-pot i, .g-bet i { width: 14px; height: 14px; border-radius: 50%; background: var(--gold); border: 3px dashed #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.5); display: inline-block; }
 
 /* Cartas */
-.game-view .g-card { width: 56px; height: 78px; font-size: 1.15rem; border-radius: 8px; margin: 0; display: inline-flex; box-shadow: 0 6px 14px rgba(0,0,0,0.45); }
+.game-view .g-card { --w: 56px; width: var(--w); height: calc(var(--w) * 1.4); font-size: 1.15rem; border-radius: 8px; margin: 0; display: inline-flex; box-shadow: 0 6px 14px rgba(0,0,0,0.45); }
 .game-view .g-card.g-back { background: repeating-linear-gradient(45deg, #b3162b 0 6px, #d42a3f 6px 12px); border: 3px solid #fbf8f1; }
 .game-view .g-card.g-slot { background: rgba(0,0,0,0.16); border: 1.5px dashed rgba(255,255,255,0.22); box-shadow: none; }
 .g-cards { display: flex; gap: 3px; justify-content: center; }
-.g-seat:not(.hero) .g-card { width: 40px; height: 56px; font-size: 0.9rem; }
-.g-seat.hero .g-card { width: 64px; height: 90px; font-size: 1.35rem; }
+.g-seat:not(.hero) .g-card { --w: 40px; font-size: 0.9rem; }
+.g-seat.hero .g-card { --w: 64px; font-size: 1.35rem; }
 .g-card.deal { animation: g-deal .45s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes g-deal { from { opacity: 0; transform: translateY(-50px) scale(.35) rotate(-18deg); } to { opacity: 1; transform: none; } }
 .g-card.flip { animation: g-flip .5s ease both; }
@@ -168,13 +168,14 @@ body.game-open { overflow: hidden; }
   .g-players { flex: none; } .g-players span { display: none; } .g-players select { font-size: 0.72rem; padding: 6px 6px; max-width: 76px; }
   .g-main { padding: 8px 10px 16px; gap: 12px; }
   .g-table { width: calc(100% - 64px); aspect-ratio: 0.72; margin: 62px auto 80px; }
+  .g-table.baja { aspect-ratio: 0.86; } /* pantallas bajas: mesa más ancha, que luego se encoge para caber */
   .g-felt { border-width: 11px; }
   .g-logo { top: 16%; }
   .g-center { top: 49%; gap: 7px; }
-  .game-view .g-card { width: 36px; height: 50px; font-size: 0.85rem; border-radius: 6px; }
+  .game-view .g-card { --w: 36px; font-size: 0.85rem; border-radius: 6px; }
   .g-board { gap: 4px; }
-  .g-seat:not(.hero) .g-card { width: 28px; height: 39px; font-size: 0.68rem; }
-  .g-seat.hero .g-card { width: 50px; height: 70px; font-size: 1.1rem; }
+  .g-seat:not(.hero) .g-card { --w: 28px; font-size: 0.68rem; }
+  .g-seat.hero .g-card { --w: 50px; font-size: 1.1rem; }
   .g-seat.sl-bl { left: 2%; top: 74%; } .g-seat.sl-l { left: 2%; top: 52%; } .g-seat.sl-tl { left: 2%; top: 30%; } .g-seat.sl-t { left: 50%; top: 1%; }
   .g-seat.sl-tr { left: 98%; top: 30%; } .g-seat.sl-r { left: 98%; top: 52%; } .g-seat.sl-br { left: 98%; top: 74%; }
   .g-plate { min-width: 0; padding: 3px 9px 3px 3px; gap: 5px; }
