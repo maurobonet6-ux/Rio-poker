@@ -89,8 +89,16 @@ async function grabar({ html, nombre, total, eventos = [], snap, narracion = nul
   let ajuste = { fuera: d => d, diseno: t => t, inicios: {}, total }, sintesis = null;
   if (narracion && voz.activa()){
     try {
-      sintesis = voz.sintetizar(narracion, nombre);
-      ajuste = ajustar(narracion, sintesis.dur, total);
+      // Duración máxima del vídeo: si con la voz sale más largo, se acelera un poco la voz (hasta VELOCIDAD_MAX) y se vuelve a calcular
+      const MAX = +process.env.DURACION_MAX || 25;
+      let vel = +process.env.VELOCIDAD || voz.VELOCIDAD_BASE;
+      for (;;){
+        sintesis = voz.sintetizar(narracion, nombre, vel);
+        ajuste = ajustar(narracion, sintesis.dur, total);
+        if (ajuste.total <= MAX || vel >= voz.VELOCIDAD_MAX) break;
+        console.log(`Voz en off: ${ajuste.total.toFixed(1)} s con velocidad ${vel.toFixed(2)}; pruebo más rápido`);
+        vel = Math.min(voz.VELOCIDAD_MAX, +(vel + 0.1).toFixed(2));
+      }
       if (process.env.DEBUG_VOZ) for (const fr of narracion) console.log(`[voz] ${fr.id}: empieza en ${ajuste.inicios[fr.id].toFixed(2)} s, dura ${sintesis.dur[fr.id]} s → termina ${(ajuste.inicios[fr.id] + sintesis.dur[fr.id]).toFixed(2)} s`);
       console.log(`Voz en off: ${narracion.length} frases, ${ajuste.pausas.length} pausa(s) añadida(s), el vídeo dura ${ajuste.total.toFixed(1)} s`);
     } catch (e){ console.warn('Sin voz en off: ' + e.message); sintesis = null; }

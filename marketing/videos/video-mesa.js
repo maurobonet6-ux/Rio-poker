@@ -224,7 +224,7 @@ function render(t){
 
 // Lo que dice la voz y cuándo (ver video-lista.js): cada título y su subtítulo, sin pisar el siguiente momento de la animación.
 const narracion = [
-  ...H.caps.map((c, i) => ({ id: 'c' + i, texto: [c.t, c.sub].filter(Boolean).join('. '), en: c.at + 0.2, limite: i + 1 < H.caps.length ? H.caps[i + 1].at : H.END })),
+  ...H.caps.map((c, i) => ({ id: 'c' + i, texto: [i === 0 ? require('./voz.js').gancho('mesa') : '', c.t, c.sub].filter(Boolean).join('. '), en: c.at + 0.2, limite: i + 1 < H.caps.length ? H.caps[i + 1].at : H.END })),
   { id: 'cta', texto: require('./voz.js').CTA, en: H.END + 0.4, limite: H.TOTAL },
 ];
 // Sonidos: reparto de cartas, cuenta atrás, sello de RÍO y cambio al final
