@@ -10,14 +10,23 @@ const VOZ_EDGE = 'es-ES-ElviraNeural';
 const esEdge = v => /^es-[A-Z]{2}-\w+Neural$/.test(v || '');
 // La despedida de todos los vídeos (corta: con voz, cada segundo cuenta).
 const CTA = 'Analiza tus manos gratis en riopoker.es.';
+const VELOCIDAD_BASE = 1.12, VELOCIDAD_MAX = 1.4;
+// Ganchos: lo primero que se oye, para que den ganas de seguir viendo. Sin cifras inventadas: solo curiosidad y retos.
+const GANCHOS = {
+  mesa: ['¿Pagas o tiras? Piénsalo antes del final.', 'Esta mano parece fácil… no lo es.', '¿Qué harías tú aquí? Decide ya.', 'Un error aquí te cuesta todas las fichas.'],
+  concurso: ['¿Aciertas antes de que acabe la cuenta atrás?', '¿Te atreves con esta?', 'A ver cuánto sabes de póker.', 'Nadie debería fallar esta… ¿o sí?'],
+  mito: ['Seguro que te lo han contado.', 'Esto lo dicen en todas las mesas.', 'Te lo han dicho mil veces.', 'Mucha gente se lo cree.'],
+  lista: ['¿Cuántas conocías?', 'Tres cosas que te harán mejorar.', 'Quédate hasta la última.', 'La tercera es la que más se olvida.'],
+};
+const gancho = formato => { const l = GANCHOS[formato]; return l[Math.floor(Math.random() * l.length)]; };
 const activa = () => process.env.SIN_VOZ !== '1';
 
 // frases: [{ id, texto }] → { dir, dur: { id: segundos }, archivo(id) }. Lanza un Error si no se puede (el vídeo sale entonces sin voz).
-function sintetizar(frases, nombre){
+function sintetizar(frases, nombre, vel){
   const dir = path.join(SALIDA, 'voz-' + nombre);
   fs.rmSync(dir, { recursive: true, force: true });
   const frasesN = frases.map(f => ({ id: f.id, texto: normalizarVoz(f.texto) }));
-  const velocidad = +process.env.VELOCIDAD || 1.12;
+  const velocidad = vel || +process.env.VELOCIDAD || VELOCIDAD_BASE;
   const lanzar = (script, voz) => {
     const peticion = { dir, voz, velocidad, frases: frasesN };
     try { return execFileSync('python3', [path.join(__dirname, script), JSON.stringify(peticion)], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 24 }); }
@@ -37,4 +46,4 @@ function sintetizar(frases, nombre){
   return { dir, dur, archivo: id => path.join(dir, id + '.wav'), textos: Object.fromEntries(frasesN.map(f => [f.id, f.texto])) };
 }
 
-module.exports = { sintetizar, activa, VOCES, CTA };
+module.exports = { sintetizar, activa, VOCES, CTA, gancho, GANCHOS, VELOCIDAD_BASE, VELOCIDAD_MAX };

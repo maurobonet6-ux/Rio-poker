@@ -35,7 +35,7 @@ window.render = render;`;
 const ORDINAL = ['uno', 'dos', 'tres'];
 // Lo que dice la voz y cuándo: cada frase no debe pisar el siguiente momento de la animación (si no cabe, se hace una pausa).
 const narracion = l => [
-  { id: 'tit', texto: l.titulo, en: T.titulo + 0.2, limite: T.items[0] },
+  { id: 'tit', texto: `${require('./voz.js').gancho('lista')} ${l.titulo}`, en: T.titulo + 0.2, limite: T.items[0] },
   ...l.items.map((it, i) => ({ id: 'i' + i, texto: `Número ${ORDINAL[i]}. ${it.t}. ${it.s}`, en: T.items[i] + 0.25, limite: i < 2 ? T.items[i + 1] : T.fin })),
   { id: 'cta', texto: require('./voz.js').CTA, en: T.fin + 0.4, limite: T.total },
 ];
