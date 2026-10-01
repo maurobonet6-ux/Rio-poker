@@ -222,9 +222,11 @@ function render(t){
 }
 </script></body></html>`;
 
-// Lo que dice la voz y cuándo (ver video-lista.js): cada título y su subtítulo, sin pisar el siguiente momento de la animación.
+// Lo que dice la voz y cuándo (ver video-lista.js): solo los títulos grandes (los subtítulos se leen en pantalla, para no alargar el vídeo), sin pisar el siguiente momento de la animación.
+// El último título («Ganas el 52 % y solo necesitas el 31 %») se dice más corto: «Ganas el 52, necesitas el 31».
+const ultimo = t => { const n = [...t.matchAll(/data-to="(\d+)"/g)].map(m => m[1]); return n.length === 2 ? `Ganas el ${n[0]}. Necesitas el ${n[1]}.` : t; };
 const narracion = [
-  ...H.caps.map((c, i) => ({ id: 'c' + i, texto: [i === 0 ? require('./voz.js').gancho('mesa') : '', c.t, c.sub].filter(Boolean).join('. '), en: c.at + 0.2, limite: i + 1 < H.caps.length ? H.caps[i + 1].at : H.END })),
+  ...H.caps.map((c, i) => ({ id: 'c' + i, texto: i === H.caps.length - 1 ? ultimo(c.t) : c.t, en: c.at + 0.2, limite: i + 1 < H.caps.length ? H.caps[i + 1].at : H.END })),
   { id: 'cta', texto: require('./voz.js').CTA, en: H.END + 0.4, limite: H.TOTAL },
 ];
 // Sonidos: reparto de cartas, cuenta atrás, sello de RÍO y cambio al final
