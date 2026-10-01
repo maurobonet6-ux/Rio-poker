@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       mano:
-        description: 'auto (mano al azar) o una mano en JSON: {"id":"ajo-utg","mano":["Ah","Jd"],"mesa":["Jc","7s","2d"],"bote":24,"pagar":12}'
+        description: 'auto, un tema (color, ak, parejas, allin, flop, turn, river) con cantidad opcional ("color 3"), una mano ("Ah Kd | Qs 8c 3h | 18 8") o un JSON'
         required: false
         default: 'auto'
         type: string
@@ -57,11 +57,7 @@ jobs:
           DESTINO: ${{ github.event_name == 'schedule' && 'canal' || inputs.destino }}
         run: |
           set +e
-          if [ "$MANO" = "auto" ]; then
-            node marketing/videos/generar.js auto "$CANTIDAD" 2>&1 | tee log.txt
-          else
-            node marketing/videos/generar.js "$MANO" 2>&1 | tee log.txt
-          fi
+          node marketing/videos/generar.js "$MANO" "$CANTIDAD" 2>&1 | tee log.txt
           estado=${PIPESTATUS[0]}
           if [ -z "$BOT" ] || [ -z "$CHAT" ]; then
             echo "::warning::Faltan los secretos TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID: el vídeo solo queda como artefacto."

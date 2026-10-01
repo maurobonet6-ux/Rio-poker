@@ -1,5 +1,7 @@
 // Genera el vídeo de una mano a partir de un JSON sencillo (lo que escribe Claude desde n8n), o de una mano al azar.
 // Uso: node generar.js '<json>'   ·   node generar.js mano.json   ·   node generar.js auto [cantidad]
+//      node generar.js "color 3"            → 3 vídeos de proyectos de color (temas: color, ak, parejas, allin, preflop, flop, turn, river)
+//      node generar.js "Ah Kd | Qs 8c 3h | 18 8"  → una mano concreta: tus cartas | mesa | bote | apuesta
 // Escribe en salida/ el vídeo rio-<id>.mp4 y termina con código 0. Si la mano no vale (datos mal,
 // o RÍO no recomienda pagar ni tirar) termina con código 2 y un mensaje claro en español.
 // Con "auto" prueba manos al azar hasta que RÍO recomiende pagar o tirar (máximo 8 intentos por vídeo);
@@ -13,7 +15,24 @@ const node = (...a) => execFileSync('node', a, { cwd: __dirname, stdio: ['ignore
 const azar = (n) => Math.floor(Math.random() * n);
 const elige = (xs) => xs[azar(xs.length)];
 
-function manoAlAzar(){
+// Temas que se pueden pedir: cada uno es una condición sobre la mano repartida.
+const palo = c => c[1], valor = c => c[0];
+const TEMAS = {
+  color: d => d.mesa.length >= 3 && d.mesa.length <= 4 && palo(d.mano[0]) === palo(d.mano[1]) && d.mesa.filter(c => palo(c) === palo(d.mano[0])).length === 2,
+  ak: d => [d.mano[0], d.mano[1]].map(valor).sort().join('') === 'AK',
+  parejas: d => valor(d.mano[0]) === valor(d.mano[1]),
+  allin: d => d.mesa.length === 0,
+  preflop: d => d.mesa.length === 0,
+  flop: d => d.mesa.length === 3,
+  turn: d => d.mesa.length === 4,
+  river: d => d.mesa.length === 5,
+};
+
+function manoAlAzar(tema){
+  if (tema){
+    for (let i = 0; i < 20000; i++){ const d = manoAlAzar(); if (TEMAS[tema](d)) return d; }
+    throw new Error('no se pudo repartir una mano del tema ' + tema);
+  }
   const mazo = [];
   for (const v of '23456789TJQKA') for (const p of 'shdc') mazo.push(v + p);
   for (let i = mazo.length - 1; i > 0; i--){ const j = azar(i + 1); [mazo[i], mazo[j]] = [mazo[j], mazo[i]]; }
@@ -44,13 +63,36 @@ function intentar(datos){
   return { ok: true };
 }
 
-const arg = process.argv[2] || 'auto';
-if (arg === 'auto'){
-  const cantidad = Math.min(20, Math.max(1, parseInt(process.argv[3], 10) || 1));
+const arg = (process.argv[2] || 'auto').trim();
+
+// Mano escrita a mano: "Ah Kd | Qs 8c 3h | 18 8"  (tus cartas | mesa | bote | apuesta). La mesa puede ir vacía.
+function manoEscrita(texto){
+  const [c, m, n] = texto.split('|').map(x => x.trim());
+  const cartas = x => (x || '').split(/\s+/).filter(Boolean).map(k => k[0].toUpperCase() + k[1].toLowerCase()).map(k => k.replace(/^1/, 'T'));
+  const nums = (n || '').split(/\s+/).filter(Boolean).map(Number);
+  return { id: 'mano-' + Date.now().toString(36), mano: cartas(c), mesa: cartas(m), bote: nums[0], pagar: nums[1] };
+}
+
+// "auto", "5", "color", "color 3"… → { tema, cantidad }
+function pedido(texto){
+  const t = texto.toLowerCase().split(/\s+/).filter(w => w && w !== 'auto');
+  const num = t.find(w => /^\d+$/.test(w));
+  const tema = t.find(w => TEMAS[w]);
+  const raro = t.filter(w => w !== num && w !== tema);
+  if (raro.length) throw new Error('no entiendo "' + raro.join(' ') + '". Temas: ' + Object.keys(TEMAS).join(', ') + ', o una mano como: Ah Kd | Qs 8c 3h | 18 8');
+  return { tema, cantidad: Math.min(20, Math.max(1, parseInt(num || process.argv[3], 10) || 1)) };
+}
+
+let pide = null;
+if (!arg.startsWith('{') && !arg.includes('|') && !fs.existsSync(arg)){
+  try { pide = pedido(arg); } catch (e){ console.error('Mano no válida: ' + e.message); process.exit(2); }
+}
+if (pide){
+  const { tema, cantidad } = pide;
   let hechos = 0;
   for (let v = 1; v <= cantidad; v++){
     for (let i = 1; i <= 8; i++){
-      const d = validar(manoAlAzar());
+      const d = validar(manoAlAzar(tema));
       console.log(`Vídeo ${v}/${cantidad} · intento ${i}: ${d.mano.join(' ')} | ${d.mesa.join(' ') || 'sin mesa'} | bote ${d.bote}, pagar ${d.pagar}`);
       if (intentar(d).ok){ hechos++; break; }
     }
@@ -61,7 +103,7 @@ if (arg === 'auto'){
 }
 
 let datos;
-try { datos = JSON.parse(fs.existsSync(arg) ? fs.readFileSync(arg, 'utf8') : arg); }
+try { datos = arg.includes('|') && !arg.startsWith('{') ? manoEscrita(arg) : JSON.parse(fs.existsSync(arg) ? fs.readFileSync(arg, 'utf8') : arg); }
 catch (e) { console.error('El JSON de la mano no es válido'); process.exit(2); }
 try { datos = validar(datos); } catch (e) { console.error('Mano no válida: ' + e.message); process.exit(2); }
 const r = intentar(datos);
