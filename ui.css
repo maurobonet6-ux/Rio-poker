@@ -727,3 +727,44 @@ body.entrada-lista .mesa .street-now { padding: 0 !important; margin: 0 !importa
 .g-info span { color: var(--c-text-2); font-weight: 600; }
 .g-stats b.neg, .g-sesion b.neg, .g-fin-t.neg { color: var(--ev-neg); }
 .g-back:hover, .g-speed:hover, .g-players select:hover { border-color: var(--c-line-3); }
+
+/* =====================================================================
+   Toques de color (sin perder la sobriedad)
+   ===================================================================== */
+/* Fácil en verde, Avanzado en rojo */
+.mode-switch.seg button[data-mode="facil"].active { background: rgba(34,197,94,0.16) !important; color: #4ADE80 !important; box-shadow: 0 0 0 1px rgba(34,197,94,0.45) !important; }
+.mode-switch.seg button[data-mode="pro"].active { background: rgba(229,48,74,0.18) !important; color: #FF8A9B !important; box-shadow: 0 0 0 1px rgba(229,48,74,0.5) !important; }
+/* Mesa / Lista y Tu sitio / Rival: la elegida en rojo */
+.entry-switch.seg button.active, .seat-mode.seg button.active { background: var(--brand) !important; color: #fff !important; box-shadow: 0 4px 12px -4px rgba(229,48,74,0.6) !important; }
+/* Accesos rápidos con su color */
+#uploadBox .i { color: #60A5FA; } #storyBtn .i { color: #4ADE80; } #importBtn .i { color: #FBBF24; }
+.details-row > .i:first-child { color: var(--red-400); }
+/* Menú: la sección activa en rojo */
+.an-link.on, .an-link.on .an-ic { color: var(--red-400) !important; }
+@media (max-width: 899px) { .an-link.on span:last-child { color: var(--c-text); } }
+/* Tarjetas con color (Practicar, Aprender) */
+.pr-card.c-red .pr-ic { background: rgba(229,48,74,0.14); border-color: rgba(229,48,74,0.35); color: #FF7A8E; }
+.pr-card.c-amber .pr-ic { background: rgba(245,165,36,0.14); border-color: rgba(245,165,36,0.35); color: #FBBF24; }
+.pr-card.c-blue .pr-ic { background: rgba(96,165,250,0.14); border-color: rgba(96,165,250,0.35); color: #60A5FA; }
+.pr-card.c-green .pr-ic { background: rgba(34,197,94,0.14); border-color: rgba(34,197,94,0.35); color: #4ADE80; }
+.pr-card.hot { background: linear-gradient(135deg, rgba(229,48,74,0.14), var(--c-s1) 55%); border-color: rgba(229,48,74,0.35); }
+.pr-card.hot:hover { border-color: rgba(229,48,74,0.6); }
+.pr-card.c-red small, .pr-card.hot small { color: #FF8A9B; }
+/* Cuenta: iconos con color y cerrar sesión en rojo */
+.av-item.av-go-historial .av-ic { color: #60A5FA; background: rgba(96,165,250,0.12); }
+.av-item.av-navPlan .av-ic { color: #FBBF24; background: rgba(245,165,36,0.12); }
+.av-item.av-navImport .av-ic { color: #4ADE80; background: rgba(34,197,94,0.12); }
+.av-item.av-navInstall .av-ic { color: #C084FC; background: rgba(192,132,252,0.12); }
+.av-item.av-navLogin .av-ic { color: #4ADE80; background: rgba(34,197,94,0.12); }
+.av-item.av-navLogout, .av-item.av-navLogout .av-ic, .av-item.av-navLogout .av-go { color: #FF6B80; }
+.av-item.av-navLogout .av-ic { background: rgba(229,48,74,0.12); }
+.av-item.av-navLogout:hover { border-color: rgba(229,48,74,0.45); }
+/* Progreso: cifras con un toque de color */
+.pv-kpi:nth-child(1) b { color: #60A5FA; }
+.pv-kpi { position: relative; overflow: hidden; }
+.pv-kpi::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--c-line-2); }
+.pv-kpi:nth-child(1)::before { background: #60A5FA; } .pv-kpi:nth-child(2)::before { background: #FBBF24; }
+.pv-kpi:nth-child(3)::before { background: #4ADE80; } .pv-kpi:nth-child(4)::before { background: var(--brand); }
+.pv-hist .i:first-child { color: #60A5FA; }
+.pv-leak { border-color: rgba(229,48,74,0.3); background: linear-gradient(135deg, rgba(229,48,74,0.10), var(--c-s1) 60%); }
+.pv-leak small { color: #FF8A9B; }

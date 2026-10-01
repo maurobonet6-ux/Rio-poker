@@ -1737,14 +1737,14 @@
     const t = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
     const body = document.getElementById('practiceBody');
     body.innerHTML = `<div class="pr-grid">
-      <button type="button" class="pr-card hot" data-pr="train"><span class="pr-ic"><svg class="i"><use href="#i-target"/></svg></span><b>Entrenamiento</b>
+      <button type="button" class="pr-card hot c-red" data-pr="partida"><span class="pr-ic"><svg class="i"><use href="#i-spade"/></svg></span><b>Partida de práctica</b>
+        <span>Manos completas contra 2 a 6 rivales con estilos distintos. Al acabar, RÍO repasa tus decisiones.</span><small>Fichas sin valor</small></button>
+      <button type="button" class="pr-card c-amber" data-pr="train"><span class="pr-ic"><svg class="i"><use href="#i-target"/></svg></span><b>Entrenamiento</b>
         <span>Situaciones sueltas: ¿pagas, subes o tiras? RÍO te corrige al momento.</span>
         <small>${t.n ? `${t.n} situaciones · ${Math.round(t.ok / t.n * 100)}% acertadas` : 'Empieza ahora · gratis'}</small></button>
-      <button type="button" class="pr-card" data-pr="errores"><span class="pr-ic"><svg class="i"><use href="#i-crosshair"/></svg></span><b>Entrenar mis errores</b>
+      <button type="button" class="pr-card c-blue" data-pr="errores"><span class="pr-ic"><svg class="i"><use href="#i-crosshair"/></svg></span><b>Entrenar mis errores</b>
         <span>Situaciones del tipo que más fallas, sacadas de tus manos y de tu entrenamiento.</span>
         <small>${errorSpots().length >= ERR_MIN ? `${errorSpots().length} decisiones mejorables tuyas` : 'Se desbloquea al analizar más manos'}</small></button>
-      <button type="button" class="pr-card" data-pr="partida"><span class="pr-ic"><svg class="i"><use href="#i-spade"/></svg></span><b>Partida de práctica</b>
-        <span>Manos completas contra 2 a 6 rivales con estilos distintos. Al acabar, RÍO repasa tus decisiones.</span><small>Fichas sin valor</small></button>
     </div>`;
     const act = { train: () => openTrainer(), errores: () => openTrainer('errores'), partida: () => openPartida(), tablas: () => openCharts(), glosario: () => openGlossary() };
     body.querySelectorAll('[data-pr]').forEach(b => b.addEventListener('click', () => act[b.dataset.pr]()));
@@ -1753,12 +1753,12 @@
   // Aprender: tablas, glosario, guías y manos iniciales (las preguntas frecuentes van debajo, en el HTML).
   function renderLearn(){
     const body = document.getElementById('learnBody');
-    const card = (ic, t, d, attrs) => `<${attrs.href ? 'a' : 'button type="button"'} class="pr-card" ${attrs.href ? `href="${attrs.href}"` : `data-ln="${attrs.ln}"`}><span class="pr-ic"><svg class="i"><use href="#i-${ic}"/></svg></span><b>${t}</b><span>${d}</span></${attrs.href ? 'a' : 'button'}>`;
+    const card = (ic, t, d, attrs) => `<${attrs.href ? 'a' : 'button type="button"'} class="pr-card ${attrs.c || ''}" ${attrs.href ? `href="${attrs.href}"` : `data-ln="${attrs.ln}"`}><span class="pr-ic"><svg class="i"><use href="#i-${ic}"/></svg></span><b>${t}</b><span>${d}</span></${attrs.href ? 'a' : 'button'}>`;
     body.innerHTML = `<div class="pr-grid">
-      ${card('grid-3x3', 'Tablas de manos', 'Qué manos abrir desde cada posición, en cash y torneo.', { ln: 'tablas' })}
-      ${card('book-a', 'Glosario de póker', 'Equity, pot odds, outs, SPR… explicados fácil.', { ln: 'glosario' })}
-      ${card('library', 'Guías', 'Cómo calcular pot odds, cuándo hacer 3-bet, cómo jugar AK…', { href: '/guias/' })}
-      ${card('layers', 'Manos iniciales', 'Las 169 manos: cuándo jugarlas y contra qué.', { href: '/manos/' })}
+      ${card('grid-3x3', 'Tablas de manos', 'Qué manos abrir desde cada posición, en cash y torneo.', { ln: 'tablas', c: 'c-green' })}
+      ${card('book-a', 'Glosario de póker', 'Equity, pot odds, outs, SPR… explicados fácil.', { ln: 'glosario', c: 'c-blue' })}
+      ${card('library', 'Guías', 'Cómo calcular pot odds, cuándo hacer 3-bet, cómo jugar AK…', { href: '/guias/', c: 'c-amber' })}
+      ${card('layers', 'Manos iniciales', 'Las 169 manos: cuándo jugarlas y contra qué.', { href: '/manos/', c: 'c-red' })}
     </div>`;
     const act = { tablas: () => openCharts(), glosario: () => openGlossary() };
     body.querySelectorAll('[data-ln]').forEach(b => b.addEventListener('click', () => act[b.dataset.ln]()));
@@ -1813,7 +1813,7 @@
       ['log-out', 'Cerrar sesión', 'navLogout', logged]
     ].filter(x => x[3]);
     const list = document.getElementById('accountList');
-    list.innerHTML = items.map(([ic, l, id]) => `<button type="button" class="av-item" data-click="${id}"><span class="av-ic"><svg class="i"><use href="#i-${ic}"/></svg></span><b>${l}</b><svg class="i av-go"><use href="#i-chevron-right"/></svg></button>`).join('')
+    list.innerHTML = items.map(([ic, l, id]) => `<button type="button" class="av-item av-${id.replace(':', '-')}" data-click="${id}"><span class="av-ic"><svg class="i"><use href="#i-${ic}"/></svg></span><b>${l}</b><svg class="i av-go"><use href="#i-chevron-right"/></svg></button>`).join('')
       + `<div class="av-legal"><a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/">Qué es RÍO</a><br><span class="age-badge">+18</span> Juega con responsabilidad · <a href="https://www.jugarbien.es" target="_blank" rel="noopener">jugarbien.es</a></div>`;
     list.querySelectorAll('[data-click]').forEach(b => b.addEventListener('click', () => {
       if (b.dataset.click.startsWith('go:')) { showView(b.dataset.click.slice(3)); return; }
