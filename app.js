@@ -379,6 +379,12 @@
   const pickerTitle = document.getElementById('pickerTitle');
   const resultPanel = document.getElementById('resultPanel');
 
+  // Carta dibujada (palos en SVG): size = '' (normal), 'mini' o 'lg'. Baraja de 4 colores por defecto (body.deck4).
+  function cardFace(card, size = ''){
+    return `<span class="pc ${size} s-${card.suit}" aria-hidden="true"><span class="pc-r">${RANK_LABEL(card.rank)}</span>` +
+      `<svg class="pc-sm"><use href="#suit-${card.suit}"/></svg><svg class="pc-big"><use href="#suit-${card.suit}"/></svg></span>`;
+  }
+  document.body.classList.toggle('deck4', storageGet('rio_deck4', true) !== false);
   function allUsedCards(){ return [...hole, ...board].filter(Boolean); }
   function cardKey(c){ return c.rank+'-'+c.suit; }
   function isUsed(rank,suit){ return allUsedCards().some(c=>c.rank===rank && c.suit===suit); }
@@ -389,9 +395,11 @@
     btn.className = 'cardslot ' + (card ? 'filled' : 'empty');
     if (card && SUIT_CRIMSON[card.suit]) btn.classList.add('crimson');
     if (card){
-      btn.innerHTML = `<span class="r">${RANK_LABEL(card.rank)}</span><span class="s">${SUIT_SYMBOL[card.suit]}</span>`;
+      btn.innerHTML = cardFace(card);
+      btn.setAttribute('aria-label', `${RANK_LABEL(card.rank)} de ${SUIT_NAME[card.suit].toLowerCase()} (cambiar)`);
     } else {
       btn.textContent = '+';
+      btn.setAttribute('aria-label', zone === 'hole' ? `Elegir tu carta ${idx + 1}` : `Elegir carta ${['del flop', 'del flop', 'del flop', 'del turn', 'del river'][idx]}`);
     }
     btn.addEventListener('click', () => openPicker(zone, idx));
     return btn;
@@ -497,9 +505,9 @@
     document.getElementById('stepGuide2').style.display = cur === 2 ? '' : 'none';
     document.getElementById('stepGuide3').style.display = cur === 3 ? '' : 'none';
     document.getElementById('stepTodo').innerHTML = [
-      '✅ <b>¡Listo!</b> Pulsa <b>Analizar mano</b>.',
+      '<b>¡Listo!</b> Pulsa <b>Analizar mano</b>.',
       'Falta: <b>elige tus dos cartas</b>.',
-      'Falta: <b>dinos dónde estás sentado</b> (o pulsa «Está bien así»).',
+      'Toca tu asiento en la mesa si no estás en el <b>botón</b>.',
       'Falta: <b>di cuánto ha apostado tu rival</b> (o «Nadie ha apostado»).'][cur];
   }
   ['heroPosInput', 'villPosInput'].forEach(id => document.getElementById(id).addEventListener('change', () => { posTouched = true; updateSteps(); }));
@@ -601,7 +609,7 @@
     } else {
       pickerTitle.textContent = slotLabel() + RANK_LABEL(pickedRank) + ' — elige el palo';
       const back = document.createElement('button');
-      back.type = 'button'; back.className = 'back-btn'; back.textContent = '← Cambiar valor';
+      back.type = 'button'; back.className = 'back-btn'; back.textContent = 'Cambiar valor';
       back.addEventListener('click', () => { pickStep = 'rank'; renderPickerStep(); });
       pickerBody.appendChild(back);
       const grid = document.createElement('div');
@@ -609,8 +617,8 @@
       for (const suit of SUITS){
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = 'suit-btn ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
-        b.innerHTML = `${SUIT_SYMBOL[suit]}<small>${SUIT_NAME[suit]}</small>`;
+        b.className = 'suit-btn s-' + suit + ' ' + (SUIT_CRIMSON[suit] ? 'crimson' : 'black');
+        b.innerHTML = `<svg class="pc-suit" aria-hidden="true"><use href="#suit-${suit}"/></svg><small>${SUIT_NAME[suit]}</small>`;
         const current = activeSlot ? (activeSlot.zone==='hole'?hole[activeSlot.idx]:board[activeSlot.idx]) : null;
         const usedByOther = isUsed(pickedRank, suit) && !(current && current.rank===pickedRank && current.suit===suit);
         b.disabled = usedByOther;
@@ -816,15 +824,29 @@
   // y lo que te toca pagar ya se puede analizar (se usan valores por defecto).
   function setEasyMore(on, remember){
     document.body.classList.toggle('easy-more', on);
-    document.getElementById('moreToggle').innerHTML = on
-      ? '▲ Ocultar detalles avanzados'
-      : '⚙️ Ajustar detalles avanzados<small>Cómo juega tu rival, cuántos rivales, cash o torneo y secuencia de apuestas. No hace falta para analizar.</small>';
     if (remember) { try { localStorage.setItem('rio_easy_more', on ? '1' : '0'); } catch (e) {} }
   }
+  // Hoja «Ajustar detalles» (abajo en el móvil, a la derecha en el ordenador). Al abrirla se ven todos los detalles.
+  const sheet = document.getElementById('detailsSheet'), sheetOverlay = document.getElementById('sheetOverlay');
+  let sheetReturn = null;
+  function openDetails(){
+    setEasyMore(true, true);
+    sheetReturn = document.activeElement;
+    sheet.hidden = false; sheetOverlay.hidden = false; document.body.classList.add('sheet-open');
+    setTimeout(() => document.getElementById('sheetClose').focus(), 30);
+  }
+  function closeDetails(){
+    sheet.hidden = true; sheetOverlay.hidden = true; document.body.classList.remove('sheet-open');
+    updateDetailsSummary();
+    if (sheetReturn && sheetReturn.focus) sheetReturn.focus();
+  }
+  ['sheetClose', 'sheetDone'].forEach(id => document.getElementById(id).addEventListener('click', closeDetails));
+  sheetOverlay.addEventListener('click', closeDetails);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sheet.hidden) closeDetails(); });
   let easyMoreSaved = false;
   try { easyMoreSaved = localStorage.getItem('rio_easy_more') === '1'; } catch (e) {}
   setEasyMore(easyMoreSaved);
-  document.getElementById('moreToggle').addEventListener('click', () => setEasyMore(!document.body.classList.contains('easy-more'), true));
+  document.getElementById('moreToggle').addEventListener('click', openDetails);
   // En Pro: modo rápido (bote y lo que pagas) o completo (secuencia, stacks, SPR).
   function setBetsFull(on, remember){
     document.body.classList.toggle('bets-full', on);
@@ -835,14 +857,8 @@
   try { betsFullSaved = localStorage.getItem('rio_bets_full') === '1'; } catch (e) {}
   setBetsFull(betsFullSaved);
   document.querySelectorAll('#betsMode [data-bm]').forEach(b => b.addEventListener('click', () => setBetsFull(b.dataset.bm === 'full', true)));
-  document.getElementById('moreNudgeAdd').addEventListener('click', () => {
-    setEasyMore(true, true);
-    document.getElementById('tablePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-  document.getElementById('moreNudgePro').addEventListener('click', () => {
-    setMode('pro');
-    document.getElementById('tablePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+  document.getElementById('moreNudgeAdd').addEventListener('click', openDetails);
+  document.getElementById('moreNudgePro').addEventListener('click', () => { setMode('pro'); openDetails(); });
 
   const DECISION_ES = { RAISE:'SUBE', CALL:'PAGA', FOLD:'TIRA', CHECK:'PASA', BET:'APUESTA' };
   function decisionHTML(t){ return `<span class="easy-only">${DECISION_ES[t] || t}</span><span class="pro-only">${t}</span>`; }
@@ -3226,8 +3242,9 @@
       const bluff = reco.bc || null;
       const isBluff = reco.kind === 'bluff', isOpen = reco.kind === 'open';
       const heroDraw = aStreet > 0 && aStreet < 3 && hasDraw(hole, aBoard);
-      badge.innerHTML = ({ ok: '🟢', warn: '🟡', no: '🔴' })[cls] + ' ' + decisionHTML(text);
-      badge.className = 'decision-badge ' + cls;
+      const DEC_IC = { CALL: 'check', CHECK: 'minus', RAISE: 'arrow-up', BET: 'arrow-up', FOLD: 'x' };
+      badge.innerHTML = `<span class="db-ic"><svg class="i"><use href="#i-${DEC_IC[text]}"/></svg></span>` + decisionHTML(text);
+      badge.className = 'decision-badge ' + cls + ' act-' + text.toLowerCase();
 
       // --- Explicación modo Pro ---
       const posPhrase = oop
@@ -3291,7 +3308,10 @@
 
       requestAnimationFrame(() => {
         document.getElementById('gaugeFill').style.width = Math.max(2, Math.min(100, win)) + '%';
+        document.getElementById('gaugeFill').classList.toggle('below', call > 0 && win < needed);
         document.getElementById('gaugeMark').style.left = Math.max(0, Math.min(100, needed)) + '%';
+        document.getElementById('gaugeMark').style.display = call > 0 ? '' : 'none';
+        document.getElementById('markLabel').style.left = Math.max(12, Math.min(88, needed)) + '%';
       });
       document.getElementById('markLabel').textContent = call > 0 ? `Necesitas ${needed.toFixed(0)}%` : 'Sin coste';
 
@@ -3347,11 +3367,19 @@
       const fmtEV = (v) => (v >= 0 ? '+' : '') + (inBB ? (v / bbSize()).toFixed(1).replace('.', ',') + ' BB' : v.toFixed(1).replace('.', ',') + ' ' + unitLabel);
       const evShown = call > 0 ? ev : bluff && (text === 'BET') ? bluff.evBet : null;
       const kchips = [];
-      kchips.push(`<div class="kchip"><b>${Math.round(win)}%</b><span class="easy-only">Ganas</span><span class="pro-only">Equity</span></div>`);
-      if (call > 0) kchips.push(`<div class="kchip"><b>${Math.round(needed)}%</b><span class="easy-only">Necesitas</span><span class="pro-only">Pot odds</span></div>`);
-      if (evShown !== null) kchips.push(`<div class="kchip ${evShown >= 0 ? 'pos' : 'neg'}"><b>${fmtEV(evShown)}</b><span class="easy-only">${call > 0 ? 'de media si pagas' : 'de media si apuestas'}</span><span class="pro-only">${call > 0 ? 'EV de pagar' : 'EV de apostar'}</span></div>`);
-      if (aStreet > 0 && aStreet < 3 && outs !== null) kchips.push(`<div class="kchip"><b>${outs}</b><span class="easy-only">Cartas que te ayudan</span><span class="pro-only">Outs</span></div>`);
+      if (aStreet > 0 && aStreet < 3 && outs !== null) kchips.push(`<div class="kchip"><b>${outs}</b><span class="easy-only">Te ayudan</span><span class="pro-only">Outs</span></div>`);
+      kchips.push(`<div class="kchip"><b>${fmtN(pot + call)}</b><span>${call > 0 ? 'Bote si pagas' : 'Bote'}</span></div>`);
+      kchips.push(`<div class="kchip"><b>${Math.round(lose)}%</b><span>Pierdes</span></div>`);
+      if (kchips.length < 3 && call > 0) kchips.push(`<div class="kchip"><b>${Math.round(needed)}%</b><span class="easy-only">Necesitas</span><span class="pro-only">Pot odds</span></div>`);
       document.getElementById('keyLine').innerHTML = kchips.join('');
+      // Cabecera del resultado: EV grande, cuánto ganas frente a lo que necesitas y la mano en miniatura.
+      const evParts = evShown === null ? null : fmtEV(evShown).match(/^(\S+)\s*(.*)$/);
+      document.getElementById('resEv').innerHTML = evShown === null ? ''
+        : `<b class="${evShown >= 0 ? 'pos' : 'neg'}">${evParts[1]}</b><small><span class="easy-only">${evParts[2] || 'fichas'} de media</span><span class="pro-only">EV${evParts[2] ? ' · ' + evParts[2] : ''}</span></small>`;
+      document.getElementById('resWin').innerHTML = `<span class="easy-only">Ganas <b>${Math.round(win)}%</b> de las veces</span><span class="pro-only">Equity <b>${win.toFixed(1).replace('.', ',')}%</b></span>`;
+      document.getElementById('resSummary').innerHTML = `<span class="rs-cards">${hole.map(c => cardFace(c, 'mini')).join('')}</span>` +
+        (aBoard.length ? `<span class="rs-sep"></span><span class="rs-cards">${aBoard.map(c => cardFace(c, 'mini')).join('')}</span>` : '') +
+        `<span class="rs-meta">${heroPos} vs ${villPos} · ${STREET_NAMES[aStreet]}</span>`;
 
       // --- ¿Por qué? En pocas frases cortas: equity, precio, rival, proyectos, riesgo ---
       const pctS = (x) => Math.round(x) + '%';
@@ -3380,8 +3408,10 @@
       if (aStreet > 0 && aStreet < 3 && outs) why.push(`🃏 Tienes <b>${outs} ${outs === 1 ? 'carta' : 'cartas'}</b> que mejoran tu jugada en la próxima calle.`);
       if (!isOpen && why.length < 5) why.push(oop ? '📍 Hablas antes que tu rival: juegas con menos información.' : '📍 Hablas después que tu rival: ves lo que hace antes de decidir.');
       if (riskPremium) why.push('🏆 Torneo: te juegas buena parte de tu stack, así que pedimos algo más de ventaja.');
+      const sinEmoji = (x) => x.replace(/^\S+\s/, ''); // cada motivo empieza por un emoji: en la interfaz nueva van sin él
       document.getElementById('whyTitle').innerHTML = `¿Por qué RÍO recomienda ${decisionHTML(text)}?`;
-      document.getElementById('whyList').innerHTML = why.map(x => `<li>${x}</li>`).join('');
+      document.getElementById('whyList').innerHTML = why.map(x => `<li>${sinEmoji(x)}</li>`).join('');
+      document.getElementById('whyShort').innerHTML = why.slice(0, 2).map(sinEmoji).join(' ');
 
       // --- Plan: cuánto apostar y qué hacer si te suben ---
       const curStreet = availableStreets() - 1;
@@ -3412,7 +3442,7 @@
       else if (text === 'CHECK') planItems.push('Pasa.', `Si después tu rival apuesta: ${limit}.`);
       else planItems.push('Tira la mano: no hay plan que la salve a este precio.');
       if (tourney && !stackNow) planItems.push('Torneo: escribe <b>tu stack</b> para ajustar el consejo al riesgo de quedar eliminado.');
-      document.getElementById('planBox').innerHTML = `<div class="plan-title">📋 Tu plan</div><ul>${planItems.filter(Boolean).map(x => `<li>${x}</li>`).join('')}</ul>`;
+      document.getElementById('planBox').innerHTML = `<div class="plan-title">Tu plan</div><ul>${planItems.filter(Boolean).map(x => `<li>${x}</li>`).join('')}</ul>`;
       const verdict = text === 'CALL' ? `pagar <b>${fmtN(call)}${u}</b>`
         : text === 'RAISE' && isOpen ? `subir a <b>${fmtN(Math.round(bbSize() * 3 * 100) / 100)}${u}</b>`
         : text === 'RAISE' ? `subir a unas <b>${fmtN(Math.round(heroPut))}${u}</b>`
@@ -3424,10 +3454,10 @@
       renderTimeline(reviewRows);
       saveReviews(reviewRows);
       document.getElementById('streetTrack').innerHTML = STREET_NAMES.map((n, i) =>
-        `<span class="${i === aStreet ? 'cur' : i < aStreet ? 'done' : ''}">${i < aStreet ? '✓ ' : ''}${n}</span>`).join('<i>→</i>');
+        `<span class="${i === aStreet ? 'cur' : i < aStreet ? 'done' : ''}">${n}</span>`).join('<i>·</i>');
       const nsBtn = document.getElementById('nextStreetBtn');
       nsBtn.style.display = curStreet < 3 && text !== 'FOLD' ? 'block' : 'none';
-      nsBtn.textContent = `➡️ Siguiente calle: ${['añadir el flop', 'añadir el turn', 'añadir el river'][Math.min(2, curStreet)]}`;
+      nsBtn.textContent = `Siguiente calle: ${['añadir el flop', 'añadir el turn', 'añadir el river'][Math.min(2, curStreet)]}`;
 
       resultPanel.classList.add('show');
       analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar mano';
@@ -3529,6 +3559,7 @@
   const backToStart = () => { document.getElementById('resetBtn').click(); document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   document.getElementById('demoOwnBtn').addEventListener('click', backToStart);
   document.getElementById('againBtn').addEventListener('click', backToStart);
+  document.getElementById('resEdit').addEventListener('click', () => document.getElementById('cardsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
   // ---- ¿Qué pasa si tu rival juega distinto? Misma mano contra 5 perfiles, de más tight a más suelto ----
   const WHATIF = [['Muy tight', 12], ['Tight', 22], ['Normal', 40], ['Suelto', 60], ['Muy suelto', 100]];
@@ -3555,7 +3586,7 @@
         street: c.aStreet, heroPos: c.heroPos, unraised: c.unraised, premium: c.premium, iters: 1200 });
       results.push(r.text);
       const cell = row.children[i].querySelector('b');
-      cell.className = cls[r.text]; cell.innerHTML = decisionHTML(r.text);
+      cell.className = cls[r.text] + ' act-' + r.text.toLowerCase(); cell.innerHTML = decisionHTML(r.text);
     }
     const same = results.every(x => x === results[0]);
     note.innerHTML = same
@@ -3676,6 +3707,65 @@
   })();
 
   // Lo que usa la partida de práctica (partida.js) del motor de RÍO
+  // ---- Mesa visual: asientos, bote y resumen de los detalles ----
+  // Los asientos van en el orden real de la mesa (sentido de las agujas del reloj desde el botón).
+  // Tocar un asiento cambia tu posición o la del rival (según «Tu sitio / Rival»); por debajo siguen
+  // mandando los selectores heroPosInput y villPosInput, que están en «Ajustar detalles».
+  const SEAT_XY = { BTN: [50, 92], SB: [11, 74], BB: [11, 27], UTG: [50, 8], HJ: [89, 27], CO: [89, 74] };
+  const heroSel = document.getElementById('heroPosInput'), villSel = document.getElementById('villPosInput');
+  let seatMode = 'hero';
+  function renderSeats(){
+    const box = document.getElementById('mesaSeats');
+    if (!box) return;
+    box.innerHTML = Object.entries(SEAT_XY).map(([pos, [x, y]]) => {
+      const role = pos === heroSel.value ? 'hero' : pos === villSel.value ? 'vill' : '';
+      const tag = role === 'hero' ? '<span class="seat-tag">Tú</span>' : role === 'vill' ? '<span class="seat-tag">Rival</span>' : '';
+      const label = role === 'hero' ? `Tu posición: ${pos}` : role === 'vill' ? `Posición del rival: ${pos}` : `Asiento ${pos}`;
+      return `<button type="button" class="seat-btn ${role}" data-seat="${pos}" style="left:${x}%;top:${y}%" aria-label="${label}" aria-pressed="${role ? 'true' : 'false'}">${tag}${pos}</button>`;
+    }).join('');
+    box.querySelectorAll('[data-seat]').forEach(b => b.addEventListener('click', () => pickSeat(b.dataset.seat)));
+  }
+  function pickSeat(pos){
+    const [mine, other] = seatMode === 'hero' ? [heroSel, villSel] : [villSel, heroSel];
+    if (other.value === pos){ other.value = mine.value; other.dispatchEvent(new Event('change', { bubbles: true })); }
+    mine.value = pos; mine.dispatchEvent(new Event('change', { bubbles: true }));
+    renderSeats(); updateDetailsSummary();
+  }
+  document.querySelectorAll('[data-seatmode]').forEach(b => b.addEventListener('click', () => {
+    seatMode = b.dataset.seatmode;
+    document.querySelectorAll('[data-seatmode]').forEach(x => { x.classList.toggle('active', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+  }));
+  [heroSel, villSel].forEach(sel => sel.addEventListener('change', () => { renderSeats(); updateDetailsSummary(); }));
+
+  // Bote y apuesta en el centro de la mesa (al tocarlos se va al campo correspondiente).
+  function renderMesaPot(){
+    const box = document.getElementById('mesaPot');
+    if (!box) return;
+    const potEl = document.getElementById('potInput'), callEl = document.getElementById('callInput');
+    if (potEl.value === '' && callEl.value === ''){ box.innerHTML = ''; return; }
+    const pot = Number(potEl.value) || 0, call = Number(callEl.value) || 0;
+    box.innerHTML = `<button type="button" class="pill" data-go="pot"><span class="chip-dot"></span><small>Bote</small>${fmtN(pot)}</button>` +
+      (call > 0 ? `<button type="button" class="pill" data-go="call"><small>Pagar</small>${fmtN(call)}</button>` : '<span class="pill"><small>Sin apuesta</small></span>');
+    box.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
+      const pro = document.body.classList.contains('mode-pro');
+      const id = b.dataset.go === 'pot' ? (pro ? 'potInput' : 'potBeforeInput') : (pro ? 'callInput' : 'betInput');
+      const el = document.getElementById(id); el.focus(); el.select && el.select();
+    }));
+  }
+  ['potInput', 'callInput', 'potBeforeInput', 'betInput'].forEach(id => document.getElementById(id).addEventListener('input', () => setTimeout(renderMesaPot, 0)));
+  document.getElementById('noBetBtn').addEventListener('click', () => setTimeout(renderMesaPot, 0));
+
+  // Resumen de «Ajustar detalles» (lo que se usará si no tocas nada).
+  function updateDetailsSummary(){
+    const el = document.getElementById('detailsSummary');
+    if (!el) return;
+    const game = storageGet('rio_game', 'cash') === 'torneo' ? 'Torneo' : 'Cash';
+    const rival = villRange && villRange.unknown ? 'rival medio' : `rival ${rangeLabel().toLowerCase()}`;
+    el.textContent = `${heroSel.value} vs ${villSel.value} · ${numRivals} rival${numRivals > 1 ? 'es' : ''} · ${game} · ${rival}`;
+  }
+  renderSeats(); renderMesaPot(); updateDetailsSummary();
+  setInterval(() => { if (sheet.hidden) renderMesaPot(); }, 1500); // también tras rellenar por captura, voz o enlace compartido
+
   window.RIO_ENGINE = { recommend, runEquity, withBluffs, poolFromSet, topRange, handTopPercent, bestHand, categoryName,
     fullDeck, drawN, grade, OPEN_PCT, cardHTML, decisionHTML, of20, storageGet, storageSet,
     cardText: (c) => RANK_LABEL(c.rank) + SUIT_SYMBOL[c.suit] };
