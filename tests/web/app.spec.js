@@ -527,3 +527,30 @@ test('Mi progreso: resume tus manos y tu mayor leak, y Atrás vuelve al analizad
   await page.goto('http://rio.test/#/progreso');
   await expect(page.locator('#progressView')).toBeVisible();
 });
+
+test('navegación: secciones con su dirección, pestaña activa y Atrás del navegador', async ({ page }) => {
+  await abrir(page);
+  const nav = page.locator('#appNav');
+  await expect(nav.locator('.an-link.on')).toHaveText(/Analizar/);
+  await nav.locator('[data-route="practicar"]').click();
+  await expect(page).toHaveURL(/#\/practicar$/);
+  await expect(page.locator('#practiceView')).toBeVisible();
+  await expect(nav.locator('.an-link.on')).toHaveText(/Practicar/);
+  await nav.locator('[data-route="cuenta"]').click();
+  await expect(page.locator('#accountView')).toBeVisible();
+  await expect(page.locator('#accountList')).toContainText('Configuración');
+  await page.goBack();
+  await expect(page.locator('#practiceView')).toBeVisible();
+  await page.goBack();
+  await expect(page.locator('#practiceView')).toBeHidden();
+  await expect(page.locator('#cardsPanel')).toBeVisible();
+});
+
+test('navegación: el historial se ve en su sección y vuelve al analizador al salir', async ({ page }) => {
+  await abrir(page, { storage: { rio_history: [{ hand: 'A♠ K♦', equity: '60.0', decision: 'CALL', cls: 'warn', t: Date.now(), st: 1 }] } });
+  await page.goto('http://rio.test/#/historial');
+  await expect(page.locator('#historyView #historyPanel')).toBeVisible();
+  await page.goto('http://rio.test/#/');
+  await expect(page.locator('#historyView #historyPanel')).toHaveCount(0);
+  await expect(page.locator('.wrap #historyPanel')).toBeVisible();
+});

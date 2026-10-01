@@ -179,6 +179,7 @@
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
     document.getElementById('sidebarAccount').textContent = logged ? storageGet('rio_email', '') : 'Sin cuenta · tus datos solo en este navegador';
+    const anPro = document.getElementById('anProTxt'); if (anPro) anPro.textContent = isPro() ? 'PRO ✓' : 'Hazte PRO';
     const cta = document.getElementById('acctCta');
     if (!logged){ cta.textContent = 'Entrar o crear cuenta gratis'; cta.dataset.go = 'login'; cta.className = 'acct-cta'; }
     else if (!isPro()){ cta.textContent = `⭐ Hazte PRO · ${PRO_PRICE_LABEL}/mes`; cta.dataset.go = 'plans'; cta.className = 'acct-cta gold'; }
@@ -390,7 +391,7 @@
   let analyzeInView = false, resultInView = false;
   function updateSticky(){
     // Solo antes de analizar: con el resultado a la vista ya no hace falta.
-    const show = !!(hole[0] && hole[1]) && !analyzeInView && !resultInView && !resultPanel.classList.contains('show');
+    const show = !!(hole[0] && hole[1]) && !document.body.classList.contains('view-open') && !analyzeInView && !resultInView && !resultPanel.classList.contains('show');
     document.getElementById('stickyAnalyze').classList.toggle('show', show);
     document.body.classList.toggle('has-sticky', show);
   }
@@ -1626,7 +1627,12 @@
   // ---- Secciones con dirección propia (#/progreso…) ----
   // La portada (#/ o sin #) es el analizador. Cada sección es una vista a pantalla completa
   // y el botón Atrás del navegador vuelve a la anterior.
-  const VIEWS = { progreso: { el: 'progressView', render: () => renderProgress() } };
+  const VIEWS = {
+    progreso: { el: 'progressView', render: () => renderProgress() },
+    practicar: { el: 'practiceView', render: () => renderPractice() },
+    historial: { el: 'historyView', render: () => renderHistoryView(), leave: () => returnHistoryPanel() },
+    cuenta: { el: 'accountView', render: () => renderAccount() }
+  };
   function currentView(){ const m = location.hash.match(/^#\/([a-z]+)/); return m && VIEWS[m[1]] ? m[1] : null; }
   let navInApp = false; // true si se ha llegado a la vista desde dentro de RÍO (así Atrás vuelve a donde estabas)
   function showView(name){
@@ -1634,15 +1640,92 @@
     if (location.hash !== target){ navInApp = true; location.hash = target; return; } // el cambio de # pinta la vista
     applyView();
   }
+  let shownView = null;
   function applyView(){
     const v = currentView();
+    if (shownView && shownView !== v && VIEWS[shownView].leave) VIEWS[shownView].leave();
+    shownView = v;
     Object.entries(VIEWS).forEach(([k, def]) => { document.getElementById(def.el).hidden = k !== v; });
     document.body.classList.toggle('view-open', !!v);
-    if (v){ closeModal(); VIEWS[v].render(); window.scrollTo(0, 0); document.getElementById(VIEWS[v].el).scrollTop = 0; }
+    document.querySelectorAll('#appNav [data-route]').forEach(a => a.classList.toggle('on', a.dataset.route === (v || '') && !a.classList.contains('an-brand')));
+    if (v){ closeModal(); closeSidebar(); VIEWS[v].render(); document.getElementById(VIEWS[v].el).scrollTop = 0; }
+    updateSticky();
+  }
+  // La barra de navegación usa enlaces con # normales; solo hace falta saber que el cambio viene de dentro.
+  document.querySelectorAll('#appNav a').forEach(a => a.addEventListener('click', () => { navInApp = true; }));
+  document.getElementById('anPro').addEventListener('click', () => openPlanPanel());
+
+  // Practicar: el entrenamiento y la partida de práctica, más las tablas y el glosario.
+  function renderPractice(){
+    const t = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
+    const body = document.getElementById('practiceBody');
+    body.innerHTML = `<div class="pr-grid">
+      <button type="button" class="pr-card hot" data-pr="train"><span class="pr-ic">🎯</span><b>Entrenamiento</b>
+        <span>Situaciones sueltas: ¿pagas, subes o tiras? RÍO te corrige al momento.</span>
+        <small>${t.n ? `${t.n} situaciones · ${Math.round(t.ok / t.n * 100)}% acertadas` : 'Empieza ahora · gratis'}</small></button>
+      <button type="button" class="pr-card" data-pr="partida"><span class="pr-ic">🃏</span><b>Partida de práctica</b>
+        <span>Manos completas contra 2 a 6 rivales con estilos distintos. Al acabar, RÍO repasa tus decisiones.</span><small>Fichas sin valor</small></button>
+      <button type="button" class="pr-card" data-pr="tablas"><span class="pr-ic">📊</span><b>Tablas de manos</b><span>Qué manos abrir desde cada posición, en cash y torneo.</span></button>
+      <button type="button" class="pr-card" data-pr="glosario"><span class="pr-ic">📖</span><b>Glosario de póker</b><span>Equity, pot odds, outs, SPR… explicados fácil.</span></button>
+    </div>`;
+    const act = { train: () => openTrainer(), partida: () => openPartida(), tablas: () => openCharts(), glosario: () => openGlossary() };
+    body.querySelectorAll('[data-pr]').forEach(b => b.addEventListener('click', () => act[b.dataset.pr]()));
+  }
+
+  // Historial: se reutiliza el mismo panel del analizador (filtros, patrones y lista); se mueve aquí mientras la vista está abierta.
+  let historyHome = null; // marca del sitio original del panel en el analizador
+  function renderHistoryView(){
+    const historyPanel = document.getElementById('historyPanel');
+    if (!historyHome){ historyHome = document.createComment('historial'); historyPanel.parentNode.insertBefore(historyHome, historyPanel); }
+    const box = document.getElementById('historyViewBody');
+    renderHistory();
+    if (!getHistory().length){
+      box.innerHTML = `<div class="pv-empty"><div class="pv-empty-ic">📜</div><h3>Aún no has analizado ninguna mano</h3>
+        <p>Cada mano que analices se guarda aquí, con lo que dijo RÍO y lo que hiciste tú.</p>
+        <div class="pv-actions"><a class="btn-primary" href="#/">Analizar una mano</a></div></div>`;
+      return;
+    }
+    box.innerHTML = '';
+    box.appendChild(historyPanel);
+    historyPanel.classList.add('in-view');
+  }
+  function returnHistoryPanel(){
+    const historyPanel = document.getElementById('historyPanel');
+    if (!historyHome) return;
+    if (historyPanel.parentNode !== historyHome.parentNode){ historyHome.parentNode.insertBefore(historyPanel, historyHome.nextSibling); }
+    historyPanel.classList.remove('in-view');
+  }
+
+  // Cuenta: la misma información que la tarjeta del menú, más los accesos de cuenta y ajustes.
+  function renderAccount(){
+    updateProfileUI(); renderPlanInfo(); refreshPhotoUsage();
+    const logged = !!storageGet('rio_token', '');
+    const cta = document.getElementById('acctCta');
+    document.getElementById('accountViewCard').innerHTML = `<div class="acct-card av-card">
+      <div class="acct-top"><div class="acct-avatar">${escHTML(document.getElementById('acctAvatar').textContent)}</div>
+        <div class="acct-info"><div class="acct-name">${escHTML(document.getElementById('sidebarProfile').textContent)}</div><div class="acct-mail">${escHTML(document.getElementById('sidebarAccount').textContent)}</div></div></div>
+      <div class="sidebar-foot">${document.getElementById('sidebarFoot').innerHTML}</div>
+      <button type="button" class="${cta.className}" id="avCta">${escHTML(cta.textContent)}</button></div>`;
+    document.getElementById('avCta').addEventListener('click', () => cta.click());
+    const items = [
+      ['💎', 'Planes y precios', 'navPlan', true],
+      ['📋', 'Importar historial (PokerStars · GGPoker)', 'navImport', true],
+      ['⚙️', 'Configuración', 'navSettings', true],
+      ['📲', 'Instalar en el móvil', 'navInstall', true],
+      ['🔑', 'Entrar o crear cuenta', 'navLogin', !logged],
+      ['🚪', 'Cerrar sesión', 'navLogout', logged]
+    ].filter(x => x[3]);
+    const list = document.getElementById('accountList');
+    list.innerHTML = items.map(([ic, l, id]) => `<button type="button" class="av-item" data-click="${id}"><span>${ic}</span><b>${l}</b><i>›</i></button>`).join('')
+      + `<div class="av-legal"><a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/guias/">Guías</a></div>`;
+    list.querySelectorAll('[data-click]').forEach(b => b.addEventListener('click', () => {
+      document.getElementById(b.dataset.click).click();
+      if (b.dataset.click === 'navLogout') setTimeout(renderAccount, 300);
+    }));
   }
   window.addEventListener('hashchange', applyView);
   document.querySelectorAll('[data-view-back]').forEach(b => b.addEventListener('click', () => { if (navInApp) history.back(); else showView(null); }));
-  if (currentView()) applyView();
+  setTimeout(applyView, 0); // al final del arranque, con todo ya definido (también marca la pestaña activa)
 
   // ---- Modo entrenamiento ----
   const TRAIN_SPOTS = [['BTN','BB'],['CO','BB'],['BB','BTN'],['SB','BB'],['UTG','BB'],['BTN','SB'],['HJ','BTN'],['BB','CO'],['CO','BTN']];
