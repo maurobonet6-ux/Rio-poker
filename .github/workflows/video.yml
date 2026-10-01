@@ -88,12 +88,21 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Instalar el navegador
         run: npx playwright install --with-deps chromium
-      - name: Instalar numpy (sonido) y ffmpeg (vídeo)
-        run: pip install numpy imageio-ffmpeg
+      - name: Guardar el modelo de la voz entre ejecuciones
+        uses: actions/cache@v4
+        with:
+          path: marketing/videos/modelos
+          key: kokoro-v1.0
+      - name: Instalar numpy (sonido), ffmpeg (vídeo) y la voz en off (Kokoro)
+        run: pip install numpy imageio-ffmpeg kokoro-onnx soundfile edge-tts
       - name: Hacer el vídeo
         env:
           PEDIDO: ${{ matrix.pedido }}
           N: ${{ matrix.n }}
+          # Opcionales (Settings → Secrets and variables → Actions → Variables): VOZ = ef_dora | em_alex | em_santa; SIN_VOZ = 1 para quitar la voz
+          VOZ: ${{ vars.VOZ }}
+          SIN_VOZ: ${{ vars.SIN_VOZ }}
+          SIN_FONDO: ${{ vars.SIN_FONDO }}
         run: |
           set +e
           mkdir -p marketing/videos/salida

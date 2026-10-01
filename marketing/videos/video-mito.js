@@ -54,14 +54,21 @@ window.render = render;`;
   return documento(css, cuerpo, js);
 }
 
+// Lo que dice la voz y cuándo (ver video-lista.js).
+const narracion = m => [
+  { id: 'afirmacion', texto: `¿Mito o realidad? ${m.dice}`, en: T.card + 0.3, limite: T.cuenta },
+  { id: 'veredicto', texto: `${m.verdad ? 'Es realidad' : 'Es un mito'}. ${m.why}`, en: T.flip + 0.25, limite: T.fin },
+  { id: 'cta', texto: require('./voz.js').CTA, en: T.fin + 0.4, limite: T.total },
+];
+
 const eventos = () => [{ t: T.card, tipo: 'whoosh' }, ...[0, 1, 2].map(i => ({ t: T.cuenta + i, tipo: 'tick' })), { t: T.flip - 0.4, tipo: 'riser', dur: 0.4 }, { t: T.flip, tipo: 'ding' }, { t: T.fin, tipo: 'whoosh' }];
 
 async function hacerMito({ m = MITOS[Math.floor(Math.random() * MITOS.length)], id = 'mito-' + Date.now().toString(36), snap } = {}){
-  const f = await grabar({ html: pagina(m), nombre: id, total: T.total, eventos: eventos(), snap });
+  const f = await grabar({ html: pagina(m), nombre: id, total: T.total, eventos: eventos(), snap, narracion: narracion(m) });
   if (f) console.log('LISTO ' + f + ' · mito');
   return { ok: true, id, archivo: f };
 }
-module.exports = { hacerMito, pagina, T };
+module.exports = { hacerMito, pagina, narracion, T };
 if (require.main === module){
   const snap = (process.env.SNAP || '').split(',').filter(Boolean);
   hacerMito({ snap: snap.length ? snap : undefined }).catch(e => { console.error(e); process.exit(1); });

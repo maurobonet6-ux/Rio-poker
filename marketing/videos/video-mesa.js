@@ -3,7 +3,7 @@
 const { chromium } = require('@playwright/test');
 const fs = require('fs'), path = require('path'), { spawn, execFileSync } = require('child_process');
 const { SALIDA, ffmpeg, unirAudio, fontRoute } = require('./comun.js');
-const { renderizarMudo } = require('./motor.js');
+const { grabar } = require('./motor.js');
 const FF = ffmpeg(), FPS = 30, HERE = SALIDA;
 process.chdir(SALIDA);
 
@@ -222,19 +222,21 @@ function render(t){
 }
 </script></body></html>`;
 
+// Lo que dice la voz y cuándo (ver video-lista.js): cada título y su subtítulo, sin pisar el siguiente momento de la animación.
+const narracion = [
+  ...H.caps.map((c, i) => ({ id: 'c' + i, texto: [c.t, c.sub].filter(Boolean).join('. '), en: c.at + 0.2, limite: i + 1 < H.caps.length ? H.caps[i + 1].at : H.END })),
+  { id: 'cta', texto: require('./voz.js').CTA, en: H.END + 0.4, limite: H.TOTAL },
+];
+// Sonidos: reparto de cartas, cuenta atrás, sello de RÍO y cambio al final
+const eventos = [
+  ...[0.55, 0.7, 0.85, 1.0].map(t => ({ t, tipo: 'whoosh' })),
+  ...H.board.map((_, k) => ({ t: 2.15 + k * 0.15, tipo: 'whoosh' })),
+  ...[6.2, 7.2, 8.2].map(t => ({ t, tipo: 'tick' })),
+  { t: 9.4, tipo: 'ding' }, { t: H.END - 0.1, tipo: 'whoosh' },
+];
+
 (async () => {
-  const f = path.join(HERE, 'mesa-' + HN + '.html'); fs.writeFileSync(f, html);
-  const b = await chromium.launch();
-  const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
-  await p.route('**/*', r => fontRoute(r) || r.continue());
-  await p.goto('file://' + f); await p.evaluate(() => document.fonts.ready); await p.evaluate(() => setup());
-  if (process.env.SNAP){ fs.mkdirSync(path.join(HERE, 'snap'), { recursive: true }); for (const t of process.env.SNAP.split(',')){ await p.evaluate(x => render(x), +t); await p.screenshot({ path: path.join(HERE, 'snap', 'm-' + HN + '-' + t + '.png') }); } await b.close(); return; }
-  await b.close();
-  const out = path.join(HERE, 'rio-' + HN + '-mudo.mp4');
-  await renderizarMudo({ archivoHtml: f, total: H.TOTAL, salida: out });
-  fs.rmSync(f);
-  const wav = path.join(HERE, HN + '.wav'), final = path.join(HERE, 'rio-' + HN + '.mp4');
-  execFileSync('python3', [path.join(__dirname, 'audio_mesa.py'), String(H.board.length), wav, String(H.TOTAL), String(H.END)]);
-  unirAudio(out, wav, final);
-  console.log(final);
+  const snap = process.env.SNAP ? process.env.SNAP.split(',') : undefined;
+  const final = await grabar({ html, nombre: HN, total: H.TOTAL, eventos, snap, narracion });
+  if (final) console.log(final);
 })();

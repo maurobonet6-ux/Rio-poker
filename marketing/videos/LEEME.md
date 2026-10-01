@@ -152,3 +152,18 @@ Nada llega al canal sin que lo apruebes. Para cambiar la hora, edita el `cron` (
 - **Cada vídeo en su máquina**: el workflow `video.yml` tiene tres tareas. `preparar` reparte el pedido (`node generar.js --plan "<pedido>" <cantidad>`),
   `generar` hace un vídeo por máquina, todas a la vez (hasta 20), y `enviar` los manda juntos a Telegram. Un lote de 10 tarda casi lo mismo que uno solo.
   Si alguno falla, se avisa en tu chat privado con el motivo y los demás llegan igualmente.
+
+## Voz en off y fondos reales
+
+- **Voz en off automática** (`voz.py`, `voz.js`, `pronunciacion.js`, `tiempos.js`): con [Kokoro](https://github.com/thewh1teagle/kokoro-onnx) (código abierto,
+  licencia Apache, sin claves ni coste). Voces en español: `ef_dora` (femenina, la de por defecto), `em_alex` y `em_santa` (masculinas); se elige con
+  `VOZ=em_alex` (o la variable de GitHub `VOZ`). El modelo (325 MB) se descarga solo de GitHub la primera vez en `marketing/videos/modelos/` (no se sube a git).
+  Requiere `pip install kokoro-onnx soundfile`; si no está instalado, el vídeo sale igualmente, sin voz. `SIN_VOZ=1` la quita.
+- **La voz encaja con la animación**: cada formato tiene su guion hablado (`narracion()`), con el momento en que empieza cada frase y el siguiente momento de la
+  animación que no debe pisar. Si una frase no cabe, la pantalla se queda quieta unos instantes en el último fotograma (`tiempos.js`) y todo lo posterior
+  se retrasa lo mismo. La cuenta atrás va sin voz. Los efectos de sonido bajan mientras se habla y el volumen final queda a -15 LUFS.
+- **Si una palabra suena mal** (siglas, palabras inglesas del póker): se corrige en `pronunciacion.js`, en la lista `SIGLAS` (escribe cómo se pronuncia).
+- **Fondos reales**: ver `fondos/LEEME.md`. El clip va detrás de la animación (no cuesta tiempo extra de verdad: ~25 s en lugar de ~14 s por vídeo corto).
+- `DEBUG_TIEMPOS=1` muestra cuánto tarda cada fase.
+
+**Voz principal: Edge TTS** (gratis, voces neuronales de Microsoft, sin clave; `es-ES-ElviraNeural` por defecto). Si falla, se usa Kokoro automáticamente. Para elegir otra, variable `VOZ` = `es-ES-AlvaroNeural`, `es-ES-XimenaNeural`… (o `ef_dora`/`em_alex`/`em_santa` para forzar Kokoro).

@@ -12,8 +12,10 @@ function ffmpeg(){
 }
 
 // Une el vídeo sin sonido con su audio y borra los archivos intermedios.
-function unirAudio(mudo, wav, final){
-  execSync(`"${ffmpeg()}" -y -loglevel error -i "${mudo}" -i "${wav}" -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart "${final}"`);
+// normalizar: con voz en off, se deja el volumen a -15 LUFS (el nivel de TikTok e Instagram) para que no suene bajo ni se sature.
+function unirAudio(mudo, wav, final, normalizar = false){
+  const filtro = normalizar ? '-af "loudnorm=I=-15:TP=-1.5:LRA=11" ' : '';
+  execSync(`"${ffmpeg()}" -y -loglevel error -i "${mudo}" -i "${wav}" -map 0:v -map 1:a -c:v copy ${filtro}-c:a aac -b:a 192k -shortest -movflags +faststart "${final}"`);
   fs.rmSync(mudo); fs.rmSync(wav);
 }
 
