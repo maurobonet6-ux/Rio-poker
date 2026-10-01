@@ -95,3 +95,32 @@ El workflow `.github/workflows/video.yml` ejecuta todo en GitHub Actions y manda
   Para seguir, hay que añadir ideas nuevas a `lib/telegram-quizzes.js` o `lib/telegram-textos.js`.
 - Para el vídeo del canal, añade el secreto `TELEGRAM_CANAL` (por ejemplo `@riopoker_es`) en GitHub; el bot tiene que ser administrador del canal.
 - Desde Actions o n8n también se puede mandar un vídeo al canal con `destino = canal`.
+
+## Formatos de vídeo y lote diario
+
+Hay cuatro formatos, todos 1080×1920 con efectos de sonido (sin música):
+
+| Formato | Qué es | Archivos |
+| --- | --- | --- |
+| `mesa` | «¿Qué harías tú?»: mano en la mesa y veredicto real de RÍO | `video-mesa.js`, `manos.js`, `construir.js` |
+| `concurso` | «¿Quién sabe más de póker?»: niveles, 4 respuestas, cuenta atrás, confeti | `video-concurso.js`, `concurso-preguntas.js` |
+| `mito` | «¿Mito o realidad?»: afirmación, cuenta atrás y la tarjeta se da la vuelta | `video-mito.js`, `mito-lista-datos.js` |
+| `lista` | «Top 3»: tres puntos que van apareciendo | `video-lista.js`, `mito-lista-datos.js` |
+
+`motor.js` graba cualquier página con `render(t)`; `plantilla.js` trae la cabecera y la pantalla final de los formatos mito y lista.
+Para un formato nuevo: copia `video-lista.js`, cambia el diseño y el contenido y añádelo a `FORMATOS` y `PESOS` en `generar.js`.
+
+Pedirlos (`node generar.js "<pedido>"`, o el campo *mano* del workflow, o lo que escribas tras `/video` en Telegram):
+
+- `auto` (o nada): cada vídeo sale de un formato distinto al azar. `5` → cinco vídeos.
+- `concurso`, `mito`, `lista`, `mesa` → ese formato. `mito 3` → tres vídeos de mito.
+- `color`, `ak`, `parejas`, `allin`, `flop`, `turn`, `river` → vídeo de mesa de ese tema (solo formato mesa).
+- `Ah Kd | Qs 8c 3h | 18 8` → una mano concreta (tus cartas | mesa | bote | apuesta).
+
+**Preguntas que nunca se repiten ni se equivocan:** el concurso mezcla un banco fijo con generadores que CALCULAN la respuesta
+(pot odds, regla del 4 y del 2, SPR, frecuencia del farol, combinaciones). Las pruebas (`tests/unit/concurso.test.js`) recalculan las respuestas.
+Los textos de mito y lista salen de las páginas de la web.
+
+**Lote diario con aprobación:** `.github/workflows/video.yml` se lanza cada día (cron `0 7 * * *` = 9:00 en España en verano), hace
+`VIDEOS_AL_DIA` vídeos (variable del repositorio; por defecto 5) y los manda a tu chat privado, cada uno con botones ✅ Aprobar / ❌ Descartar.
+Nada llega al canal sin que lo apruebes. Para cambiar la hora, edita el `cron` (está en UTC); para cambiar la cantidad, la variable `VIDEOS_AL_DIA`.

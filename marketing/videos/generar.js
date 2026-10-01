@@ -1,10 +1,11 @@
 // Genera el vídeo de una mano a partir de un JSON sencillo (lo que escribe Claude desde n8n), o de una mano al azar.
 // Uso: node generar.js '<json>'   ·   node generar.js mano.json   ·   node generar.js auto [cantidad]
+//      node generar.js "concurso 5"         → 5 vídeos de «¿Quién sabe más de póker?» (formatos: mesa, concurso, mito, lista)
 //      node generar.js "color 3"            → 3 vídeos de proyectos de color (temas: color, ak, parejas, allin, preflop, flop, turn, river)
 //      node generar.js "Ah Kd | Qs 8c 3h | 18 8"  → una mano concreta: tus cartas | mesa | bote | apuesta
 // Escribe en salida/ el vídeo rio-<id>.mp4 y termina con código 0. Si la mano no vale (datos mal,
 // o RÍO no recomienda pagar ni tirar) termina con código 2 y un mensaje claro en español.
-// Con "auto" prueba manos al azar hasta que RÍO recomiende pagar o tirar (máximo 8 intentos por vídeo);
+// Con "auto" mezcla formatos al azar (mesa, concurso, mito, lista); en el de mesa prueba manos al azar hasta que RÍO recomiende pagar o tirar (máximo 8 intentos por vídeo);
 // "auto 10" hace un lote de 10 vídeos distintos.
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const { validar } = require('./construir.js');
@@ -73,14 +74,26 @@ function manoEscrita(texto){
   return { id: 'mano-' + Date.now().toString(36), mano: cartas(c), mesa: cartas(m), bote: nums[0], pagar: nums[1] };
 }
 
-// "auto", "5", "color", "color 3"… → { tema, cantidad }
+// Formatos de vídeo. Sin pedir ninguno, cada vídeo sale de uno distinto (así no se sube siempre lo mismo).
+const FORMATOS = { mesa: 'mesa', concurso: 'concurso', quiz: 'concurso', mito: 'mito', lista: 'lista', top: 'lista' };
+// Reparto al azar cuando no se pide formato: más peso a la mesa y al concurso, que son los más completos.
+const PESOS = [['mesa', 30], ['concurso', 30], ['mito', 20], ['lista', 20]];
+function elegirFormato(){
+  let x = Math.random() * PESOS.reduce((a, [, p]) => a + p, 0);
+  for (const [f, p] of PESOS){ if ((x -= p) < 0) return f; }
+  return 'mesa';
+}
+
+// "auto", "5", "color", "concurso 3", "color 3"… → { formato, tema, cantidad }
 function pedido(texto){
   const t = texto.toLowerCase().split(/\s+/).filter(w => w && w !== 'auto');
   const num = t.find(w => /^\d+$/.test(w));
   const tema = t.find(w => TEMAS[w]);
-  const raro = t.filter(w => w !== num && w !== tema);
-  if (raro.length) throw new Error('no entiendo "' + raro.join(' ') + '". Temas: ' + Object.keys(TEMAS).join(', ') + ', o una mano como: Ah Kd | Qs 8c 3h | 18 8');
-  return { tema, cantidad: Math.min(20, Math.max(1, parseInt(num || process.argv[3], 10) || 1)) };
+  const formato = FORMATOS[t.find(w => FORMATOS[w])];
+  const raro = t.filter(w => w !== num && w !== tema && !FORMATOS[w]);
+  if (raro.length) throw new Error('no entiendo "' + raro.join(' ') + '". Formatos: ' + [...new Set(Object.values(FORMATOS))].join(', ') + '. Temas de mesa: ' + Object.keys(TEMAS).join(', ') + '. O una mano como: Ah Kd | Qs 8c 3h | 18 8');
+  if (tema && formato && formato !== 'mesa') throw new Error('los temas (' + tema + ') solo valen para el formato mesa');
+  return { formato, tema, cantidad: Math.min(20, Math.max(1, parseInt(num || process.argv[3], 10) || 1)) };
 }
 
 let pide = null;
@@ -91,9 +104,14 @@ if (pide){
   const { tema, cantidad } = pide;
   let hechos = 0;
   for (let v = 1; v <= cantidad; v++){
+    const formato = pide.formato || (tema ? 'mesa' : elegirFormato());
+    if (formato !== 'mesa'){
+      console.log(`Vídeo ${v}/${cantidad} · formato ${formato}`);
+      node('video-' + formato + '.js'); hechos++; continue;
+    }
     for (let i = 1; i <= 8; i++){
       const d = validar(manoAlAzar(tema));
-      console.log(`Vídeo ${v}/${cantidad} · intento ${i}: ${d.mano.join(' ')} | ${d.mesa.join(' ') || 'sin mesa'} | bote ${d.bote}, pagar ${d.pagar}`);
+      console.log(`Vídeo ${v}/${cantidad} · mesa · intento ${i}: ${d.mano.join(' ')} | ${d.mesa.join(' ') || 'sin mesa'} | bote ${d.bote}, pagar ${d.pagar}`);
       if (intentar(d).ok){ hechos++; break; }
     }
   }
