@@ -11,18 +11,19 @@ La métrica que manda es la de `/api/content`: cuántos usuarios, cuentas, anál
 
 ### 1. Analista: mira los datos (5 min)
 
-Si existen las variables `STATS_KEY` y acceso a riopoker.es:
+La clave de servicio está guardada como **credencial del entorno** para `riopoker.es`: el sistema la añade sola a cada
+petición (cabecera `x-api-key`), sin que la veas. Si en vez de eso existe la variable `STATS_KEY`, añádela tú con `-H "x-api-key: $STATS_KEY"`.
 
 ```bash
-H="x-api-key: $STATS_KEY"
-curl -s -H "$H" https://riopoker.es/api/stats?vista=producto   # embudo, retención, qué funciones usan, errores comunes (anónimos)
-curl -s -H "$H" "https://riopoker.es/api/content?vista=resumen" # piezas por estado y las que más usuarios traen
-curl -s -H "$H" "https://riopoker.es/api/content?limit=40"      # las últimas piezas: estado, «feedback» del dueño, métricas y resultados
+H=${STATS_KEY:+x-api-key: $STATS_KEY}
+curl -s ${H:+-H "$H"} https://riopoker.es/api/stats?vista=producto     # embudo, retención, qué funciones usan, errores comunes (anónimos)
+curl -s ${H:+-H "$H"} "https://riopoker.es/api/content?vista=resumen"   # piezas por estado y las que más usuarios traen
+curl -s ${H:+-H "$H"} "https://riopoker.es/api/content?limit=40"        # las últimas piezas: estado, «feedback» del dueño, métricas y resultados
 ```
 
 Saca 3 conclusiones: qué funcionó (más `analizaron` y `pro` por pieza), qué rechazó el dueño y **por qué**
 (campo `feedback`: respétalo siempre), y qué error cometen más los usuarios esta semana (`errores.semana`, fuente 2 de ideas).
-Si no hay acceso, sigue sin datos y dilo en el `resumen` del plan.
+Si responde 403 o no hay acceso, sigue sin datos y dilo en el `resumen` del plan.
 
 ### 2. Investigador: qué conviene publicar hoy (10 min)
 

@@ -86,9 +86,11 @@ created_at, scheduled_at, published_at, metrics { views, likes, comments, shares
 
 ## Lo que tiene que hacer el dueño (una sola vez)
 
-1. **Una clave de servicio** (`STATS_KEY`, 16+ caracteres, la misma en los tres sitios):
-   Vercel → Settings → Environment Variables · GitHub → Settings → Secrets → Actions · el entorno de Claude (variable `STATS_KEY`).
-2. **Acceso a riopoker.es** para la rutina: en el entorno de Claude, Network access → añadir `riopoker.es`.
+1. **Una clave de servicio** (`STATS_KEY`, 16+ caracteres, la misma en todos los sitios):
+   Vercel → Settings → Environment Variables · GitHub → Settings → Secrets → Actions.
+2. **Credencial del entorno de Claude** (para la rutina): claude.ai/code → botón del entorno («Default») encima del cuadro de mensaje →
+   engranaje → API credentials → Add credential: sitio `riopoker.es`, cabecera `x-api-key` sin prefijo, valor = la clave.
+   Abre también el acceso a riopoker.es (no hace falta tocar Network access).
 3. **El mismo bot** en `TELEGRAM_BOT_TOKEN` de Vercel y de GitHub (manda las tarjetas y recibe los botones). En Vercel también `TELEGRAM_CHANNEL` y `ANTHROPIC_API_KEY` (ya están).
 4. **n8n:** importar `marketing/n8n/equipo-botones.json` (ver su nota).
 5. **ElevenLabs:** la clave en GitHub → Secrets → `ELEVENLABS_API_KEY`.
