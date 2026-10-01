@@ -1,8 +1,9 @@
+// La app vive en /app/ (la portada «/» es la landing, que no se guarda para uso sin conexión).
 // Service worker de RÍO: permite instalar la web como app y abrirla sin
 // conexión. Siempre intenta la red primero (para tener la última versión) y
 // solo usa la copia guardada si no hay conexión. Nunca guarda llamadas a /api.
-const CACHE = 'rio-v4';
-const SHELL = ['/', '/app.css', '/app.js', '/partida.css', '/partida.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'rio-v5';
+const SHELL = ['/app/', '/app.css', '/app.js', '/partida.css', '/partida.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -17,6 +18,6 @@ self.addEventListener('fetch', (e) => {
     fetch(e.request).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
       return res;
-    }).catch(() => caches.match(e.request).then(r => r || caches.match('/')))
+    }).catch(() => caches.match(e.request).then(r => r || caches.match('/app/')))
   );
 });

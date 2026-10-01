@@ -14,6 +14,8 @@
     { "path": "/api/telegram", "schedule": "0 17 * * *" }
   ],
   "redirects": [
+    { "source": "/descubre", "destination": "/", "permanent": true },
+    { "source": "/descubre/", "destination": "/", "permanent": true },
     { "source": "/ig", "destination": "/?utm_source=instagram", "permanent": false },
     { "source": "/yt", "destination": "/?utm_source=youtube", "permanent": false },
     { "source": "/tt", "destination": "/?utm_source=tiktok", "permanent": false },

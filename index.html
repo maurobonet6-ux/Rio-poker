@@ -3,795 +3,289 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#0A0A0B">
-<link rel="icon" href="/icons/icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="RÍO">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="RÍO">
-<meta property="og:title" content="RÍO — Tu coach de póker con IA">
-<meta property="og:description" content="Analiza tus manos con IA: te dice si pagar, subir o tirar y por qué, detecta tus errores y te ayuda a entrenarlos. En español.">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:locale" content="es_ES">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="RÍO — Tu coach de póker con IA">
-<meta name="twitter:description" content="Analiza tus manos con IA: te dice si pagar, subir o tirar y por qué, detecta tus errores y te ayuda a entrenarlos. En español.">
-<!-- SEO: lo escribe scripts/build-seo.js con la dirección de sitio.json. No lo edites a mano. -->
+<script>/* Enlaces viejos (cuando la app estaba en «/»): #/practicar, #m=… y la app instalada en el móvil abren la app en /app/ sin enseñar la landing. */
+(function(){var h=location.hash,s=false;try{s=!!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))}catch(e){}
+if(h.indexOf('#/')===0||h.indexOf('#m=')===0||s)location.replace('/app/'+location.search+h)})();</script>
+<title>RÍO — Tu coach de póker con IA, en español</title>
+<meta name="description" content="Analiza tus manos de póker, entiende tus errores y descubre cómo jugar mejor. Con captura, voz o historial. Gratis para empezar.">
 <link rel="canonical" href="https://riopoker.es/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RÍO Poker">
+<meta property="og:title" content="RÍO — Tu coach de póker con IA">
+<meta property="og:description" content="Analiza tus manos, entiende tus errores y descubre cómo jugar mejor.">
 <meta property="og:url" content="https://riopoker.es/">
 <meta property="og:image" content="https://riopoker.es/og-image.png">
-<meta name="twitter:image" content="https://riopoker.es/og-image.png">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","@id":"https://riopoker.es/#app","name":"RÍO","alternateName":"RÍO · Coach de póker con IA y calculadora","url":"https://riopoker.es/","description":"Coach de póker con IA y calculadora en español: analiza tus manos por captura, voz o a mano, descubre tus errores y entrena. Equity, outs, pot odds y EV explicados.","applicationCategory":"GameApplication","applicationSubCategory":"Coach de póker con IA y calculadora de póker","operatingSystem":"Web, Android, iOS","inLanguage":"es","image":"https://riopoker.es/og-image.png","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}},{"@type":"FAQPage","@id":"https://riopoker.es/#faq","inLanguage":"es","mainEntity":[{"@type":"Question","name":"¿Qué es RÍO?","acceptedAnswer":{"@type":"Answer","text":"RÍO es un coach de póker con IA y una calculadora en español. Le dices tus cartas, la mesa, el bote y lo que te toca pagar, y te dice si pagar, subir o tirar en cada calle, con la probabilidad de ganar, los outs, las odds del bote y el EV explicados fácil."}},{"@type":"Question","name":"¿Es gratis?","acceptedAnswer":{"@type":"Answer","text":"Sí. Tienes un análisis de prueba sin registrarte y 10 más al crear tu cuenta gratis, solo con tu email. El entrenamiento, el glosario y las tablas de manos son gratis. RÍO PRO (9,99 €/mes o 79,99 €/año) da análisis manuales ilimitados y funciones con IA como analizar una captura."}},{"@type":"Question","name":"¿Puedo usar RÍO mientras juego?","acceptedAnswer":{"@type":"Answer","text":"No. RÍO es una herramienta de estudio para repasar tus manos después de jugar. La mayoría de salas online prohíben las ayudas en tiempo real."}},{"@type":"Question","name":"¿Qué diferencia hay entre el modo Fácil y el Avanzado?","acceptedAnswer":{"@type":"Answer","text":"El modo Fácil te guía paso a paso y te pregunta el bote con dos preguntas sencillas. El Avanzado muestra todos los datos: rango del rival, EV, SPR y más detalles de cada calle."}},{"@type":"Question","name":"¿Funciona en el móvil?","acceptedAnswer":{"@type":"Answer","text":"Sí. RÍO funciona en el navegador del móvil y del ordenador, y puedes instalarlo en la pantalla de inicio como una app."}},{"@type":"Question","name":"¿Qué necesito saber de póker para usarlo?","acceptedAnswer":{"@type":"Answer","text":"Solo las reglas básicas de Texas Hold'em. Si no conoces un término como equity, pot odds u outs, tienes el glosario de póker y las tablas de manos iniciales por posición."}}]}]}
-</script>
-<!-- /SEO -->
-<!-- Estadísticas de visitas de Vercel (sin cookies). Se activan en Vercel → Analytics.
-     · No cuentan las visitas del administrador (o de un dispositivo abierto una vez con ?sinestadisticas=1;
-       ?conestadisticas=1 lo deshace).
-     · Guarda de dónde llegó la persona la primera vez (?utm_source=… o la web de la que viene), para saber
-       qué red social trae cuentas y clientes. -->
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-  (function(){
-    try {
-      var q = new URLSearchParams(location.search);
-      if (q.has('sinestadisticas')) localStorage.setItem('rio_sin_estadisticas', '1');
-      if (q.has('conestadisticas')) localStorage.removeItem('rio_sin_estadisticas');
-      if (!localStorage.getItem('rio_src')){
-        var src = q.get('utm_source') || '', ref = '';
-        try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch(e){}
-        if (!src && ref && ref !== location.hostname){
-          var redes = { instagram: 'instagram', youtube: 'youtube', youtu: 'youtube', tiktok: 'tiktok', facebook: 'facebook', google: 'google', chatgpt: 'chatgpt', reddit: 'reddit', t: 'telegram', telegram: 'telegram', discord: 'discord', x: 'x', twitter: 'x' };
-          var partes = ref.replace(/^(www|m|l|lm)\./, '').split('.');
-          src = redes[partes[0]] || partes[0];
-        }
-        localStorage.setItem('rio_src', (src || 'directo').toLowerCase().slice(0, 40));
-      }
-      if (localStorage.getItem('rio_sin_estadisticas') === '1') return;
-    } catch(e){}
-    var s = document.createElement('script'); s.defer = true; s.src = '/_vercel/insights/script.js';
-    document.head.appendChild(s);
-  })();
-</script>
-<title>RÍO — Coach de póker con IA y calculadora en español</title>
-<meta name="google-site-verification" content="5Jb1JVNjgTQIfLwJ1bwyH3I1LJ4JpQxOFmUyAJRoSug">
-<meta name="description" content="Coach de póker con IA y calculadora en español: analiza tus manos por captura, voz o a mano, descubre tus errores y entrena. Equity, outs, pot odds y EV explicados.">
+<meta property="og:locale" content="es_ES">
+<meta name="theme-color" content="#09090B">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/app.css">
-<link rel="stylesheet" href="/partida.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/landing.css">
+<meta name="google-site-verification" content="5Jb1JVNjgTQIfLwJ1bwyH3I1LJ4JpQxOFmUyAJRoSug">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"RÍO Poker","alternateName":["riopoker","RÍO"],"url":"https://riopoker.es/"}
+</script>
+<script>(function(){try{if(localStorage.getItem('rio_sin_estadisticas')==='1')return}catch(e){}window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};var s=document.createElement('script');s.defer=true;s.src='/_vercel/insights/script.js';document.head.appendChild(s)})();try{if(!localStorage.getItem('rio_src')){var q=new URLSearchParams(location.search),src=q.get('utm_source')||'',ref='';try{ref=document.referrer?new URL(document.referrer).hostname:''}catch(e){}if(!src&&ref&&ref!==location.hostname){var r={instagram:'instagram',youtube:'youtube',youtu:'youtube',tiktok:'tiktok',facebook:'facebook',google:'google',chatgpt:'chatgpt',reddit:'reddit',t:'telegram',telegram:'telegram',discord:'discord',x:'x',twitter:'x'},p=ref.replace(/^(www|m|l|lm)\./,'').split('.');src=r[p[0]]||p[0]}localStorage.setItem('rio_src',(src||'directo').toLowerCase().slice(0,40))}}catch(e){}</script>
 </head>
 <body>
-<div class="inapp-bar" id="inappBar" hidden>
-  <span class="inapp-txt" id="inappTxt">Estás en el navegador de la app. Para no perder tu sesión, abre RÍO en tu navegador.</span>
-  <span class="inapp-acts"><a class="inapp-btn" id="inappOpen" hidden>Abrir en Chrome</a><button type="button" class="inapp-btn" id="inappCopy">Copiar enlace</button><button type="button" class="inapp-x" id="inappClose" aria-label="Cerrar aviso">✕</button></span>
-</div>
-<div class="wrap">
-  <div class="suitwatermark one">♠</div>
-  <div class="suitwatermark two">♥</div>
-  <div class="suitwatermark three">♣</div>
+<!-- Landing pública de RÍO (para quien llega de fuera). La app está en riopoker.es/app/.
+     Todo lo que se muestra es real: la mano de ejemplo es la de la app y las cifras son las que da su motor. -->
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="logo" href="/">RÍO</a>
+    <nav class="nav-links" aria-label="Secciones"><a href="#producto">Producto</a><a href="#leaks">Leaks</a><a href="#entrenamiento">Entrenamiento</a><a href="#precios">Precios</a><a href="#faq">FAQ</a></nav>
+    <div class="nav-cta"><a class="link" href="/app/#/cuenta">Entrar</a><a class="btn btn-sm" href="/app/">Empezar gratis</a></div>
+  </div>
+</header>
 
-  <header class="hero">
-    <div class="brand-row">
-      <div class="brand">
-        <h1>RÍO <span class="h1-sub">Coach de póker con IA y calculadora en español</span></h1>
-        <p class="tagline-actions"><span class="call">CALL</span><span class="sep">,</span> <span class="raise">RAISE</span> <span class="sep">O</span> <span class="fold">FOLD</span></p>
-        <p>Decide en cada calle: preflop, flop, turn y river</p>
+<main>
+<section class="hero">
+  <div class="wrap hero-in">
+    <div class="hero-copy">
+      <p class="eyebrow">Análisis de manos de póker · en español</p>
+      <h1>Tu coach de póker <span>con IA.</span></h1>
+      <p class="lead">Analiza tus manos, entiende tus errores y descubre cómo jugar mejor.</p>
+      <div class="inputs" aria-label="Formas de meter una mano">
+        <span class="in-lbl">Mete la mano como quieras</span>
+        <span class="in hot"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>Captura</span><span class="in hot"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg>Voz</span><span class="in"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>Historial</span><span class="in"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="11" height="16" rx="2"/><path d="M17 6.5l3 .8a1.5 1.5 0 0 1 1 1.8l-3 11a1.5 1.5 0 0 1-1.8 1L13 20"/></svg>A mano</span>
       </div>
-      <button type="button" class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
-    </div>
-    <div class="mode-row">
-      <span class="mode-lbl">Modo</span>
-      <div class="mode-switch" role="group" aria-label="Modo de la calculadora">
-        <button type="button" data-mode="facil">😌 Fácil</button>
-        <button type="button" data-mode="pro">🧠 Avanzado</button>
+      <div class="cta-row">
+        <a class="btn btn-lg" href="/app/">Empezar gratis <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+        <a class="btn btn-lg btn-ghost" href="#producto">Ver cómo funciona</a>
       </div>
-      <div class="mode-note" id="modeNote"></div>
+      <ul class="facts">
+        <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> 1 análisis sin registrarte</li>
+        <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> 10 más con tu cuenta gratis</li>
+        <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Sin tarjeta</li>
+      </ul>
     </div>
-    <div class="steps-nav">
-      <div class="dot" id="dotPreflop"></div>
-      <div class="dot" id="dotFlop"></div>
-      <div class="dot" id="dotTurn"></div>
-      <div class="dot" id="dotRiver"></div>
-    </div>
-    <div class="steps-labels">
-      <span id="lblPreflop">Preflop</span>
-      <span id="lblFlop">Flop</span>
-      <span id="lblTurn">Turn</span>
-      <span id="lblRiver">River</span>
-    </div>
-  </header>
 
-  <details class="demo-panel easy-only" id="demoPanel">
-    <summary><span>👀 ¿Primera vez? Mira cómo analiza RÍO una mano</span><span class="demo-open"><span class="o-closed">Ver ▾</span><span class="o-open">Cerrar ▴</span></span></summary>
-    <div class="demo-card" id="demoCard">
-      <div class="demo-flow">
-        <div><small>Tus cartas</small><span id="demoHole"></span></div>
-        <i>→</i>
-        <div><small>Mesa (flop)</small><span id="demoBoard"></span></div>
+    <div class="stage" aria-label="RÍO en el ordenador y en el móvil">
+      <div class="float shot" aria-hidden="true">
+        <div class="shot-img"><div class="felt"><span class="fc"></span><span class="fc"></span><span class="fc r"></span><span class="fc"></span><span class="fc"></span></div></div>
+        <div class="shot-txt"><b><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>Captura leída</b><span><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Cartas · bote · posiciones</span></div>
       </div>
-      <div class="demo-sit">Estás en el <b>botón</b> contra la <b>ciega grande</b>. Hay <b>30</b> en el bote y te toca pagar <b>10</b>.</div>
-      <div class="demo-dec" id="demoDec">Calculando…</div>
-      <div class="demo-more">👆 Esto es solo el resumen. Pulsa abajo para ver <b>todo lo que te dice RÍO</b> de esta mano.</div>
-      <button type="button" class="btn-primary" id="demoLoadBtn" style="width:100%;">▶ Ver el análisis completo de esta mano</button>
-      <div class="hint" style="text-align:center; margin-top:6px;">No gasta tus análisis gratis.</div>
-    </div>
-  </details>
-
-  <section class="panel" id="cardsPanel">
-    <div class="panel-head"><div class="panel-num">1</div><h2><small class="step-lbl easy-only">Paso 1 de 3</small>Tus cartas</h2></div>
-    <div class="entry-q">¿Cómo quieres introducir tu mano?</div>
-    <div class="entry-row">
-    <label class="entry-shot" for="screenshotInput" id="uploadBox">
-      <span class="tile-lbl" aria-hidden="true"><span class="t-ic">📸</span><span class="t-tit">Captura</span></span>
-      <span class="entry-shot-title"><span class="es-long">📸 Analiza desde una captura</span> <span class="pro-badge" id="uploadProBadge">PRO</span></span>
-      <span class="entry-shot-sub">Sube una captura y RÍO detectará cartas, board, bote, apuestas y posiciones.</span>
-      <span class="entry-shot-btn">Subir captura</span>
-      <small id="uploadSub">1 crédito de IA</small>
-      <input type="file" id="screenshotInput" accept="image/*" hidden>
-    </label>
-    <div class="quick-fill">
-      <button type="button" class="quick-btn story-btn" id="storyBtn"><span class="tile-lbl" aria-hidden="true"><span class="t-ic">🎙️</span><span class="t-tit">Cuéntamela</span></span><span class="es-long">🎙️ Cuéntame tu mano</span><small>Díctala o escríbela como a un amigo</small><span class="quick-foot"><span class="pro-badge" id="storyProBadge">PRO</span> 1 crédito de IA</span></button>
-      <button type="button" class="quick-btn pro-only" id="importBtn"><span class="tile-lbl" aria-hidden="true"><span class="t-ic">📋</span><span class="t-tit">Historial</span></span><span class="es-long">📋 Importar historial</span><small>PokerStars · GGPoker</small><span class="quick-foot"><span class="pro-badge" id="importProBadge">PRO</span></span></button>
-    </div>
-    <button type="button" class="entry-manual" id="manualBtn"><span class="tile-lbl" aria-hidden="true"><span class="t-ic">✍️</span><span class="t-tit">A mano</span><span class="t-sub">Gratis</span></span><span class="em-ic">✍️</span><span class="em-txt"><b>Introducir manualmente</b><small>Elige tus cartas paso a paso · gratis</small></span><span class="em-go">Empezar ↓</span></button>
-    </div>
-    <div class="shared-banner" id="sharedBanner" style="display:none;"></div>
-    <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
-    <div class="table-grid">
-      <div>
-        <div class="zone-label">Tu mano</div>
-        <div class="card-row" id="holeRow"></div>
+      <div class="float voice" aria-hidden="true">
+        <div class="v-top"><span class="v-mic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg></span><span class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+        <p>“Tenía as-cinco de picas en el botón y la ciega grande pagó…”</p>
       </div>
-      <div>
-        <div class="zone-label">Comunitarias <span class="street-now" id="streetNow">Preflop</span></div>
-        <div class="board-groups">
-          <div><div class="card-row" id="flopRow"></div><div class="grp-tag" id="tagFlop">Flop</div></div>
-          <div><div class="card-row" id="turnRow"></div><div class="grp-tag" id="tagTurn">Turn</div></div>
-          <div><div class="card-row" id="riverRow"></div><div class="grp-tag" id="tagRiver">River</div></div>
-        </div>
-        <div class="board-hint" id="boardHint"></div>
-      </div>
-    </div>
-    <div class="current-hand" id="currentHand">Elige tus dos cartas para empezar.</div>
-  </section>
-
-  <section class="panel" id="tablePanel">
-    <div class="panel-head"><div class="panel-num">2</div><h2><small class="step-lbl easy-only">Paso 2 de 3</small><span class="easy-only">¿Dónde estás sentado?</span><span class="pro-only">La mesa</span></h2></div>
-    <div class="step-guide easy-only" id="stepGuide2" style="display:none;">👉 <b>Ahora:</b> dinos en qué sitio de la mesa estáis tú y tu rival. Si no lo sabes, déjalo como está. <button type="button" class="link-btn" id="posOkBtn">Está bien así →</button></div>
-    <div class="inputs-row">
-      <div class="field">
-        <label>Tu posición <button type="button" class="help" data-help="position">?</button></label>
-        <select id="heroPosInput">
-          <option value="UTG">UTG — primera en hablar</option>
-          <option value="HJ">HJ — media-temprana</option>
-          <option value="CO">CO — media-tardía</option>
-          <option value="BTN" selected>BTN — botón (mejor posición)</option>
-          <option value="SB">SB — ciega pequeña</option>
-          <option value="BB">BB — ciega grande</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Posición del rival</label>
-        <select id="villPosInput">
-          <option value="UTG">UTG — primera en hablar</option>
-          <option value="HJ">HJ — media-temprana</option>
-          <option value="CO">CO — media-tardía</option>
-          <option value="BTN">BTN — botón (mejor posición)</option>
-          <option value="SB">SB — ciega pequeña</option>
-          <option value="BB" selected>BB — ciega grande</option>
-        </select>
-      </div>
-      <div class="field field-wide">
-        <div class="hint pro-only" id="posInfoBox">
-          Cuanto más tarde hables, más información tienes: <b>BTN</b> es la mejor posición y <b>UTG</b> la peor.
-          Si no sabes cuál es la tuya, deja <b>BTN</b> (tú) y <b>BB</b> (rival) — es la combinación más habitual.
-        </div>
-        <div class="hint" id="orderHint">Afecta al margen de seguridad del consejo, no al cálculo de equity</div>
-      </div>
-      <div class="field field-wide easy-only"><button type="button" class="more-toggle" id="moreToggle"></button></div>
-      <div class="field field-wide easy-extra">
-        <label><span class="easy-only">¿Cómo juega tu rival?</span><span class="pro-only">Rango del rival</span> <button type="button" class="help" data-help="range">?</button></label>
-        <div class="range-chips easy-only" id="rangeChips">
-          <button type="button" class="toggle-btn" data-range="40" data-unknown="1">No lo sé<small>Usamos un rival medio</small></button>
-          <button type="button" class="toggle-btn" data-range="100">Juega casi todo<small>Entra con cualquier mano</small></button>
-          <button type="button" class="toggle-btn" data-range="40">Normal<small>Juega manos decentes</small></button>
-          <button type="button" class="toggle-btn" data-range="15">Solo manos buenas<small>Juega poco y cuando entra, va fuerte</small></button>
-        </div>
-        <div class="hint range-explain easy-only" id="rangeExplain"></div>
-        <div class="pro-only">
-          <div class="range-top">
-            <input type="range" id="rangeSlider" min="2" max="100" step="1" aria-label="Porcentaje de manos del rival">
-            <b id="rangePctLabel">40%</b>
-          </div>
-          <div class="range-presets" id="rangePresets"></div>
-          <div class="range-grid" id="rangeGrid"></div>
-          <div class="hint">Toca una casilla para añadirla o quitarla. Diagonal = parejas · arriba = mismo palo (s) · abajo = distinto palo (o). Recuadro verde = tu mano.</div>
-          <div class="field" style="margin-top:14px; max-width:320px;">
-            <label>¿Cuánto farolea? <button type="button" class="help" data-help="bluffs">?</button></label>
-            <select id="bluffSelect">
-              <option value="0.03">Casi nunca</option>
-              <option value="0.1" selected>Lo normal / No lo sé</option>
-              <option value="0.2">Mucho</option>
-            </select>
-            <div class="hint">Si no lo sabes, deja «Lo normal». Cuanto más farolea, más manos flojas tiene cuando apuesta y más compensa pagarle con manos medias.</div>
+      <div class="laptop">
+        <div class="screen">
+          <div class="win-bar"><span></span><span></span><span></span><em>riopoker.es · Análisis</em></div>
+          <div class="win-body">
+            <div class="an-head"><div><small>Flop · BTN vs BB · Cash</small><div class="hand"><span class="pc"><b>A</b><i>♠</i></span><span class="pc"><b>5</b><i>♠</i></span><span class="sep"></span><span class="pc"><b>K</b><i>♠</i></span><span class="pc red"><b>8</b><i>♦</i></span><span class="pc"><b>3</b><i>♠</i></span></div></div>
+              <div class="decision"><small>RÍO recomienda</small><b>Pagar 10</b></div></div>
+            <div class="metrics">
+              <div><small>Equity</small><b>53%</b></div>
+              <div><small>Pot odds</small><b>25%</b></div>
+              <div><small>EV de pagar</small><b class="pos">+11,6</b></div>
+              <div><small>Outs</small><b>15</b></div>
+            </div>
+            <ul class="reasons">
+              <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Ganas ~53% de las veces y necesitas 25% para que pagar compense.</span></li>
+              <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Contra sus manos fuertes solo ganas ~40%: paga, pero no subas.</span></li>
+              <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Tienes 15 cartas que mejoran tu jugada en la próxima calle.</span></li>
+            </ul>
           </div>
         </div>
+        <div class="base"></div>
       </div>
-      <div class="field easy-extra">
-        <label>Rivales en la mano <button type="button" class="help" data-help="rivals">?</button></label>
-        <div class="stepper">
-          <button type="button" id="rivMinus">−</button>
-          <span id="rivVal">1</span>
-          <button type="button" id="rivPlus">+</button>
+      <div class="phone">
+        <div class="ph-notch"></div>
+        <div class="ph-body">
+          <div class="ph-label">Entrenamiento · River</div>
+          <div class="hand sm"><span class="pc red"><b>J</b><i>♦</i></span><span class="pc red"><b>8</b><i>♦</i></span></div>
+          <p>BB contra BTN. Bote 15, tu rival apuesta 5.</p>
+          <div class="ph-opts"><span class="on">Tirar</span><span>Pagar</span><span>Subir</span></div>
+          <div class="ph-ok"><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Correcto</span></div>
         </div>
       </div>
-      <div class="field easy-extra">
-        <label>Tipo de partida <button type="button" class="help" data-help="game">?</button></label>
-        <div class="toggle-group" id="gameType">
-          <button type="button" class="toggle-btn" data-game="cash">Cash<small>Fichas = dinero</small></button>
-          <button type="button" class="toggle-btn" data-game="torneo">Torneo<small>Si lo pierdes todo, fuera</small></button>
-        </div>
-      </div>
+      <div class="pchips" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="pchips c2" aria-hidden="true"><i></i><i></i></div>
     </div>
-  </section>
-
-  <section class="panel" id="betsPanel">
-    <div class="panel-head"><div class="panel-num">3</div><h2><small class="step-lbl easy-only">Paso 3 de 3</small><span class="easy-only">El bote</span><span class="pro-only">Las apuestas</span></h2></div>
-    <div class="step-guide easy-only" id="stepGuide3" style="display:none;">👉 <b>Ahora:</b> dinos cuánto había en el centro y cuánto ha apostado tu rival. Si nadie ha apostado, pulsa «Nadie ha apostado».</div>
-    <div class="toggle-group bets-mode pro-only" id="betsMode">
-      <button type="button" class="toggle-btn" data-bm="quick">💰 Solo el bote<small>Bote y lo que pagas</small></button>
-      <button type="button" class="toggle-btn" data-bm="full">📝 Secuencia completa<small>Apuestas, stacks y SPR</small></button>
-    </div>
-    <details class="seq-box easy-extra full-only" id="seqBox">
-      <summary>📝 Secuencia de apuestas <span class="seq-tag">recomendada</span></summary>
-      <div class="hint seq-intro">Apunta qué hizo cada uno en cada calle. Calculamos el bote y lo que te toca pagar, ajustamos el rango del rival según cómo apuesta y repasamos <b>todas tus decisiones</b>, no solo la última.</div>
-      <div class="seq-blinds field">
-        <label>Ciega grande <button type="button" class="help" data-help="blinds">?</button></label>
-        <input type="number" id="bbInput" value="2" min="0" step="any" inputmode="decimal">
-      </div>
-      <div class="seq-tabs" id="seqTabs"></div>
-      <div class="seq-list" id="seqList"></div>
-      <div class="seq-controls" id="seqControls"></div>
-      <div class="seq-foot">
-        <button type="button" id="seqUndo">↶ Deshacer</button>
-        <button type="button" id="seqClear">Borrar secuencia</button>
-      </div>
-    </details>
-    <div class="or-line easy-extra full-only" id="orLine">…o escribe directamente el bote y lo que te toca pagar:</div>
-    <div class="easy-pot easy-only" id="easyPot">
-      <div class="field">
-        <label>¿Cuánto había en el centro antes de la apuesta? <button type="button" class="help" data-help="pot">?</button></label>
-        <input type="number" id="potBeforeInput" min="0" step="any" placeholder="0" inputmode="decimal">
-      </div>
-      <div class="field">
-        <label>¿Cuánto ha apostado tu rival? <button type="button" class="help" data-help="call">?</button></label>
-        <div class="easy-bet-row">
-          <input type="number" id="betInput" min="0" step="any" placeholder="0" inputmode="decimal">
-          <button type="button" class="btn-secondary" id="noBetBtn">Nadie ha apostado</button>
-        </div>
-        <div class="hint">Lo que te cuesta pagar para seguir en la mano.</div>
-      </div>
-      <div class="easy-pot-sum" id="easyPotSum"></div>
-    </div>
-    <div class="inputs-row">
-      <div class="field pro-only">
-        <label>Bote actual <button type="button" class="help" data-help="pot">?</button></label>
-        <input type="number" id="potInput" min="0" step="1" placeholder="0" inputmode="decimal">
-        <div class="hint">Fichas o €, la unidad da igual</div>
-      </div>
-      <div class="field pro-only">
-        <label>Cantidad a igualar <button type="button" class="help" data-help="call">?</button></label>
-        <input type="number" id="callInput" min="0" step="1" placeholder="0" inputmode="decimal">
-        <div class="hint">Lo que cuesta pagar ahora</div>
-      </div>
-      <div class="field pro-only tourney-show">
-        <label>Tu stack efectivo <button type="button" class="help" data-help="stack">?</button></label>
-        <input type="number" id="stackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
-        <div class="hint">Fichas que te quedan detrás</div>
-      </div>
-      <div class="field pro-only full-only">
-        <label>Stack del rival</label>
-        <input type="number" id="villStackInput" min="0" step="1" placeholder="Opcional" inputmode="decimal">
-        <div class="hint">Para el SPR efectivo</div>
-      </div>
-    </div>
-    <div class="street-pick easy-extra">
-      <div class="zone-label">¿Qué decisión quieres analizar? <button type="button" class="help" data-help="street">?</button></div>
-      <div class="street-btns" id="streetBtns"></div>
-    </div>
-    <div class="actions">
-      <button class="btn-primary" id="analyzeBtn">Analizar mano</button>
-      <button class="btn-secondary" id="resetBtn">Reiniciar</button>
-    </div>
-    <div class="step-todo easy-only" id="stepTodo"></div>
-    <div class="usage-row" id="usageRow"></div>
-    <button type="button" class="link-btn" id="trainLink">🎯 ¿Quieres practicar? Prueba el modo entrenamiento</button>
-    <button type="button" class="link-btn" id="partidaLink">🃏 O juega una partida de práctica contra RÍO</button>
-  </section>
-
-  <section class="panel result" id="resultPanel">
-    <div class="panel-head"><div class="panel-num">4</div><h2>Resultado</h2></div>
-    <div class="verdict">
-      <div class="decision-badge" id="decisionBadge">—</div>
-      <div class="verdict-line" id="verdictLine"></div>
-      <div class="result-hand" id="resultHandName">—</div>
-    </div>
-    <div class="key-line" id="keyLine"></div>
-    <div class="why-title" id="whyTitle">¿Por qué?</div>
-    <ul class="why-list" id="whyList"></ul>
-    <div class="plan" id="planBox"></div>
-    <!-- ¿Tú qué hiciste? Alimenta tus patrones y errores (rio_history / rio_reviews). Lo pinta app.js. -->
-    <div class="you-did" id="youDid" hidden></div>
-
-    <details class="full-analysis" id="fullAnalysis">
-      <summary>Ver análisis completo ↓</summary>
-      <div class="sub-title" style="margin-top:4px;">Explicación detallada</div>
-      <div class="advice" id="adviceBox"></div>
-    <div id="timelineWrap" style="display:none;">
-      <div class="sub-title">Tus decisiones calle a calle</div>
-      <div id="timeline"></div>
-    </div>
-    <div class="easy-only">
-      <div class="dots" id="oddsDots" aria-hidden="true"></div>
-      <div class="dots-legend"><span class="w">Ganas</span><span class="t">Empatas</span><span class="l">Pierdes</span></div>
-      <div class="plain" id="plainLine"></div>
-    </div>
-    <div class="gauge">
-      <div class="gauge-fill" id="gaugeFill"></div>
-      <div class="gauge-mark" id="gaugeMark"></div>
-    </div>
-    <div class="gauge-labels"><span>0%</span><span id="markLabel">Necesitas X%</span><span>100%</span></div>
-    <div class="stat-grid">
-      <div class="stat" data-help="equity"><b id="statEquity">—</b><span>Prob. de ganar</span></div>
-      <div class="stat pro-only" data-help="tie"><b id="statTie">—</b><span>Prob. de empate</span></div>
-      <div class="stat" data-help="lose"><b id="statLose">—</b><span>Prob. de perder</span></div>
-      <div class="stat" data-help="needed"><b id="statNeeded">—</b><span class="easy-only">Necesitas ganar</span><span class="pro-only">Pot odds</span></div>
-      <div class="stat" data-help="outs"><b id="statOuts">—</b><span class="easy-only">Cartas que te ayudan</span><span class="pro-only">Outs</span></div>
-      <div class="stat pro-only" data-help="ratio"><b id="statRatio">—</b><span>Ratio del bote</span></div>
-      <div class="stat pro-only" data-help="ev"><b id="statEV">—</b><span>EV de pagar</span></div>
-      <div class="stat pro-only" data-help="spr"><b id="statSPR">—</b><span>SPR</span></div>
-      <div class="stat pro-only" data-help="range"><b id="statRange">—</b><span>Rango rival</span></div>
-    </div>
-    <div id="outsBox" style="display:none;">
-      <div class="sub-title"><span class="easy-only">Cartas que mejoran tu mano en la próxima calle</span><span class="pro-only">Outs (mejoran tu categoría en la próxima calle)</span></div>
-      <div class="outs-list" id="outsList"></div>
-    </div>
-    <div id="finalsWrap" style="display:none;">
-      <div class="sub-title"><span class="easy-only">¿Con qué jugada puedes acabar?</span><span class="pro-only">Distribución de tu mano final</span></div>
-      <div class="finals" id="finalsBox"></div>
-    </div>
-    </details>
-
-    <div class="what-if" id="whatIf" style="display:none;">
-      <div class="wi-title">¿Qué pasa si tu rival juega distinto?</div>
-      <div class="wi-scale"><span>Más tight</span><span>Más suelto</span></div>
-      <div class="wi-row" id="whatIfRow"></div>
-      <div class="hint" id="whatIfNote"></div>
-    </div>
-
-    <div class="next-step">
-      <div class="wi-title">Siguiente paso</div>
-    <div class="street-track" id="streetTrack"></div>
-    <button class="btn-primary" id="nextStreetBtn" style="width:100%; margin-top:14px; display:none;">➡️ Siguiente calle</button>
-    <div class="reraise-box" id="reraiseBox">
-      <div class="next-dec">
-        <div class="nd-kicker">RÍO también analiza la siguiente decisión</div>
-        <div class="nd-q">¿Tu rival acaba de resubir?</div>
-        <button type="button" class="btn-secondary" id="reraiseToggleBtn" style="width:100%;">Analizar nueva apuesta →</button>
-      </div>
-      <div class="reraise-panel" id="reraisePanel" style="display:none;">
-        <p class="reraise-hint">Tu rival vuelve a subir después de que pagues (o subas). Pon el bote y lo que te cuesta igualar esa nueva subida y te mostramos qué conviene hacer con la misma mano.</p>
-        <div class="inputs-row reraise-inputs">
-          <label>Bote tras la subida<br><input type="number" id="reraisePotInput" min="0" step="0.5" inputmode="decimal" placeholder="p. ej. 90"></label>
-          <label>Te cuesta igualar<br><input type="number" id="reraiseCallInput" min="0" step="0.5" inputmode="decimal" placeholder="p. ej. 30"></label>
-        </div>
-        <button type="button" class="btn-secondary" id="reraiseAnalyzeBtn" style="width:100%; margin-top:10px;">Analizar la subida</button>
-        <div class="reraise-result" id="reraiseResult"></div>
-      </div>
-    </div>
-    <div class="trial-nudge" id="trialNudge" style="display:none;">🎁 <b>¿Te ha servido?</b> Crea tu cuenta gratis (solo tu email) y tendrás <b>10 análisis más</b>. <button type="button" class="btn-primary" id="trialSignup">Crear cuenta gratis</button></div>
-    <div class="more-nudge easy-only" id="moreNudge">🎯 <b>¿Quieres un análisis más preciso?</b> Dinos cómo juega tu rival y lo que apostó cada uno.
-      <div class="more-btns"><button type="button" class="btn-secondary" id="moreNudgeAdd">Añadir detalles</button><button type="button" class="btn-primary" id="moreNudgePro">Activar modo Avanzado</button></div></div>
-    <div class="demo-next" id="demoNext" style="display:none;"><b>👉 Así funciona RÍO.</b> Ahora prueba con una mano tuya.
-      <button type="button" class="btn-primary" id="demoOwnBtn" style="width:100%; margin-top:10px;">Ahora analiza tu propia mano →</button></div>
-    <button class="btn-primary" id="againBtn" style="width:100%; margin-top:14px;">🔄 Analizar otra mano</button>
-    <div class="next-actions">
-      <button class="btn-secondary" id="shareBtn">📤 Compartir</button>
-      <button class="btn-secondary" id="copyBtn">📋 Copiar</button>
-    </div>
-    </div>
-    <button type="button" class="link-btn" id="feedbackBtn">👎 ¿Te parece raro este consejo? Avísanos</button>
-  </section>
-
-  <section class="panel" id="historyPanel" style="display:none;">
-    <div class="panel-head"><div class="panel-num">📜</div><h2>Historial de manos</h2></div>
-    <details class="hist-patterns pro-hist" id="histPatterns" open>
-      <summary>📊 Tus patrones</summary>
-      <div id="histPatternsBody"></div>
-    </details>
-    <div class="hist-filters pro-hist" id="histFilters">
-      <select id="hfStreet" aria-label="Calle"><option value="">Todas las calles</option><option value="0">Preflop</option><option value="1">Flop</option><option value="2">Turn</option><option value="3">River</option></select>
-      <select id="hfDec" aria-label="Decisión"><option value="">Todas las decisiones</option><option value="CALL">Pagar</option><option value="RAISE">Subir</option><option value="BET">Apostar</option><option value="CHECK">Pasar</option><option value="FOLD">Tirar</option></select>
-      <select id="hfEv" aria-label="EV"><option value="">+EV y −EV</option><option value="pos">Solo +EV</option><option value="neg">Solo −EV</option></select>
-      <label class="hf-err"><input type="checkbox" id="hfErr"> Solo mis errores</label>
-    </div>
-    <div class="hist-head"><span>Mano</span><span>RÍO dice</span><span><span class="easy-only">Ganancia</span><span class="pro-only">EV</span></span><span>Tu jugada</span></div>
-    <div id="historyList"></div>
-    <div class="hint" id="histNote" style="margin-top:10px; font-size:0.74rem; line-height:1.45;"></div>
-  </section>
-
-  <div class="sticky-analyze" id="stickyAnalyze"><button type="button" class="btn-primary" id="stickyAnalyzeBtn">Analizar mano</button></div>
-
-  <section class="faq" id="faq" aria-labelledby="faqTitle">
-    <h2 id="faqTitle">Preguntas frecuentes</h2>
-    <details class="faq-item"><summary>¿Qué es RÍO?</summary><p>RÍO es un coach de póker con IA y una calculadora en español. Le dices tus cartas, la mesa, el bote y lo que te toca pagar, y te dice si pagar, subir o tirar en cada calle, con la probabilidad de ganar, los outs, las odds del bote y el EV explicados fácil.</p></details>
-    <details class="faq-item"><summary>¿Es gratis?</summary><p>Sí. Tienes un análisis de prueba sin registrarte y 10 más al crear tu cuenta gratis, solo con tu email. El entrenamiento, el glosario y las tablas de manos son gratis. RÍO PRO (9,99 €/mes o 79,99 €/año) da análisis manuales ilimitados y funciones con IA como analizar una captura.</p></details>
-    <details class="faq-item"><summary>¿Puedo usar RÍO mientras juego?</summary><p>No. RÍO es una herramienta de estudio para repasar tus manos después de jugar. La mayoría de salas online prohíben las ayudas en tiempo real.</p></details>
-    <details class="faq-item"><summary>¿Qué diferencia hay entre el modo Fácil y el Avanzado?</summary><p>El modo Fácil te guía paso a paso y te pregunta el bote con dos preguntas sencillas. El Avanzado muestra todos los datos: rango del rival, EV, SPR y más detalles de cada calle.</p></details>
-    <details class="faq-item"><summary>¿Funciona en el móvil?</summary><p>Sí. RÍO funciona en el navegador del móvil y del ordenador, y puedes instalarlo en la pantalla de inicio como una app.</p></details>
-    <details class="faq-item"><summary>¿Qué necesito saber de póker para usarlo?</summary><p>Solo las reglas básicas de Texas Hold'em. Si no conoces un término como equity, pot odds u outs, tienes el <a href="/glosario/">glosario de póker</a> y las <a href="/tablas/">tablas de manos iniciales</a> por posición.</p></details>
-  </section>
-
-  <footer>
-    Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.
-    <div class="footer-links">
-      <span class="age-badge">+18</span> Juega con responsabilidad · <a href="https://www.jugarbien.es" target="_blank" rel="noopener">jugarbien.es</a><br>
-      <a href="/descubre/">Qué es RÍO</a> · <a href="/guias/">Guías de póker</a> · <a href="/manos/">Manos iniciales</a> · <a href="/glosario/">Glosario</a> · <a href="/tablas/">Tablas de manos</a><br>
-      <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#cookies">Cookies</a> · <a href="/legal.html#condiciones">Condiciones</a>
-    </div>
-  </footer>
-</div>
-
-<!-- Navegación principal: barra superior en ordenador y barra inferior en el móvil. Rutas por # (app.js → showView). -->
-<nav class="appnav" id="appNav" aria-label="Secciones de RÍO">
-  <a class="an-brand" href="#/" data-route="">RÍO</a>
-  <a class="an-link" href="#/" data-route=""><span class="an-ic">🔍</span><span>Analizar</span></a>
-  <a class="an-link" href="#/practicar" data-route="practicar"><span class="an-ic">🎯</span><span>Practicar</span></a>
-  <a class="an-link" href="#/progreso" data-route="progreso"><span class="an-ic">📈</span><span>Progreso</span></a>
-  <a class="an-link an-desk" href="#/historial" data-route="historial"><span class="an-ic">📜</span><span>Historial</span></a>
-  <span class="an-gap"></span>
-  <button type="button" class="an-pro an-desk" id="anPro">💎 <span id="anProTxt">RÍO PRO</span></button>
-  <a class="an-link" href="#/cuenta" data-route="cuenta"><span class="an-ic">👤</span><span>Cuenta</span></a>
-</nav>
-
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-<nav class="sidebar" id="sidebar" aria-label="Menú principal">
-  <div class="sidebar-brand">
-    <b>RÍO</b>
-    <button type="button" class="sidebar-close" id="closeSidebar" aria-label="Cerrar menú">&times;</button>
   </div>
+  <p class="wrap hero-note">Mano de ejemplo real de la app con el resultado de su motor. La equity sale de una simulación y puede variar uno o dos puntos.</p>
+</section>
 
-  <div class="acct-card">
-    <div class="acct-top">
-      <div class="acct-avatar" id="acctAvatar">R</div>
-      <div class="acct-info">
-        <div class="acct-name" id="sidebarProfile"></div>
-        <div class="acct-mail" id="sidebarAccount"></div>
-      </div>
-    </div>
-    <div class="sidebar-foot" id="sidebarFoot"></div>
-    <button type="button" class="acct-cta" id="acctCta"></button>
-  </div>
-
-  <div class="sidebar-nav">
-    <div class="nav-section">Analizar</div>
-    <button type="button" class="sidebar-link nav-dup" id="navAnalyzer"><span class="ic">🔍</span><span class="lbl">Analizador</span></button>
-    <button type="button" class="sidebar-link" id="navImport"><span class="ic">📋</span><span class="lbl">Importar historial</span><span class="pro-badge">PRO</span></button>
-
-    <div class="nav-section">Aprender</div>
-    <button type="button" class="sidebar-link nav-hot nav-dup" id="navPartida"><span class="ic">🃏</span><span class="lbl">Partida de práctica<small>Juega contra rivales · 2 a 6</small></span><span class="free-badge">NUEVO</span></button>
-    <button type="button" class="sidebar-link nav-dup" id="navTrain"><span class="ic">🎯</span><span class="lbl">Entrenamiento</span><span class="free-badge">GRATIS</span></button>
-    <button type="button" class="sidebar-link" id="navCharts"><span class="ic">📊</span><span class="lbl">Tablas de manos</span></button>
-    <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span><span class="lbl">Glosario de póker</span></button>
-
-    <div class="nav-section nav-dup">Tu progreso</div>
-    <button type="button" class="sidebar-link nav-dup" id="navStats"><span class="ic">📈</span><span class="lbl">Estadísticas y errores</span></button>
-
-    <div class="nav-section">Cuenta</div>
-    <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span><span class="lbl">Entrar o crear cuenta</span></button>
-    <button type="button" class="sidebar-link" id="navManage" style="display:none;"><span class="ic">💳</span><span class="lbl">Gestionar suscripción</span></button>
-    <button type="button" class="sidebar-link" id="navPlan"><span class="ic">💎</span><span class="lbl">Planes y precios</span></button>
-    <button type="button" class="sidebar-link" id="navSettings"><span class="ic">⚙️</span><span class="lbl">Configuración</span></button>
-    <button type="button" class="sidebar-link" id="navInstall"><span class="ic">📲</span><span class="lbl">Instalar en el móvil</span></button>
-    <button type="button" class="sidebar-link logout" id="navLogout" style="display:none;"><span class="ic">🚪</span><span class="lbl">Cerrar sesión</span></button>
-  </div>
-
-  <div class="sidebar-legal">
-    <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a><br>
-    <span class="age-badge">+18</span> RÍO <span class="app-version"></span>
-  </div>
-</nav>
-
-<div class="overlay" id="settingsPanel">
-  <div class="picker paywall-card">
-    <div class="picker-head">
-      <h3>Configuración</h3>
-      <button type="button" id="closeSettings" aria-label="Cerrar">&times;</button>
-    </div>
-
-    <div class="settings-group field">
-      <label>Tu perfil</label>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="profileNameInput" maxlength="24" placeholder="Tu nombre o apodo">
-        <button class="btn-secondary" id="saveProfileBtn" style="white-space:nowrap; width:auto; padding:0 16px;">Guardar</button>
-      </div>
-      <div class="hint">Se guarda en este navegador. Si tienes RÍO PRO, tu suscripción viaja contigo por email aunque cambies de dispositivo.</div>
-    </div>
-
-    <div class="settings-group field">
-      <label>Unidad de las fichas</label>
-      <select id="unitSelect">
-        <option value="fichas">Fichas (genérico)</option>
-        <option value="€">Euros (€)</option>
-        <option value="$">Dólares ($)</option>
-        <option value="£">Libras (£)</option>
-      </select>
-    </div>
-
-    <div class="settings-group field">
-      <label>Precisión de la simulación</label>
-      <select id="simQualitySelect">
-        <option value="rapida">Rápida (1.500 manos) — recomendada</option>
-        <option value="precisa">Precisa (5.000 manos) — más lenta</option>
-      </select>
-      <div class="hint">Más manos simuladas = equity más exacta, pero tarda un poco más</div>
-    </div>
-
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Guardar historial de manos</div>
-        <div class="hint">Recuerda tus últimos análisis en este navegador</div>
-      </div>
-      <label class="switch"><input type="checkbox" id="saveHistoryToggle"><span class="slider"></span></label>
-    </div>
-
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Recordar rivales y posiciones</div>
-        <div class="hint">Precarga tu última configuración de la mesa al volver</div>
-      </div>
-      <label class="switch"><input type="checkbox" id="rememberDefaultsToggle"><span class="slider"></span></label>
-    </div>
-
-    <div class="settings-group">
-      <button class="btn-secondary" id="clearHistoryBtn" style="width:100%;">Borrar historial de manos</button>
-    </div>
-
-    <p class="paywall-fine">RÍO <span class="app-version"></span> · Herramienta de estudio para repasar tus manos. No la uses durante una partida en juego.</p>
-  </div>
-</div>
-
-<div class="overlay" id="planPanel">
-  <div class="picker paywall-card" style="max-width:900px;">
-    <div class="picker-head">
-      <h3>Tu plan</h3>
-      <button type="button" id="closePlanPanel" aria-label="Cerrar">&times;</button>
-    </div>
-
-    <div class="plan-cards">
-      <div class="plan-card" id="freePlanCard">
-        <div class="plan-card-badge" id="freePlanBadge" style="display:none;">Tu plan actual</div>
-        <h4>Gratis</h4>
-        <div class="plan-card-price"><span>0 €</span></div>
-        <ul class="plan-card-features">
-          <li><b>Análisis manuales: 1 de prueba + 10 con tu cuenta gratis</b></li>
-          <li>Entrenamiento, tablas de manos y glosario</li>
-          <li>Tu progreso y estadísticas</li>
-          <li>Historial: solo tu última mano</li>
-        </ul>
-      </div>
-
-      <div class="plan-card pro" id="proPlanCard">
-        <div class="plan-card-badge" id="proPlanBadge" style="display:none;">Tu plan actual</div>
-        <h4>RÍO PRO</h4>
-        <div class="plan-card-price"><span>9,99 €</span><small>/ mes</small></div>
-        <ul class="plan-card-features">
-          <li><b>Análisis manuales: ilimitados</b></li>
-          <li><b>Créditos de IA: 200 al mes</b><br><small>1 captura = 1 crédito · 1 mano contada = 1 crédito</small></li>
-          <li>Lee tus capturas: cartas, bote, apuestas y posiciones</li>
-          <li>Cuéntame tu mano: díctala o escríbela y la rellenamos</li>
-          <li>Importa manos de PokerStars y GGPoker</li>
-          <li>Historial de 200 manos con filtros y tus patrones</li>
-        </ul>
-        <div class="hint" id="photoUsageBox" style="margin-top:12px;"></div>
-        <button class="btn-primary" id="subscribeFromPlanBtn" style="width:100%; margin-top:14px;">Quiero RÍO PRO · 9,99 €/mes</button>
-        <button type="button" class="link-btn paid-check" style="display:block; margin:10px auto 0;">Ya he pagado, comprobar</button>
-        <div class="restore-msg paid-msg"></div>
-        <div class="plan-packs">
-          <div class="plan-packs-title">¿Necesitas más IA? Packs de créditos</div>
-          <div id="planPackList"></div>
-          <div class="hint" id="planPacksHint">Pago único · no caducan · se suman solos a tu cuenta.</div>
-        </div>
-        <button class="btn-secondary" id="manageSubBtn" style="width:100%; margin-top:10px; display:none;">💳 Gestionar suscripción</button>
-        <div class="hint" id="manageSubHint" style="display:none; margin-top:6px;">Cancelar, cambiar la tarjeta o descargar tus facturas.</div>
-        <div id="manageSubMsg" class="restore-msg"></div>
-      </div>
-
-      <div class="plan-card annual" id="annualPlanCard">
-        <div class="plan-card-badge save">Ahorras un 33 %</div>
-        <h4>RÍO PRO anual</h4>
-        <div class="plan-card-price"><span>79,99 €</span><small>/ año</small></div>
-        <div class="plan-card-sub">Sale a 6,67 €/mes</div>
-        <ul class="plan-card-features">
-          <li><b>Todo lo de RÍO PRO</b></li>
-          <li>Análisis manuales ilimitados</li>
-          <li>200 créditos de IA al mes</li>
-          <li>Un solo pago al año, sin preocuparte</li>
-          <li>Cancela cuando quieras</li>
-        </ul>
-        <button type="button" class="btn-primary annual-btn">Quiero el plan anual · 79,99 €/año</button>
-      </div>
-    </div>
-
-    <p class="paywall-fine">Verificamos tu suscripción directamente con Stripe, así que funciona desde cualquier dispositivo.</p>
-  </div>
-</div>
-
-<div class="overlay" id="helpModal">
-  <div class="picker">
-    <div class="picker-head">
-      <h3 id="helpTitle">Ayuda</h3>
-      <button type="button" id="closeHelp" aria-label="Cerrar">&times;</button>
-    </div>
-    <div class="help-body" id="helpBody"></div>
-  </div>
-</div>
-
-<div class="overlay" id="overlay">
-  <div class="picker">
-    <div class="picker-head">
-      <h3 id="pickerTitle">Elige el valor</h3>
-      <button type="button" id="closePicker" aria-label="Cerrar">&times;</button>
-    </div>
-    <div id="pickerBody"></div>
-    <button class="clear-btn" id="clearSlotBtn">Quitar esta carta</button>
-  </div>
-</div>
-
-<div class="overlay" id="paywall">
-  <div class="picker paywall-card">
-    <div class="picker-head">
-      <h3 id="paywallTitle">Has agotado tus análisis gratis</h3>
-      <button type="button" id="closePaywall" aria-label="Cerrar">&times;</button>
-    </div>
-    <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>10 análisis gratis</b>.</p>
-    <div class="pw-pitch sub-part"><b>RÍO PRO</b>Aprende de tus manos sin límite.</div>
-    <ul class="paywall-features sub-part">
-      <li>✓ <b>Análisis manuales ilimitados</b> (sin PRO: 10 con tu cuenta gratis)</li>
-      <li>✓ <b>Sube una captura</b> y RÍO lee cartas, bote, apuestas y posiciones</li>
-      <li>✓ <b>Cuéntale la mano</b> por voz o por escrito y la rellenamos</li>
-      <li>✓ <b>Importa manos</b> de PokerStars y GGPoker</li>
-      <li>✓ <b>Historial de 200 manos</b> con filtros, tus errores y tus patrones</li>
-      <li>✓ <b>200 créditos de IA al mes</b> (1 captura o 1 mano contada = 1 crédito)</li>
-    </ul>
-    <div class="paywall-price sub-part"><span>9,99&nbsp;€</span><small>/ mes</small></div>
-    <button class="btn-primary sub-part" id="subscribeBtn" style="width:100%; text-transform:uppercase; letter-spacing:0.03em;">Quiero RÍO PRO</button>
-    <div class="pw-cancel sub-part">Cancela cuando quieras. Paga con el mismo email con el que entras en RÍO.</div>
-    <div class="pw-or sub-part annual-part">o</div>
-    <div class="pw-annual sub-part annual-part">
-      <h4>RÍO PRO anual</h4>
-      <div class="paywall-price"><span>79,99&nbsp;€</span><small>/ año</small></div>
-      <div class="plan-card-sub">Sale a 6,67 €/mes · ahorras un 33 %</div>
-      <button type="button" class="btn-secondary annual-btn" style="margin-top:0;">Quiero el plan anual</button>
-    </div>
-    <button type="button" class="link-btn paid-check sub-part" style="display:block; margin:8px auto 0;">Ya he pagado, comprobar</button>
-    <div class="restore-msg paid-msg sub-part"></div>
-    <div class="pw-packs sub-part">¿Necesitas más IA? Packs extra desde <b>2,99 €</b> (+100 créditos), pago único.</div>
-    <div class="restore-box" id="restoreBox">
-      <div class="free-note login-only">💾 <b>Guarda tus manos y conserva tu progreso en cualquier dispositivo.</b><br>✅ Crear tu cuenta es <b>gratis</b>. No te pedimos tarjeta ni ningún pago.</div>
-      <div class="settings-label login-label sub-part">🔑 ¿Ya tienes cuenta? Entra</div>
-      <div class="hint" style="margin-top:2px;" id="restoreHint">Escribe tu email y te enviamos un código para entrar. Si aún no tienes cuenta, se crea gratis:</div>
-      <input type="email" id="proEmail" placeholder="tu@email.com" autocomplete="email" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px;">
-      <input type="text" id="proCode" placeholder="Código de 6 dígitos" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="display:none; width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cream); font-family:'Space Grotesk',sans-serif; margin-top:8px; letter-spacing:0.3em; text-align:center;">
-      <button class="btn-secondary" id="restoreBtn" style="width:100%; margin-top:10px;">Enviarme un código</button>
-      <div id="restoreMsg" class="restore-msg"></div>
-      <p class="paywall-fine">Al crear tu cuenta aceptas la <a href="/legal.html#privacidad" target="_blank">política de privacidad</a>. Debes ser mayor de 18 años.</p>
-    </div>
-    <p class="paywall-fine sub-part">Al suscribirte aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones de la suscripción</a>. Puedes cancelar desde «Gestionar suscripción».</p>
-    <button type="button" class="link-btn login-only see-plans" id="seePlansLink">¿Quieres RÍO PRO? Ver planes (opcional)</button>
-  </div>
-</div>
-
-<div class="overlay" id="creditsModal">
-  <div class="picker paywall-card">
-    <div class="picker-head">
-      <h3 id="creditsTitle">Packs de créditos</h3>
-      <button type="button" id="closeCreditsModal" aria-label="Cerrar">&times;</button>
-    </div>
-    <p class="paywall-copy" id="creditsCopy"></p>
-    <div class="packs" id="packList"></div>
-    <div class="restore-box">
-      <div class="hint" style="margin-top:14px;">Los créditos se suman solos al pagar. Si no los ves, pulsa:</div>
-      <button class="btn-secondary" id="redeemCreditsBtn" style="width:100%; margin-top:10px;">Ya los compré, actualizar créditos</button>
-      <div id="redeemMsg" class="restore-msg"></div>
-    </div>
-    <p class="paywall-fine">1 captura o 1 mano contada = 1 crédito. Los créditos comprados no caducan. Al comprar aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones</a>.</p>
-  </div>
-</div>
-
-<!-- Secciones propias de la app (#/progreso…). Las abre showView() en app.js. -->
-<section class="app-view" id="progressView" hidden aria-labelledby="progressTitle">
-  <div class="av-wrap">
-    <header class="av-head">
-      <button type="button" class="av-back" data-view-back aria-label="Volver al analizador">←</button>
-      <div><h2 id="progressTitle">Mi progreso</h2><p>Tus manos, tus errores y tu evolución, en un solo sitio.</p></div>
-    </header>
-    <div id="progressBody"></div>
+<section class="pillars">
+  <div class="wrap pillars-in">
+    <a class="pillar" href="/app/">
+      <div class="pv pv-analyze"><div class="mini-metrics"><div><small>Equity</small><b>53%</b></div><div><small>Pot odds</small><b>25%</b></div><div><small>EV</small><b class="pos">+11,6</b></div></div><div class="mini-badge">Pagar 10</div></div>
+      <h3>Analiza</h3><p>Captura, voz, historial o carta a carta. RÍO te dice qué hacer y por qué.</p>
+    </a>
+    <a class="pillar" href="/app/#/practicar">
+      <div class="pv pv-train"><div class="hand sm"><span class="pc red"><b>Q</b><i>♥</i></span><span class="pc"><b>Q</b><i>♣</i></span></div><div class="ph-opts"><span>Tirar</span><span class="on">Subir</span></div></div>
+      <h3>Entrena</h3><p>Decisiones por tema y tus propios errores convertidos en práctica. Gratis.</p>
+    </a>
+    <a class="pillar" href="/app/#/progreso">
+      <div class="pv pv-progress"><div class="bars"><i style="height:38%"></i><i style="height:52%"></i><i style="height:47%"></i><i style="height:66%"></i><i style="height:74%"></i></div><small>Evolución semanal · ilustrativa</small></div>
+      <h3>Mejora</h3><p>Tu panel con tus leaks, dónde pierdes EV y tu evolución semana a semana.</p>
+    </a>
   </div>
 </section>
 
-<section class="app-view" id="practiceView" hidden aria-labelledby="practiceTitle">
-  <div class="av-wrap">
-    <header class="av-head">
-      <button type="button" class="av-back" data-view-back aria-label="Volver al analizador">←</button>
-      <div><h2 id="practiceTitle">Practicar</h2><p>Entrena decisiones sueltas o juega manos completas. Gratis.</p></div>
-    </header>
-    <div id="practiceBody"></div>
+<section class="band">
+  <div class="wrap band-in">
+    <div><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span>100% en español</span></div>
+    <div><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg><span>Móvil y ordenador</span></div>
+    <div><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>Herramienta de estudio</span></div>
+    <div><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="11" height="16" rx="2"/><path d="M17 6.5l3 .8a1.5 1.5 0 0 1 1 1.8l-3 11a1.5 1.5 0 0 1-1.8 1L13 20"/></svg><span>Cash y torneo · mesas de 6 y 9</span></div>
   </div>
 </section>
 
-<section class="app-view" id="historyView" hidden aria-labelledby="historyTitle">
-  <div class="av-wrap">
-    <header class="av-head">
-      <button type="button" class="av-back" data-view-back aria-label="Volver al analizador">←</button>
-      <div><h2 id="historyTitle">Historial</h2><p>Las manos que has analizado, con lo que dijo RÍO y lo que hiciste tú.</p></div>
-    </header>
-    <div id="historyViewBody"></div>
-  </div>
-</section>
+<section class="sec" id="producto">
+  <div class="wrap">
+    <div class="sec-head"><p class="eyebrow">Cómo funciona</p><h2>De la mano que jugaste a la decisión correcta</h2>
+      <p class="sub">Tres pasos, sin hojas de cálculo ni jerga innecesaria.</p></div>
+    <ol class="steps">
+      <li><span class="num">01</span><h3>Introduce la mano</h3><p>Con una captura, contándola por voz, pegando el historial o carta a carta.</p></li>
+      <li><span class="num">02</span><h3>RÍO la analiza</h3><p>Calcula tu equity contra el rango de tu rival, el precio del bote y el EV de cada opción.</p></li>
+      <li><span class="num">03</span><h3>Aprende el porqué</h3><p>Decisión clara, explicación en palabras sencillas y un plan para la siguiente calle.</p></li>
+    </ol>
 
-<section class="app-view" id="accountView" hidden aria-labelledby="accountTitle">
-  <div class="av-wrap av-narrow">
-    <header class="av-head">
-      <button type="button" class="av-back" data-view-back aria-label="Volver al analizador">←</button>
-      <div><h2 id="accountTitle">Cuenta</h2><p>Tu plan, tus créditos y tus ajustes.</p></div>
-    </header>
-    <div id="accountViewCard"></div>
-    <div class="av-list" id="accountList"></div>
-  </div>
-</section>
-
-<!-- Partida de práctica: mesa de 6 a pantalla completa (partida.js) -->
-<section class="game-view" id="gameView" hidden aria-label="Partida de práctica">
-  <header class="g-top">
-    <button type="button" class="g-back" id="gClose" aria-label="Volver a RÍO">← <span>Volver</span></button>
-    <div class="g-title">🃏 Partida de práctica <small>fichas sin valor</small></div>
-    <div class="g-stats" id="gStats"></div>
-    <label class="g-players"><span>Jugadores</span>
-      <select id="gPlayers" aria-label="Jugadores en la mesa">
-        <option value="2">2 · mano a mano</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="var">🎲 Variable</option>
-      </select></label>
-    <button type="button" class="g-speed" id="gSpeed" title="Velocidad de los rivales">▶ Normal</button>
-  </header>
-  <div class="g-main">
-    <div class="g-stage">
-      <div class="g-table">
-        <div class="g-felt">
-          <div class="g-logo">RÍO</div>
-          <div class="g-center">
-            <div class="g-street" id="gStreet"></div>
-            <div class="g-board" id="gBoard"></div>
-            <div class="g-pot" id="gPot"></div>
-          </div>
-        </div>
-        <div id="gSeats"></div>
-        <div class="g-fin" id="gFin" hidden></div>
-      </div>
-      <div class="g-actions" id="gActions"></div>
+    <div class="grid3">
+      <article class="feat"><div class="feat-ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div><h3>Captura</h3><p>Sube una captura de la mesa y RÍO lee cartas, mesa, bote, apuestas y posiciones.</p><span class="tag">PRO · 1 crédito de IA</span></article>
+      <article class="feat"><div class="feat-ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg></div><h3>Voz</h3><p>Cuéntale la mano como a un amigo, dictada o escrita, y RÍO la rellena por ti.</p><span class="tag">PRO · 1 crédito de IA</span></article>
+      <article class="feat"><div class="feat-ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg></div><h3>Historial</h3><p>Pega una mano de PokerStars o GGPoker y se importa con su secuencia de apuestas.</p><span class="tag">PRO</span></article>
     </div>
-    <aside class="g-side">
-      <div class="g-tabs"><button type="button" data-tab="mano">Mano</button><button type="button" data-tab="repaso">Repaso</button><button type="button" data-tab="sesion">Sesión</button></div>
-      <div class="g-panel" id="gPanel"></div>
-    </aside>
+    <p class="muted center">Sin PRO también puedes introducir la mano carta a carta, gratis.</p>
   </div>
 </section>
-<script defer src="/app.js"></script>
-<script defer src="/partida.js"></script>
+
+<section class="sec alt">
+  <div class="wrap split">
+    <div>
+      <p class="eyebrow">Decisiones explicadas</p>
+      <h2>No solo qué hacer. Por qué.</h2>
+      <p class="sub">Cada análisis combina una recomendación clara con el razonamiento que hay detrás, en el nivel de detalle que prefieras.</p>
+      <ul class="list">
+        <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><b>Modo Fácil:</b> todo explicado en palabras sencillas.</span></li>
+        <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><b>Modo Avanzado:</b> equity, pot odds, EV, SPR, outs y rango del rival.</span></li>
+        <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><b>Calle a calle:</b> analiza el flop, el turn y el river de la misma mano.</span></li>
+        <li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><b>¿Y si tu rival juega distinto?</b> La misma mano contra cinco perfiles de rival.</span></li>
+      </ul>
+    </div>
+    <div class="ui-card">
+      <div class="ui-label">Tu plan</div>
+      <ol class="plan">
+        <li>Paga 10.</li>
+        <li>Si alguien vuelve a subir después: contra su rango fuerte ganas ~46%, casi la mitad de las veces; puedes pagar casi cualquier resubida.</li>
+        <li>En la siguiente calle, vuelve a analizar con la carta nueva.</li>
+      </ol>
+      <div class="ui-foot">Plan real de la mano de ejemplo</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="leaks">
+  <div class="wrap split rev">
+    <div class="ui-card">
+      <div class="ui-label accent">Tu mayor leak</div>
+      <div class="leak-title">Pagas cuando convenía retirarse</div>
+      <div class="leak-list">
+        <div><span>Te retiras cuando convenía pagar</span></div>
+        <div><span>Pasas cuando convenía apostar</span></div>
+        <div><span>Subes cuando bastaba con pagar</span></div>
+      </div>
+      <div class="ui-foot">Algunos de los errores que RÍO detecta</div>
+    </div>
+    <div>
+      <p class="eyebrow">Detección de leaks</p>
+      <h2>Descubre el error que más te cuesta</h2>
+      <p class="sub">Después de cada análisis indicas qué hiciste con un toque. RÍO lo compara con su recomendación, agrupa tus errores más repetidos y estima dónde pierdes más EV: por posición, por calle, en botes con 3-bet o pagando en el river.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt" id="entrenamiento">
+  <div class="wrap split">
+    <div>
+      <p class="eyebrow">Entrenamiento</p>
+      <h2>Convierte tus errores en práctica</h2>
+      <p class="sub">Entrena decisiones por tema o deja que RÍO elija situaciones del tipo que más fallas. Con el mismo motor del analizador y gratis.</p>
+      <div class="chips"><span>Preflop</span><span>Flop</span><span>Turn</span><span>River</span><span>3-bet</span><span>C-bet</span><span>Faroles</span><span>Pot odds</span><span class="on">Mis errores</span></div>
+      <p class="muted">Y una partida de práctica con manos completas contra 2 a 6 rivales con estilos distintos.</p>
+    </div>
+    <div class="ui-card">
+      <div class="ui-label">Situación · River</div>
+      <div class="hand"><span class="pc red"><b>J</b><i>♦</i></span><span class="pc red"><b>8</b><i>♦</i></span><span class="sep"></span><span class="pc red"><b>3</b><i>♦</i></span><span class="pc"><b>6</b><i>♠</i></span><span class="pc"><b>3</b><i>♠</i></span><span class="pc red"><b>K</b><i>♥</i></span><span class="pc red"><b>2</b><i>♥</i></span></div>
+      <p class="q">Estás en BB contra BTN. El bote es de 15 y tu rival apuesta 5. ¿Qué haces?</p>
+      <div class="opts"><span class="on">Tirar</span><span>Pagar</span><span>Subir</span></div>
+      <div class="ok-line"><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Correcto: ganas unas 2 de cada 20 y para pagar necesitas 5.</div>
+      <div class="ui-foot">Situación generada por el entrenamiento</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head"><p class="eyebrow">Mi progreso</p><h2>Tu evolución, en un solo panel</h2>
+      <p class="sub">Todo lo que analizas y entrenas se reúne en tu panel. Se llena con tus propias manos.</p></div>
+    <div class="dash" aria-hidden="true">
+      <div class="dash-kpis"><div><small>Manos analizadas</small><b>—</b></div><div><small>EV medio</small><b>—</b></div><div><small>Decisiones correctas</small><b>—</b></div><div><small>Leaks detectados</small><b>—</b></div></div>
+      <div class="dash-grid">
+        <div><h4><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg> Dónde pierdes más EV</h4><i></i><i></i><i></i></div>
+        <div><h4><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> Errores más frecuentes</h4><i></i><i></i><i></i></div>
+        <div><h4><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg> Evolución semanal</h4><i></i><i></i><i></i></div>
+        <div><h4><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="11" height="16" rx="2"/><path d="M17 6.5l3 .8a1.5 1.5 0 0 1 1 1.8l-3 11a1.5 1.5 0 0 1-1.8 1L13 20"/></svg> Acierto por calle</h4><i></i><i></i><i></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt" id="precios">
+  <div class="wrap">
+    <div class="sec-head center"><p class="eyebrow">Precios</p><h2>Empieza gratis. Pasa a PRO cuando lo necesites.</h2></div>
+    <div class="prices">
+      <article class="price"><h3>Gratis</h3><p class="amt">0 €</p><p class="per">para siempre</p>
+        <ul><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>1 análisis de prueba + 10 con tu cuenta</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Entrenamiento y partida de práctica</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Tablas de manos y glosario</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Tu progreso y estadísticas</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Historial: tu última mano</li></ul>
+        <a class="btn btn-ghost" href="/app/">Empezar gratis</a></article>
+      <article class="price featured"><span class="badge">Recomendado</span><h3>RÍO PRO</h3><p class="amt">9,99 €</p><p class="per">al mes</p>
+        <ul><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><b>Análisis manuales ilimitados</b></li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>200 créditos de IA al mes</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Captura y voz</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Importar PokerStars y GGPoker</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Historial de 200 manos con filtros</li></ul>
+        <a class="btn" href="/app/#/cuenta">Elegir PRO</a></article>
+      <article class="price"><h3>RÍO PRO anual</h3><p class="amt">79,99 €</p><p class="per">al año · 6,67 €/mes</p>
+        <ul><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Todo lo de RÍO PRO</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Ahorras un 33 %</li><li><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Cancela cuando quieras</li></ul>
+        <a class="btn btn-ghost" href="/app/#/cuenta">Elegir anual</a></article>
+    </div>
+    <p class="muted center">Packs de créditos de IA desde 2,99 € (pago único, solo con PRO). Pagos seguros con Stripe.</p>
+  </div>
+</section>
+
+<section class="sec" id="faq">
+  <div class="wrap narrow">
+    <div class="sec-head center"><h2>Preguntas frecuentes</h2></div>
+    <details><summary>¿Qué es RÍO?</summary><p>RÍO es un coach de póker con IA y una calculadora en español. Le dices tus cartas, la mesa, el bote y lo que te toca pagar, y te dice si pagar, subir o tirar en cada calle, con la probabilidad de ganar, los outs, las odds del bote y el EV explicados fácil.</p></details>
+    <details><summary>¿Es gratis?</summary><p>Sí. Tienes un análisis de prueba sin registrarte y 10 más al crear tu cuenta gratis, solo con tu email. El entrenamiento, el glosario y las tablas de manos son gratis. RÍO PRO (9,99 €/mes o 79,99 €/año) da análisis manuales ilimitados y funciones con IA como analizar una captura.</p></details>
+    <details><summary>¿Puedo usar RÍO mientras juego?</summary><p>No. RÍO es una herramienta de estudio para repasar tus manos después de jugar. La mayoría de salas online prohíben las ayudas en tiempo real.</p></details>
+    <details><summary>¿Qué diferencia hay entre el modo Fácil y el Avanzado?</summary><p>El modo Fácil te guía paso a paso y te pregunta el bote con dos preguntas sencillas. El Avanzado muestra todos los datos: rango del rival, EV, SPR y más detalles de cada calle.</p></details>
+    <details><summary>¿Funciona en el móvil?</summary><p>Sí. RÍO funciona en el navegador del móvil y del ordenador, y puedes instalarlo en la pantalla de inicio como una app.</p></details>
+    <details><summary>¿Qué necesito saber de póker para usarlo?</summary><p>Solo las reglas básicas de Texas Hold'em. Si no conoces un término como equity, pot odds u outs, tienes el <a href="/glosario/">glosario de póker</a> y las <a href="/tablas/">tablas de manos iniciales</a> por posición.</p></details>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap final-in">
+    <h2>Deja de preguntarte si jugaste bien.</h2>
+    <p>Pregúntaselo a RÍO.</p>
+    <a class="btn btn-lg" href="/app/">Empezar gratis <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div><a class="logo" href="/">RÍO</a><p>Coach de póker con IA y calculadora en español. Herramienta de estudio: no la uses mientras juegas una mano.</p></div>
+    <div class="foot-cols">
+      <div><h5>Producto</h5><a href="/app/">Analizador</a><a href="/app/#/practicar">Practicar</a><a href="/app/#/progreso">Mi progreso</a><a href="#precios">Precios</a></div>
+      <div><h5>Aprender</h5><a href="/guias/">Guías</a><a href="/manos/">Manos iniciales</a><a href="/glosario/">Glosario</a><a href="/tablas/">Tablas</a></div>
+      <div><h5>Legal</h5><a href="/legal.html#aviso-legal">Aviso legal</a><a href="/legal.html#privacidad">Privacidad</a><a href="/legal.html#condiciones">Condiciones</a><a href="/legal.html#cookies">Cookies</a></div>
+    </div>
+  </div>
+  <div class="wrap foot-bottom"><span class="age">+18</span> Juega con responsabilidad · <a href="https://www.jugarbien.es" rel="noopener">jugarbien.es</a></div>
+</footer>
 </body>
 </html>

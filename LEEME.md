@@ -1,7 +1,8 @@
 # RÍO — Despliegue con verificación real de pago
 
 Este proyecto tiene estas partes:
-- `index.html` — tu página (la herramienta de poker); su lógica está en `app.js` y sus estilos en `app.css`
+- `index.html` — la portada (landing, en «/»); estilos en `landing.css`
+- `app/index.html` — la herramienta de poker (en «/app/»); su lógica está en `app.js` y sus estilos en `app.css`
 - `api/account.js` + `vercel.json` — agrupan en una sola función las operaciones de cuenta (`lib/routes/`): el plan gratuito de Vercel permite como máximo 12 funciones
 - `lib/routes/send-code.js` y `lib/routes/verify-code.js` — inicio de sesión: envían un código de 6 dígitos al email del suscriptor y lo comprueban
 - `lib/routes/check-pro.js` — le pregunta a Stripe si el usuario con sesión iniciada tiene suscripción activa
@@ -27,7 +28,7 @@ Este proyecto tiene estas partes:
 
 2. **Sube estos archivos a GitHub**
    - Ve a github.com → New repository → ponle un nombre, por ejemplo `rio-poker`.
-   - Dentro del repo, usa "Add file → Upload files" y arrastra `index.html`, `app.js`, `app.css`, `LEEME.md`, `package.json`, `package-lock.json` y las carpetas `api` y `lib` completas.
+   - Dentro del repo, usa "Add file → Upload files" y arrastra `index.html`, la carpeta `app`, `app.js`, `app.css`, `LEEME.md`, `package.json`, `package-lock.json` y las carpetas `api` y `lib` completas.
    - Confirma los cambios ("Commit changes").
 
 3. **Importa el repo en Vercel**
@@ -85,7 +86,7 @@ Este proyecto tiene estas partes:
 
 11. **Imagen al compartir**
     - La dirección de la web está en un solo sitio: `sitio.json`. Si cambias de dominio, cámbiala ahí y ejecuta `node scripts/build-seo.js`: actualiza la dirección canónica, `og:url`, `og:image`, los datos para Google de la portada, el sitemap y todas las páginas del glosario y las tablas.
-    - Las preguntas frecuentes de la portada se escriben en `index.html` (bloque «Preguntas frecuentes»); el mismo script las copia a los datos para Google.
+    - Las preguntas frecuentes de la portada se escriben en `app/index.html` (bloque «Preguntas frecuentes»); el mismo script las copia a los datos para Google.
 
 12. **Precios (PRO 9,99 € con 200 créditos/mes y packs de créditos)**
     - En Stripe crea el precio mensual de 9,99 € de RÍO PRO y su Payment Link; pégalo en `PAYMENT_LINK` en `app.js`.

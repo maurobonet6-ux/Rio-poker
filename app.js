@@ -1724,7 +1724,7 @@
     ].filter(x => x[3]);
     const list = document.getElementById('accountList');
     list.innerHTML = items.map(([ic, l, id]) => `<button type="button" class="av-item" data-click="${id}"><span>${ic}</span><b>${l}</b><i>›</i></button>`).join('')
-      + `<div class="av-legal"><a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/guias/">Guías</a> · <a href="/descubre/">Qué es RÍO</a></div>`;
+      + `<div class="av-legal"><a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/guias/">Guías</a> · <a href="/">Qué es RÍO</a></div>`;
     list.querySelectorAll('[data-click]').forEach(b => b.addEventListener('click', () => {
       document.getElementById(b.dataset.click).click();
       if (b.dataset.click === 'navLogout') setTimeout(renderAccount, 300);
@@ -2342,7 +2342,7 @@
     };
     return b64url(JSON.stringify(o));
   }
-  function shareUrl(){ return `${location.origin}/#m=${encodeHand()}`; }
+  function shareUrl(){ return `${location.origin}/app/#m=${encodeHand()}`; }
 
   function decodeHand(code){
     try { const o = JSON.parse(unb64url(code)); return o && o.v === 1 ? o : null; } catch(e){ return null; }
@@ -2397,7 +2397,7 @@
   }
 
   async function shareHand(code){
-    const url = typeof code === 'string' ? `${location.origin}/#m=${code}` : shareUrl();
+    const url = typeof code === 'string' ? `${location.origin}/app/#m=${code}` : shareUrl();
     const text = `¿Tú qué harías con ${lastHandLabel || 'esta mano'}? Mírala en RÍO:`;
     const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
     if (navigator.share && touch){

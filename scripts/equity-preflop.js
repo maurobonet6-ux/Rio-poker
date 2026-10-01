@@ -91,7 +91,7 @@ function equity(name, rand){
 }
 
 if (require.main === module){
-  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'app', 'index.html'), 'utf8');
   const hands = html.match(/const HAND_RANKING = '([^']+)'/)[1].split(' ');
   const rand = rng(20260927);
   const out = {};

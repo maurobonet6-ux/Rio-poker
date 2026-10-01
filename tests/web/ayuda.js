@@ -32,7 +32,7 @@ async function abrir(page, opts = {}){
   });
   const errores = [];
   page.on('pageerror', (e) => errores.push(e.message));
-  await page.goto(ORIGIN + (opts.path || '/'));
+  await page.goto(ORIGIN + (opts.path || '/app/')); // la app vive en /app/ («/» es la landing)
   return { llamadas, errores };
 }
 
