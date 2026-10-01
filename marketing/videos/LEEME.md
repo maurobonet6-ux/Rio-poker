@@ -94,12 +94,18 @@ El bot (`api/telegram.js`) tiene cinco tipos de publicación. Todos van **en ord
 | `mito` | «¿Mito o realidad?» como cuestionario de 2 opciones | `lib/poker-mitos.js` |
 | `generada` | Cuestionario con una pregunta de cuentas generada y calculada; **nunca se acaba** | `lib/poker-preguntas.js` |
 | `encuesta` | Encuesta de opinión, sin respuesta correcta | `lib/telegram-encuestas.js` |
+| `resumen` | «📊 Resultados de ayer»: cierra las encuestas de ayer, cuenta los votos y publica el % de aciertos y la correcta | `lib/telegram-comunidad.js` |
+| `semana` | «🏆 Lo más difícil de la semana»: las 3 preguntas con menos aciertos y la más fácil | `lib/telegram-comunidad.js` |
+| `bienvenida` | Mensaje de presentación que se publica y se **fija** una sola vez (el bot necesita el permiso «Fijar mensajes») | `lib/telegram-comunidad.js` |
 
-**Horarios** (hora de España en verano; en invierno es una hora antes):
+Cada encuesta publicada guarda su número de mensaje en Redis (`telegram:poll:<día>:<tipo>`) para que `resumen` pueda cerrarla con `stopPoll` y contar los
+votos. Ojo: al cerrarla nadie más puede votar, así que cuentan los votos de las ~15 primeras horas.
 
 | Hora | Qué | Quién lo lanza |
 | --- | --- | --- |
-| 10:00 | `mito` | GitHub Actions, `.github/workflows/canal.yml` |
+| 9:30 | `resumen` (resultados de ayer) | GitHub Actions, `.github/workflows/canal.yml` |
+| 10:00 | `mito` | GitHub Actions |
+| lunes 10:45 | `semana` | GitHub Actions |
 | 13:00 | `generada` | GitHub Actions |
 | 17:30 | `encuesta` | GitHub Actions |
 | 19:00 | `quiz` o `texto` según el día (quiz dom, mar, jue, sáb; texto lun, mié, vie) | Vercel, cron de `vercel.json` |

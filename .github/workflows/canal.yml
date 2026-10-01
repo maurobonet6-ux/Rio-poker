@@ -5,7 +5,9 @@ name: Canal de Telegram
 
 on:
   schedule:
+    - cron: '30 7 * * *'   # 9:30 en España en verano (8:30 en invierno): resultados de ayer (cierra las encuestas y cuenta los votos)
     - cron: '0 8 * * *'    # 10:00 en España en verano (9:00 en invierno): ¿mito o realidad?
+    - cron: '45 8 * * 1'   # lunes 10:45: lo más difícil de la semana
     - cron: '0 11 * * *'   # 13:00 (12:00): cuestionario con una pregunta de cuentas generada
     - cron: '30 15 * * *'  # 17:30 (16:30): encuesta de opinión
   workflow_dispatch:
@@ -15,7 +17,7 @@ on:
         required: true
         default: 'mito'
         type: choice
-        options: [mito, generada, encuesta, quiz, texto]
+        options: [mito, generada, encuesta, quiz, texto, resumen, semana, bienvenida]
 
 jobs:
   publicar:
@@ -31,7 +33,9 @@ jobs:
           set -u
           if [ -z "$TIPO" ]; then
             case "$HORARIO" in
+              '30 7 * * *') TIPO=resumen ;;
               '0 8 * * *') TIPO=mito ;;
+              '45 8 * * 1') TIPO=semana ;;
               '0 11 * * *') TIPO=generada ;;
               '30 15 * * *') TIPO=encuesta ;;
               *) echo "::error::Horario desconocido: $HORARIO"; exit 1 ;;

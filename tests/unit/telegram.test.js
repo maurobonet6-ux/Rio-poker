@@ -60,22 +60,33 @@ test('el cron diario alterna quiz y texto según el día de la semana', () => {
 
 // Publicación de verdad con Telegram y Redis simulados en memoria: no sale ninguna llamada a internet y
 // la prueba no depende de la fecha de hoy (la numeración sale del contador, que empieza en 1).
-async function lanzar(query, memoria = new Map()){
+let contadorMensajes = 100;
+async function lanzar(query, memoria = new Map(), extra = {}){
   process.env.CRON_SECRET = 'secreto'; process.env.TELEGRAM_BOT_TOKEN = 'T'; process.env.TELEGRAM_CHANNEL = '@canal';
   process.env.UPSTASH_REDIS_REST_URL = 'http://redis.test'; process.env.UPSTASH_REDIS_REST_TOKEN = 'x';
   const llamadas = [], real = global.fetch;
   global.fetch = async (url, o) => {
     const body = JSON.parse(o.body);
     if (url === 'http://redis.test'){
-      const [op, k, , nx] = body; let r = null;
-      if (op === 'SET'){ if (nx === 'NX' && memoria.has(k)) r = null; else { memoria.set(k, '1'); r = 'OK'; } }
+      const [op, k, a, b] = body; let r = null;
+      if (op === 'SET'){ if (b === 'NX' && memoria.has(k)) r = null; else { memoria.set(k, a); r = 'OK'; } }
+      else if (op === 'GET') r = memoria.has(k) ? memoria.get(k) : null;
       else if (op === 'INCR'){ r = (Number(memoria.get(k)) || 0) + 1; memoria.set(k, String(r)); }
       else if (op === 'DECR'){ r = (Number(memoria.get(k)) || 0) - 1; memoria.set(k, String(r)); }
       else if (op === 'DEL'){ memoria.delete(k); r = 1; }
+      else if (op === 'LPUSH'){ const l = memoria.get(k) || []; l.unshift(a); memoria.set(k, l); r = l.length; }
+      else if (op === 'LTRIM'){ memoria.set(k, (memoria.get(k) || []).slice(a, b + 1)); r = 'OK'; }
+      else if (op === 'LRANGE'){ const l = memoria.get(k) || []; r = l.slice(a, b === -1 ? undefined : b + 1); }
+      else if (op === 'EXPIRE') r = 1;
       return { json: async () => ({ result: r }) };
     }
-    llamadas.push({ metodo: url.split('/').pop(), body });
-    return { json: async () => ({ ok: true, result: {} }) };
+    const metodo = url.split('/').pop();
+    if (extra.falla && extra.falla[metodo]) return { json: async () => ({ ok: false, description: extra.falla[metodo] }) };
+    llamadas.push({ metodo, body });
+    let result = {};
+    if (metodo === 'sendPoll' || metodo === 'sendMessage') result = { message_id: ++contadorMensajes };
+    if (metodo === 'stopPoll') result = (extra.votos && extra.votos(body.message_id)) || { options: [], total_voter_count: 0 };
+    return { json: async () => ({ ok: true, result }) };
   };
   const res = { statusCode: 200, body: null, status(c){ this.statusCode = c; return this; }, json(b){ this.body = b; return this; } };
   try { await telegram({ headers: { authorization: 'Bearer secreto' }, query }, res); } finally { global.fetch = real; delete process.env.UPSTASH_REDIS_REST_URL; delete process.env.UPSTASH_REDIS_REST_TOKEN; }
@@ -151,4 +162,89 @@ test('al contestar se ve claro cuál era la correcta: la explicación lo dice y 
       }
     }
   }
+});
+
+// ---- Comunidad: resultados de ayer, lo más difícil de la semana y la bienvenida fijada ----
+const comunidad = require('../../lib/telegram-comunidad');
+
+test('cada encuesta guarda en Redis lo necesario para contar los votos mañana', async () => {
+  const memoria = new Map();
+  for (const tipo of ['quiz', 'mito', 'generada', 'encuesta']) await lanzar({ tipo }, memoria);
+  const hoy = telegram.today();
+  for (const tipo of ['quiz', 'mito', 'generada', 'encuesta']){
+    const meta = JSON.parse(memoria.get(comunidad.CLAVE_POLL(hoy, tipo)));
+    assert.ok(meta.id > 100, tipo + ': número de mensaje');
+    assert.ok(meta.q.length > 0 && meta.q.length <= 100, tipo + ': pregunta corta');
+    if (tipo === 'encuesta') assert.strictEqual(meta.ok, null); else { assert.ok(Number.isInteger(meta.ok)); assert.ok(meta.correcta.length > 0); }
+  }
+});
+
+test('resultados de ayer: cierra las encuestas, cuenta los aciertos y publica una vez', async () => {
+  const memoria = new Map(), hoy = telegram.today(), ayer = comunidad.restarDia(hoy, 1);
+  for (const tipo of ['quiz', 'mito', 'encuesta']) await lanzar({ tipo }, memoria);
+  for (const tipo of ['quiz', 'mito', 'encuesta']){ memoria.set(comunidad.CLAVE_POLL(ayer, tipo), memoria.get(comunidad.CLAVE_POLL(hoy, tipo))); memoria.delete(comunidad.CLAVE_POLL(hoy, tipo)); }
+  // 7 de cada 10 aciertan; en la encuesta gana la opción 2 con 6 de 10
+  const metas = {}; for (const tipo of ['quiz', 'mito', 'encuesta']){ const m = JSON.parse(memoria.get(comunidad.CLAVE_POLL(ayer, tipo))); metas[m.id] = { tipo, m }; }
+  const votos = id => {
+    const { tipo, m } = metas[id]; const opciones = [0, 1, 2].map(i => ({ text: 'op' + i, voter_count: 1 }));
+    if (tipo === 'encuesta'){ opciones[1].voter_count = 6; return { options: opciones.slice(0, 3), total_voter_count: 8 }; }
+    opciones.forEach(o => o.voter_count = 1); opciones[m.ok].voter_count = 7;
+    const total = opciones.reduce((a, o) => a + o.voter_count, 0); return { options: opciones, total_voter_count: total };
+  };
+  const r = await lanzar({ tipo: 'resumen' }, memoria, { votos });
+  assert.strictEqual(r.res.statusCode, 200, JSON.stringify(r.res.body));
+  assert.strictEqual(r.llamadas.filter(l => l.metodo === 'stopPoll').length, 3, 'cierra las 3 encuestas');
+  const msg = r.llamadas.find(l => l.metodo === 'sendMessage').body.text;
+  assert.match(msg, /^📊 Resultados de ayer/);
+  assert.match(msg, /🃏 Mano del día: acertó el \d+ %/);
+  assert.match(msg, /🤔 ¿Mito o realidad\?: acertó el \d+ %/);
+  assert.match(msg, /Ganó «op1» con el 75 %/);
+  assert.ok(msg.length < 4096);
+  assert.strictEqual(memoria.get(comunidad.CLAVE_RESULTADOS).length, 2, 'guarda los resultados de quiz y mito para el resumen semanal');
+  const otra = await lanzar({ tipo: 'resumen' }, memoria, { votos });
+  assert.match(otra.res.body.skipped, /ya publicado hoy/);
+});
+
+test('resultados de ayer: si nadie votó o no hay datos, no publica nada y se puede reintentar', async () => {
+  const memoria = new Map();
+  const r = await lanzar({ tipo: 'resumen' }, memoria);
+  assert.strictEqual(r.res.statusCode, 200); assert.match(r.res.body.skipped, /nadie votó|no hay encuestas/);
+  assert.strictEqual(r.llamadas.filter(l => l.metodo === 'sendMessage').length, 0);
+  assert.ok(![...memoria.keys()].some(k => k.startsWith('telegram:publicado:')), 'libera la marca del día');
+});
+
+test('lo más difícil de la semana: las 3 con menos aciertos y la más fácil', async () => {
+  const memoria = new Map(), hoy = telegram.today();
+  const f = (dias, tipo, q, p, total = 10) => JSON.stringify({ dia: comunidad.restarDia(hoy, dias), tipo, q, p, total });
+  memoria.set(comunidad.CLAVE_RESULTADOS, [f(1, 'quiz', 'Pregunta A', 80), f(2, 'mito', 'Pregunta B', 20), f(3, 'generada', 'Pregunta C', 35), f(4, 'quiz', 'Pregunta D', 90), f(5, 'mito', 'Pregunta E', 55), f(20, 'quiz', 'Pregunta vieja', 1), f(2, 'quiz', 'Pocos votos', 0, 2)]);
+  const r = await lanzar({ tipo: 'semana' }, memoria);
+  assert.strictEqual(r.res.statusCode, 200, JSON.stringify(r.res.body));
+  const msg = r.llamadas[0].body.text;
+  assert.ok(msg.indexOf('Pregunta B') < msg.indexOf('Pregunta C') && msg.indexOf('Pregunta C') < msg.indexOf('Pregunta E'), 'de más difícil a menos');
+  assert.match(msg, /Solo acertó el 20 %/); assert.match(msg, /La más fácil: Pregunta D \(90 % acertó\)/);
+  assert.ok(!msg.includes('Pregunta vieja') && !msg.includes('Pocos votos'), 'ignora lo antiguo y lo de pocos votos');
+  const poco = await lanzar({ tipo: 'semana' }, new Map());
+  assert.match(poco.res.body.skipped, /suficientes resultados/);
+});
+
+test('bienvenida: se publica y se fija una sola vez; si no hay permiso para fijar, avisa pero publica', async () => {
+  const memoria = new Map();
+  const a = await lanzar({ tipo: 'bienvenida' }, memoria);
+  assert.strictEqual(a.res.statusCode, 200);
+  assert.deepStrictEqual(a.llamadas.map(l => l.metodo), ['sendMessage', 'pinChatMessage']);
+  assert.strictEqual(a.llamadas[1].body.message_id, contadorMensajes, 'fija el mensaje recién enviado');
+  assert.strictEqual(a.res.body.fijado, true);
+  assert.ok(a.llamadas[0].body.text.length < 4096 && a.llamadas[0].body.text.includes('riopoker.es'));
+  const b = await lanzar({ tipo: 'bienvenida' }, memoria);
+  assert.match(b.res.body.skipped, /ya publicado/); assert.strictEqual(b.llamadas.length, 0);
+  const c = await lanzar({ tipo: 'bienvenida' }, new Map(), { falla: { pinChatMessage: 'not enough rights to pin a message' } });
+  assert.strictEqual(c.res.statusCode, 200); assert.match(c.res.body.fijado, /not enough rights/);
+});
+
+test('las encuestas generadas llevan número de serie', async () => {
+  const memoria = new Map();
+  const a = await lanzar({ tipo: 'generada' }, memoria); memoria.delete('telegram:publicado:' + telegram.today() + ':generada');
+  const b = await lanzar({ tipo: 'generada' }, memoria);
+  assert.match(a.llamadas[0].body.question, /^🧮 Cálculo del día #1\n/);
+  assert.match(b.llamadas[0].body.question, /^🧮 Cálculo del día #2\n/);
 });

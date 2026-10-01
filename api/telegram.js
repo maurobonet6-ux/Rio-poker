@@ -21,6 +21,7 @@ const ENCUESTAS = require('../lib/telegram-encuestas');
 const { MITOS } = require('../lib/poker-mitos');
 const { pregunta } = require('../lib/poker-preguntas');
 const { redisCmd } = require('../lib/redis');
+const comunidad = require('../lib/telegram-comunidad');
 
 const SITE = 'https://riopoker.es';
 const START = Date.UTC(2026, 9, 1); // sin Redis, la numeración cuenta días desde el 1 de octubre de 2026
@@ -50,25 +51,38 @@ const LETRAS = 'ABCDEFGHIJ';
 const conLetras = opts => opts.map((o, i) => `${LETRAS[i]}) ${o}`);
 const explicacion = (ok, opts, why) => recorta(`✅ La correcta es la ${LETRAS[ok]}: ${opts[ok]}\n${why}`, 200);
 
+// Lo que se guarda de cada encuesta para poder cerrarla y contar los votos al día siguiente.
+const datosEncuesta = (msg, q, opts, ok) => ({ id: msg.message_id, q: recorta(sinMarcas(q).replace(/\n/g, ' '), 100), ok, correcta: ok == null ? null : opts[ok] });
+
 const TIPOS_VALIDOS = {
   quiz: { lista: QUIZZES, clave: 'telegram:numero', publicar: async (tg, chat, q) => {
-    await tg('sendPoll', { chat_id: chat, question: `🃏 Mano del día #${q.number}\n${q.q}`, options: conLetras(q.opts).map(text => ({ text })), type: 'quiz', correct_option_id: q.ok, explanation: explicacion(q.ok, q.opts, q.why), is_anonymous: true });
+    const m = await tg('sendPoll', { chat_id: chat, question: `🃏 Mano del día #${q.number}\n${q.q}`, options: conLetras(q.opts).map(text => ({ text })), type: 'quiz', correct_option_id: q.ok, explanation: explicacion(q.ok, q.opts, q.why), is_anonymous: true });
     await tg('sendMessage', { chat_id: chat, text: `📖 ¿Has votado? Aquí lo tienes explicado a fondo:\n${SITE}${q.link}?utm_source=telegram`, link_preview_options: { is_disabled: true } });
+    return { poll: datosEncuesta(m, q.q, q.opts.map(o => `${LETRAS[q.opts.indexOf(o)]}) ${o}`), q.ok) };
   } },
   texto: { lista: TEXTOS, clave: 'telegram:textos', publicar: async (tg, chat, t) => {
     await tg('sendMessage', { chat_id: chat, text: `${t.texto}\n\n👉 ${SITE}${t.link}?utm_source=telegram` });
   } },
   mito: { lista: MITOS, clave: 'telegram:mitos', publicar: async (tg, chat, m) => {
-    await tg('sendPoll', { chat_id: chat, question: recorta(`🤔 ¿Mito o realidad?\n${sinMarcas(m.dice)}`, 300), options: [{ text: 'Es un mito' }, { text: 'Es realidad' }], type: 'quiz', correct_option_id: m.verdad ? 1 : 0, explanation: recorta(`✅ Es ${m.verdad ? 'REALIDAD' : 'un MITO'}.\n${sinMarcas(m.why)}`, 200), is_anonymous: true });
+    const opts = ['Es un mito', 'Es realidad'], ok = m.verdad ? 1 : 0;
+    const msg = await tg('sendPoll', { chat_id: chat, question: recorta(`🤔 ¿Mito o realidad?\n${sinMarcas(m.dice)}`, 300), options: opts.map(text => ({ text })), type: 'quiz', correct_option_id: ok, explanation: recorta(`✅ Es ${m.verdad ? 'REALIDAD' : 'un MITO'}.\n${sinMarcas(m.why)}`, 200), is_anonymous: true });
+    return { poll: datosEncuesta(msg, m.dice, opts, ok) };
   } },
   encuesta: { lista: ENCUESTAS, clave: 'telegram:encuestas', publicar: async (tg, chat, e) => {
-    await tg('sendPoll', { chat_id: chat, question: `🗳️ ${e.q}`, options: e.opts.map(text => ({ text })), type: 'regular', is_anonymous: true });
+    const msg = await tg('sendPoll', { chat_id: chat, question: `🗳️ ${e.q}`, options: e.opts.map(text => ({ text })), type: 'regular', is_anonymous: true });
+    return { poll: datosEncuesta(msg, e.q, e.opts, null) };
   } },
-  // Pregunta nueva cada vez: no lleva cuenta ni se agota, porque la respuesta se calcula.
-  generada: { lista: null, publicar: async (tg, chat) => {
-    const q = pregunta();
-    await tg('sendPoll', { chat_id: chat, question: recorta(`🧮 ${sinMarcas(q.q)}`, 300), options: conLetras(q.opts.map(o => recorta(sinMarcas(o), 90))).map(text => ({ text })), type: 'quiz', correct_option_id: q.ok, explanation: explicacion(q.ok, q.opts.map(sinMarcas), sinMarcas(q.why)), is_anonymous: true });
+  // Pregunta nueva cada vez: no se agota, porque la respuesta se calcula. Lleva número para dar sensación de serie.
+  generada: { lista: null, publicar: async (tg, chat, _item, ctx) => {
+    const q = pregunta(), opts = q.opts.map(o => recorta(sinMarcas(o), 90));
+    let n = null; try { n = await ctx.redisCmd(['INCR', 'telegram:generadas']); } catch(e){}
+    const msg = await tg('sendPoll', { chat_id: chat, question: recorta(`🧮 Cálculo del día${n ? ' #' + n : ''}\n${sinMarcas(q.q)}`, 300), options: conLetras(opts).map(text => ({ text })), type: 'quiz', correct_option_id: q.ok, explanation: explicacion(q.ok, q.opts.map(sinMarcas), sinMarcas(q.why)), is_anonymous: true });
+    return { poll: datosEncuesta(msg, q.q, opts, q.ok) };
   } },
+  // Comunidad: resultados de ayer (cierra las encuestas y cuenta los votos), lo más difícil de la semana y la bienvenida fijada.
+  resumen: { lista: null, publicar: (tg, chat, _item, ctx) => comunidad.resumenDeAyer({ tg, redisCmd: ctx.redisCmd, chat, dia: ctx.day }) },
+  semana: { lista: null, publicar: (tg, chat, _item, ctx) => comunidad.resumenSemana({ tg, redisCmd: ctx.redisCmd, chat, dia: ctx.day }) },
+  bienvenida: { lista: null, unaVez: true, publicar: (tg, chat) => comunidad.bienvenida({ tg, chat }) },
 };
 
 // Si se acaba una lista, NO se repite ninguna: no se publica y (si hay TELEGRAM_AVISO_CHAT, tu chat privado
@@ -104,10 +118,11 @@ async function handler(req, res){
   const def = TIPOS_VALIDOS[tipo];
 
   // Vercel o GitHub pueden lanzar lo mismo dos veces: con Redis, solo se publica la primera de cada día y tipo.
-  const marca = `telegram:publicado:${day}:${tipo}`;
+  // Algunos tipos (la bienvenida) se publican una sola vez en la vida del canal.
+  const marca = def.unaVez ? `telegram:publicado:siempre:${tipo}` : `telegram:publicado:${day}:${tipo}`;
   try {
-    const first = await redisCmd(['SET', marca, '1', 'NX', 'EX', 172800]);
-    if (first === null){ res.status(200).json({ ok: true, skipped: `ya publicado hoy (${tipo})` }); return; }
+    const first = await redisCmd(['SET', marca, '1', 'NX', 'EX', def.unaVez ? 31536000 : 172800]);
+    if (first === null){ res.status(200).json({ ok: true, skipped: def.unaVez ? `ya publicado (${tipo})` : `ya publicado hoy (${tipo})` }); return; }
   } catch(e){ /* sin Redis: publica igualmente */ }
   const soltar = async n => { try { await redisCmd(['DEL', marca]); if (n && def.clave) await redisCmd(['DECR', def.clave]); } catch(_){} }; // así se puede reintentar
 
@@ -119,14 +134,17 @@ async function handler(req, res){
     if (number > def.lista.length){ await soltar(n); await agotado(res, tipo); return; }
     item = enLista(def.lista, number);
   }
+  let salida;
   try {
-    await def.publicar(tg, chat, item);
+    salida = await def.publicar(tg, chat, item, { day, redisCmd }) || {};
   } catch(e){
     await soltar(n);
     console.error('No se pudo publicar en Telegram:', e.message); // se ve en Vercel → Logs
     res.status(502).json({ error: e.message }); return;
   }
-  res.status(200).json({ ok: true, day, tipo, number: item ? item.number : undefined });
+  if (salida.saltar){ await soltar(n); res.status(200).json({ ok: true, skipped: salida.saltar }); return; }
+  if (salida.poll) await comunidad.guardarEncuesta(redisCmd, day, tipo, salida.poll);
+  res.status(200).json({ ok: true, day, tipo, number: item ? item.number : undefined, ...(salida.fijado !== undefined ? { fijado: salida.fijado } : {}) });
 }
 
 module.exports = handler;
