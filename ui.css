@@ -500,3 +500,13 @@ body.mode-pro .sheet .easy-extra, body.easy-more .sheet .easy-extra { display: b
 .cardslot.filled { padding: 0 !important; display: block !important; border: 0 !important; background: none !important; box-shadow: none !important; }
 #resultPanel .gauge-mark { top: -5px; bottom: auto; height: 20px; }
 #resultPanel .gauge-labels { margin-top: 12px; }
+/* Un solo botón principal por pantalla: en el resultado, «Analizar otra mano». */
+#nextStreetBtn, #demoOwnBtn, #trialSignup, #moreNudgePro { background: var(--c-s2) !important; color: var(--c-text) !important; border: 1px solid var(--c-line-3) !important; box-shadow: none !important; }
+#nextStreetBtn:hover, #demoOwnBtn:hover { background: var(--c-s3) !important; }
+#resultPanel .street-track span { background: none !important; border: 0 !important; color: var(--c-text-3); padding: 0 2px; font-size: var(--fs-12); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; box-shadow: none !important; }
+#resultPanel .street-track span.cur { color: var(--c-text) !important; }
+#resultPanel .street-track span.done { color: var(--c-text-2); }
+#resultPanel .street-track i { color: var(--c-text-3); font-style: normal; margin: 0 6px; }
+#resultPanel .nd-kicker { color: var(--c-text-3) !important; font-size: var(--fs-12); font-weight: 500; letter-spacing: 0.06em; }
+#resultPanel .nd-q { font-size: var(--fs-16); font-weight: 600; }
+#resultPanel .demo-next, #resultPanel .trial-nudge, #resultPanel .more-nudge { padding: var(--sp-4); font-size: var(--fs-14); color: var(--c-text-2); }

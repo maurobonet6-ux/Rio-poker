@@ -73,4 +73,18 @@ async function analizar(page){
   await page.waitForTimeout(300);
   return (await page.locator('#decisionBadge').innerText()).trim();
 }
-module.exports = { abrir, carta, ponerMano, ponerBote, analizar, ORIGIN };
+// Posiciones tocando los asientos de la mesa (tu sitio y, si se indica, el del rival).
+async function ponerPosiciones(page, yo, rival){
+  if (yo) await page.locator(`#mesaSeats [data-seat="${yo}"]`).click();
+  if (rival){
+    await page.locator('[data-seatmode="vill"]').click();
+    await page.locator(`#mesaSeats [data-seat="${rival}"]`).click();
+    await page.locator('[data-seatmode="hero"]').click();
+  }
+}
+// La hoja «Ajustar detalles» (rival, rivales, partida, secuencia, stacks…).
+async function abrirDetalles(page){ await page.locator('#moreToggle').click(); await page.locator('#detailsSheet').waitFor(); }
+async function cerrarDetalles(page){ await page.locator('#sheetDone').click(); await page.locator('#detailsSheet').waitFor({ state: 'hidden' }); }
+// La partida de práctica se abre desde Practicar.
+async function abrirPartida(page){ await page.goto(ORIGIN + '/app/#/practicar'); await page.locator('[data-pr="partida"]').click(); }
+module.exports = { abrir, carta, ponerMano, ponerBote, analizar, ponerPosiciones, abrirDetalles, cerrarDetalles, abrirPartida, ORIGIN };
