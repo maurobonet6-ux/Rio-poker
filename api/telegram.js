@@ -44,17 +44,22 @@ const tipoDelDia = day => TIPOS[new Date(day + 'T12:00:00Z').getUTCDay()];
 // Cada tipo: qué lista usa, cómo se numera en Redis y cómo se publica.
 const sinMarcas = s => String(s).replace(/\*/g, '');
 const recorta = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+// Telegram marca en verde o rojo lo que eliges y enseña la explicación (la misma para todos, el canal es anónimo).
+// Por eso la explicación empieza diciendo cuál era la correcta, y las opciones llevan letra para poder nombrarla.
+const LETRAS = 'ABCDEFGHIJ';
+const conLetras = opts => opts.map((o, i) => `${LETRAS[i]}) ${o}`);
+const explicacion = (ok, opts, why) => recorta(`✅ La correcta es la ${LETRAS[ok]}: ${opts[ok]}\n${why}`, 200);
 
 const TIPOS_VALIDOS = {
   quiz: { lista: QUIZZES, clave: 'telegram:numero', publicar: async (tg, chat, q) => {
-    await tg('sendPoll', { chat_id: chat, question: `🃏 Mano del día #${q.number}\n${q.q}`, options: q.opts.map(text => ({ text })), type: 'quiz', correct_option_id: q.ok, explanation: q.why, is_anonymous: true });
+    await tg('sendPoll', { chat_id: chat, question: `🃏 Mano del día #${q.number}\n${q.q}`, options: conLetras(q.opts).map(text => ({ text })), type: 'quiz', correct_option_id: q.ok, explanation: explicacion(q.ok, q.opts, q.why), is_anonymous: true });
     await tg('sendMessage', { chat_id: chat, text: `📖 ¿Has votado? Aquí lo tienes explicado a fondo:\n${SITE}${q.link}?utm_source=telegram`, link_preview_options: { is_disabled: true } });
   } },
   texto: { lista: TEXTOS, clave: 'telegram:textos', publicar: async (tg, chat, t) => {
     await tg('sendMessage', { chat_id: chat, text: `${t.texto}\n\n👉 ${SITE}${t.link}?utm_source=telegram` });
   } },
   mito: { lista: MITOS, clave: 'telegram:mitos', publicar: async (tg, chat, m) => {
-    await tg('sendPoll', { chat_id: chat, question: recorta(`🤔 ¿Mito o realidad?\n${sinMarcas(m.dice)}`, 300), options: [{ text: 'Mito ❌' }, { text: 'Realidad ✅' }], type: 'quiz', correct_option_id: m.verdad ? 1 : 0, explanation: recorta(sinMarcas(m.why), 200), is_anonymous: true });
+    await tg('sendPoll', { chat_id: chat, question: recorta(`🤔 ¿Mito o realidad?\n${sinMarcas(m.dice)}`, 300), options: [{ text: 'Es un mito' }, { text: 'Es realidad' }], type: 'quiz', correct_option_id: m.verdad ? 1 : 0, explanation: recorta(`✅ Es ${m.verdad ? 'REALIDAD' : 'un MITO'}.\n${sinMarcas(m.why)}`, 200), is_anonymous: true });
   } },
   encuesta: { lista: ENCUESTAS, clave: 'telegram:encuestas', publicar: async (tg, chat, e) => {
     await tg('sendPoll', { chat_id: chat, question: `🗳️ ${e.q}`, options: e.opts.map(text => ({ text })), type: 'regular', is_anonymous: true });
@@ -62,7 +67,7 @@ const TIPOS_VALIDOS = {
   // Pregunta nueva cada vez: no lleva cuenta ni se agota, porque la respuesta se calcula.
   generada: { lista: null, publicar: async (tg, chat) => {
     const q = pregunta();
-    await tg('sendPoll', { chat_id: chat, question: recorta(`🧮 ${sinMarcas(q.q)}`, 300), options: q.opts.map(text => ({ text: recorta(sinMarcas(text), 100) })), type: 'quiz', correct_option_id: q.ok, explanation: recorta(sinMarcas(q.why), 200), is_anonymous: true });
+    await tg('sendPoll', { chat_id: chat, question: recorta(`🧮 ${sinMarcas(q.q)}`, 300), options: conLetras(q.opts.map(o => recorta(sinMarcas(o), 90))).map(text => ({ text })), type: 'quiz', correct_option_id: q.ok, explanation: explicacion(q.ok, q.opts.map(sinMarcas), sinMarcas(q.why)), is_anonymous: true });
   } },
 };
 
