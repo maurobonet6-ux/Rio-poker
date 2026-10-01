@@ -2,6 +2,7 @@
 #  · Cada día a la hora del horario: hace el lote del día (VIDEOS_AL_DIA, por defecto 5) y te lo manda a tu chat privado,
 #    cada vídeo con botones ✅ Aprobar / ❌ Descartar. Nada se publica sin que lo apruebes.
 #  · A mano o desde n8n: lo mismo, pidiendo formato, tema y cantidad (o destino = canal para mandarlo directo al canal).
+# Cada vídeo se hace en su propia máquina de GitHub y todas a la vez: un lote de 10 tarda casi lo mismo que uno solo.
 # Secretos del repositorio: TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID (tu chat, también para los avisos de error)
 # y TELEGRAM_CANAL (el canal, por ejemplo @riopoker_es; el bot tiene que ser administrador).
 # Variable del repositorio (Settings → Secrets and variables → Actions → Variables): VIDEOS_AL_DIA, el número de vídeos diarios.
@@ -34,9 +35,45 @@ on:
         options: [chat, canal]
 
 jobs:
-  video:
+  # 1. Reparte el pedido en un vídeo por elemento (solo hace falta Node, no instala nada más).
+  preparar:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 5
+    outputs:
+      plan: ${{ steps.plan.outputs.plan }}
+      total: ${{ steps.plan.outputs.total }}
+      error: ${{ steps.plan.outputs.error }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: plan
+        env:
+          MANO: ${{ inputs.mano || 'auto' }}
+          CANTIDAD: ${{ inputs.cantidad || vars.VIDEOS_AL_DIA || '5' }}
+        run: |
+          set +e
+          salida=$(node marketing/videos/generar.js --plan "$MANO" "$CANTIDAD" 2>log.txt)
+          estado=$?
+          if [ "$estado" -eq 0 ]; then
+            echo "plan=$salida" >> "$GITHUB_OUTPUT"
+            echo "total=$(echo "$salida" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).include.length))')" >> "$GITHUB_OUTPUT"
+          else
+            echo "plan=" >> "$GITHUB_OUTPUT"
+            echo "error=$(tr '\n' ' ' < log.txt)" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+  # 2. Hace cada vídeo en su propia máquina, todas a la vez.
+  generar:
+    needs: preparar
+    if: needs.preparar.outputs.plan != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.preparar.outputs.plan) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,60 +81,93 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Guardar el navegador entre ejecuciones
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Instalar el navegador
         run: npx playwright install --with-deps chromium
       - name: Instalar numpy (sonido) y ffmpeg (vídeo)
         run: pip install numpy imageio-ffmpeg
-      - name: Generar el vídeo y mandarlo a Telegram
+      - name: Hacer el vídeo
         env:
-          MANO: ${{ inputs.mano || 'auto' }}
-          CANTIDAD: ${{ inputs.cantidad || vars.VIDEOS_AL_DIA || '5' }}
+          PEDIDO: ${{ matrix.pedido }}
+          N: ${{ matrix.n }}
+        run: |
+          set +e
+          mkdir -p marketing/videos/salida
+          node marketing/videos/generar.js "$PEDIDO" 1 2>&1 | tee log.txt
+          estado=${PIPESTATUS[0]}
+          if [ "$estado" -ne 0 ]; then
+            aviso=$(grep -E 'Mano no válida|no es válido' log.txt | tail -n1)
+            echo "Vídeo $N: ${aviso:-error inesperado}" > "marketing/videos/salida/error-$N.txt"
+          fi
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video-${{ matrix.n }}
+          path: |
+            marketing/videos/salida/rio-*.mp4
+            marketing/videos/salida/error-*.txt
+          retention-days: 3
+          if-no-files-found: ignore
+
+  # 3. Manda todos los vídeos a Telegram (con botones de aprobar) y avisa de lo que haya fallado.
+  enviar:
+    needs: [preparar, generar]
+    if: always() && needs.preparar.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/download-artifact@v4
+        if: needs.preparar.outputs.plan != ''
+        continue-on-error: true
+        with:
+          pattern: video-*
+          merge-multiple: true
+          path: salida
+      - name: Mandar a Telegram
+        env:
           TEXTO: ${{ inputs.texto }}
           BOT: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
           CANAL: ${{ secrets.TELEGRAM_CANAL }}
           DESTINO: ${{ inputs.destino || 'chat' }}
+          PEDIDOS: ${{ needs.preparar.outputs.total }}
+          ERROR_PLAN: ${{ needs.preparar.outputs.error }}
         run: |
           set +e
-          node marketing/videos/generar.js "$MANO" "$CANTIDAD" 2>&1 | tee log.txt
-          estado=${PIPESTATUS[0]}
           if [ -z "$BOT" ] || [ -z "$CHAT" ]; then
-            echo "::warning::Faltan los secretos TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID: el vídeo solo queda como artefacto."
-            [ "$estado" -eq 0 ] || exit "$estado"
-            exit 0
+            echo "::error::Faltan los secretos TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID"; exit 1
           fi
-          if [ "$estado" -eq 0 ]; then
-            destino="$CHAT"; pie="$TEXTO"
-            botones='{"inline_keyboard":[[{"text":"✅ Aprobar","callback_data":"ok"},{"text":"❌ Descartar","callback_data":"no"}]]}'
-            if [ "$DESTINO" = "canal" ]; then
-              destino="$CANAL"; botones=""
-              [ -n "$pie" ] || pie="🃏 ¿Qué harías tú? Mira qué dice RÍO y analiza tus manos gratis 👉 https://riopoker.es/tg"
-            fi
-            total=$(ls marketing/videos/salida/rio-*.mp4 | wc -l); n=0
-            for video in marketing/videos/salida/rio-*.mp4; do
-              n=$((n+1))
-              nombre=$(basename "$video" .mp4 | sed 's/^rio-//' | sed -E 's/^(auto|mano).*/mesa/; s/^([a-z]+)-.*/\1/')
-              if [ "$DESTINO" = "canal" ]; then leyenda="$pie"; else leyenda="🎬 ${n}/${total} · ${nombre}${pie:+ · $pie}"; fi
-              curl -sS -f "https://api.telegram.org/bot${BOT}/sendVideo" \
-                -F chat_id="$destino" -F video=@"$video" -F supports_streaming=true \
-                -F caption="${leyenda:0:1000}" ${botones:+-F reply_markup="$botones"} > /dev/null
-              sleep 2
-            done
-            if [ "$DESTINO" != "canal" ]; then
-              curl -sS -f "https://api.telegram.org/bot${BOT}/sendMessage" -d chat_id="$CHAT" \
-                --data-urlencode "text=✅ Listos los ${total} vídeos de hoy. Pulsa ✅ en los que quieras publicar." > /dev/null
-            fi
-          else
-            aviso=$(grep -E 'Mano no válida|no es válido' log.txt | tail -n1)
-            curl -sS -f "https://api.telegram.org/bot${BOT}/sendMessage" \
-              -d chat_id="$CHAT" --data-urlencode "text=⚠️ No se pudo hacer el vídeo: ${aviso:-error inesperado, mira los registros de GitHub Actions}" > /dev/null
-            exit "$estado"
+          aviso() { curl -sS -f "https://api.telegram.org/bot${BOT}/sendMessage" -d chat_id="$CHAT" --data-urlencode "text=$1" > /dev/null; }
+          if [ -n "$ERROR_PLAN" ]; then aviso "⚠️ No se pudo preparar el pedido: ${ERROR_PLAN}"; exit 0; fi
+
+          destino="$CHAT"; pie="$TEXTO"
+          botones='{"inline_keyboard":[[{"text":"✅ Aprobar","callback_data":"ok"},{"text":"❌ Descartar","callback_data":"no"}]]}'
+          if [ "$DESTINO" = "canal" ]; then
+            destino="$CANAL"; botones=""
+            [ -n "$pie" ] || pie="🃏 ¿Qué harías tú? Mira qué dice RÍO y analiza tus manos gratis 👉 https://riopoker.es/tg"
           fi
-      - name: Guardar el vídeo
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: video
-          path: marketing/videos/salida/rio-*.mp4
-          retention-days: 3
-          if-no-files-found: ignore
+          total=$(ls salida/rio-*.mp4 2>/dev/null | wc -l); n=0
+          for video in salida/rio-*.mp4; do
+            [ -e "$video" ] || break
+            n=$((n+1))
+            nombre=$(basename "$video" .mp4 | sed 's/^rio-//' | sed -E 's/^(auto|mano).*/mesa/; s/^([a-z]+)-.*/\1/')
+            if [ "$DESTINO" = "canal" ]; then leyenda="$pie"; else leyenda="🎬 ${n}/${total} · ${nombre}${pie:+ · $pie}"; fi
+            curl -sS -f "https://api.telegram.org/bot${BOT}/sendVideo" \
+              -F chat_id="$destino" -F video=@"$video" -F supports_streaming=true \
+              -F caption="${leyenda:0:1000}" ${botones:+-F reply_markup="$botones"} > /dev/null
+            sleep 2
+          done
+
+          # Avisos privados (nunca al canal): vídeos que no se pudieron hacer
+          errores=$(cat salida/error-*.txt 2>/dev/null)
+          faltan=$(( ${PEDIDOS:-0} - total ))
+          if [ "$faltan" -gt 0 ]; then
+            aviso "⚠️ Se pidieron ${PEDIDOS} vídeos y llegaron ${total}.${errores:+ $errores}"
+          elif [ "$DESTINO" != "canal" ] && [ "$total" -gt 0 ]; then
+            aviso "✅ Listos los ${total} vídeos de hoy. Pulsa ✅ en los que quieras publicar."
+          fi
+          [ "$total" -gt 0 ] || exit 1

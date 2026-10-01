@@ -1,19 +1,25 @@
-// Función serverless de Vercel: publica en el canal de Telegram según el día de la semana (hora de España):
-//   quiz  → pregunta del día (encuesta en modo cuestionario + enlace a la página que la explica)
-//   texto → un dato útil de lib/telegram-textos.js con el enlace a la web
-//   video → no publica nada aquí: el vídeo lo manda GitHub Actions (.github/workflows/video.yml)
-// La lanza cada día el cron de vercel.json; también se puede lanzar a mano desde
-// Vercel → Settings → Cron Jobs → Run.
+// Función serverless de Vercel: publica en el canal de Telegram. Tipos de publicación:
+//   quiz     → pregunta del día (encuesta en modo cuestionario + enlace a la página que la explica), en orden
+//   texto    → un dato útil de lib/telegram-textos.js con el enlace a la web, en orden
+//   mito     → «¿Mito o realidad?» como cuestionario de 2 opciones, en orden (lib/poker-mitos.js)
+//   generada → cuestionario con una pregunta de cuentas generada y CALCULADA (lib/poker-preguntas.js): nunca se repite
+//   encuesta → encuesta de opinión sin respuesta correcta (lib/telegram-encuestas.js), en orden
+// Sin parámetro, lo lanza el cron de vercel.json (cada día) y publica quiz o texto según el día de la semana.
+// Con ?tipo=mito (o generada, encuesta, quiz, texto) lo lanza a otras horas GitHub Actions (.github/workflows/canal.yml),
+// porque el plan de Vercel solo permite un horario al día.
 //
 // Variables de entorno necesarias en Vercel:
 //   TELEGRAM_AVISO_CHAT (opcional) tu chat privado con el bot, para avisarte si se acaban las ideas nuevas
 //   TELEGRAM_BOT_TOKEN  el token que da @BotFather (el bot tiene que ser administrador del canal)
 //   TELEGRAM_CHANNEL    el canal, por ejemplo @riopoker
-//   CRON_SECRET         cualquier clave larga; Vercel la manda al lanzar el cron
-// Opcional: UPSTASH_REDIS_REST_URL / _TOKEN, para no publicar dos veces el mismo día.
+//   CRON_SECRET         cualquier clave larga; Vercel la manda al lanzar el cron (la misma va en GitHub para canal.yml)
+// Opcional: UPSTASH_REDIS_REST_URL / _TOKEN, para no publicar dos veces lo mismo y llevar la cuenta en orden.
 
 const QUIZZES = require('../lib/telegram-quizzes');
 const TEXTOS = require('../lib/telegram-textos');
+const ENCUESTAS = require('../lib/telegram-encuestas');
+const { MITOS } = require('../lib/poker-mitos');
+const { pregunta } = require('../lib/poker-preguntas');
 const { redisCmd } = require('../lib/redis');
 
 const SITE = 'https://riopoker.es';
@@ -23,25 +29,45 @@ const START = Date.UTC(2026, 9, 1); // sin Redis, la numeración cuenta días de
 function today(now = new Date()){
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
 }
-// La publicación nº 1 es la primera pregunta de la lista, la nº 2 la segunda… y al acabar vuelve a empezar.
-function quizNumber(number){
-  const i = (((number - 1) % QUIZZES.length) + QUIZZES.length) % QUIZZES.length;
-  return { number, ...QUIZZES[i] };
-}
-const quizForDay = day => quizNumber(Math.max(1, Math.floor((Date.parse(day + 'T00:00:00Z') - START) / 86400000) + 1));
+const diasDesdeInicio = day => Math.max(1, Math.floor((Date.parse(day + 'T00:00:00Z') - START) / 86400000) + 1);
 
-// Qué toca cada día de la semana (0 = domingo … 6 = sábado). Los jueves y sábados toca vídeo.
-const TIPOS = ['quiz', 'quiz', 'texto', 'quiz', 'video', 'texto', 'video'];
+// La publicación nº 1 es la primera de la lista, la nº 2 la segunda… Si el número pasa del final, `agotado` (no se repite nada).
+const enLista = (lista, number) => ({ number, ...lista[(((number - 1) % lista.length) + lista.length) % lista.length] });
+const quizNumber = number => enLista(QUIZZES, number);
+const textoNumber = number => enLista(TEXTOS, number);
+const quizForDay = day => quizNumber(diasDesdeInicio(day));
+
+// Qué toca cada día de la semana (0 = domingo … 6 = sábado) cuando el cron diario no trae tipo.
+const TIPOS = ['quiz', 'texto', 'quiz', 'texto', 'quiz', 'texto', 'quiz'];
 const tipoDelDia = day => TIPOS[new Date(day + 'T12:00:00Z').getUTCDay()];
-// Mismo reparto en orden y vuelta a empezar, como las preguntas.
-function textoNumber(number){
-  const i = (((number - 1) % TEXTOS.length) + TEXTOS.length) % TEXTOS.length;
-  return { number, ...TEXTOS[i] };
-}
-const textoForDay = day => textoNumber(Math.max(1, Math.floor((Date.parse(day + 'T00:00:00Z') - START) / 86400000) + 1));
 
-// Si se acaba la lista de preguntas o de textos, NO se repite ninguna: no se publica y (si hay
-// TELEGRAM_AVISO_CHAT, tu chat privado con el bot) se te avisa de que hay que añadir ideas nuevas.
+// Cada tipo: qué lista usa, cómo se numera en Redis y cómo se publica.
+const sinMarcas = s => String(s).replace(/\*/g, '');
+const recorta = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+
+const TIPOS_VALIDOS = {
+  quiz: { lista: QUIZZES, clave: 'telegram:numero', publicar: async (tg, chat, q) => {
+    await tg('sendPoll', { chat_id: chat, question: `🃏 Mano del día #${q.number}\n${q.q}`, options: q.opts.map(text => ({ text })), type: 'quiz', correct_option_id: q.ok, explanation: q.why, is_anonymous: true });
+    await tg('sendMessage', { chat_id: chat, text: `📖 ¿Has votado? Aquí lo tienes explicado a fondo:\n${SITE}${q.link}?utm_source=telegram`, link_preview_options: { is_disabled: true } });
+  } },
+  texto: { lista: TEXTOS, clave: 'telegram:textos', publicar: async (tg, chat, t) => {
+    await tg('sendMessage', { chat_id: chat, text: `${t.texto}\n\n👉 ${SITE}${t.link}?utm_source=telegram` });
+  } },
+  mito: { lista: MITOS, clave: 'telegram:mitos', publicar: async (tg, chat, m) => {
+    await tg('sendPoll', { chat_id: chat, question: recorta(`🤔 ¿Mito o realidad?\n${sinMarcas(m.dice)}`, 300), options: [{ text: 'Mito ❌' }, { text: 'Realidad ✅' }], type: 'quiz', correct_option_id: m.verdad ? 1 : 0, explanation: recorta(sinMarcas(m.why), 200), is_anonymous: true });
+  } },
+  encuesta: { lista: ENCUESTAS, clave: 'telegram:encuestas', publicar: async (tg, chat, e) => {
+    await tg('sendPoll', { chat_id: chat, question: `🗳️ ${e.q}`, options: e.opts.map(text => ({ text })), type: 'regular', is_anonymous: true });
+  } },
+  // Pregunta nueva cada vez: no lleva cuenta ni se agota, porque la respuesta se calcula.
+  generada: { lista: null, publicar: async (tg, chat) => {
+    const q = pregunta();
+    await tg('sendPoll', { chat_id: chat, question: recorta(`🧮 ${sinMarcas(q.q)}`, 300), options: q.opts.map(text => ({ text: recorta(sinMarcas(text), 100) })), type: 'quiz', correct_option_id: q.ok, explanation: recorta(sinMarcas(q.why), 200), is_anonymous: true });
+  } },
+};
+
+// Si se acaba una lista, NO se repite ninguna: no se publica y (si hay TELEGRAM_AVISO_CHAT, tu chat privado
+// con el bot) se te avisa de que hay que añadir ideas nuevas.
 async function agotado(res, que){
   const aviso = process.env.TELEGRAM_AVISO_CHAT;
   try {
@@ -67,57 +93,35 @@ async function handler(req, res){
   if (!process.env.TELEGRAM_BOT_TOKEN || !chat){ res.status(500).json({ error: 'Faltan TELEGRAM_BOT_TOKEN o TELEGRAM_CHANNEL en Vercel' }); return; }
 
   const day = today();
-  const tipo = tipoDelDia(day);
-  if (tipo === 'video'){ res.status(200).json({ ok: true, skipped: 'hoy toca vídeo: lo publica GitHub Actions' }); return; }
-  // Vercel puede lanzar el cron dos veces: si hay Redis, solo publica la primera.
-  try {
-    const first = await redisCmd(['SET', `telegram:publicado:${day}`, '1', 'NX', 'EX', 172800]);
-    if (first === null){ res.status(200).json({ ok: true, skipped: 'ya publicado hoy' }); return; }
-  } catch(e){ /* sin Redis: publica igualmente */ }
+  const pedido = String((req.query && req.query.tipo) || '');
+  if (pedido && !TIPOS_VALIDOS[pedido]){ res.status(400).json({ error: 'Tipo no válido', validos: Object.keys(TIPOS_VALIDOS) }); return; }
+  const tipo = pedido || tipoDelDia(day);
+  const def = TIPOS_VALIDOS[tipo];
 
-  if (tipo === 'texto'){
-    let n = null;
-    try { n = await redisCmd(['INCR', 'telegram:textos']); } catch(e){}
-    const t = n ? textoNumber(n) : textoForDay(day);
-    if (t.number > TEXTOS.length){
-      try { await redisCmd(['DEL', `telegram:publicado:${day}`]); if (n) await redisCmd(['DECR', 'telegram:textos']); } catch(_){}
-      await agotado(res, 'texto'); return;
-    }
-    try {
-      await tg('sendMessage', { chat_id: chat, text: `${t.texto}\n\n👉 ${SITE}${t.link}?utm_source=telegram` });
-    } catch(e){
-      try { await redisCmd(['DEL', `telegram:publicado:${day}`]); if (n) await redisCmd(['DECR', 'telegram:textos']); } catch(_){}
-      console.error('No se pudo publicar en Telegram:', e.message);
-      res.status(502).json({ error: e.message }); return;
-    }
-    res.status(200).json({ ok: true, day, tipo, number: t.number });
-    return;
-  }
+  // Vercel o GitHub pueden lanzar lo mismo dos veces: con Redis, solo se publica la primera de cada día y tipo.
+  const marca = `telegram:publicado:${day}:${tipo}`;
+  try {
+    const first = await redisCmd(['SET', marca, '1', 'NX', 'EX', 172800]);
+    if (first === null){ res.status(200).json({ ok: true, skipped: `ya publicado hoy (${tipo})` }); return; }
+  } catch(e){ /* sin Redis: publica igualmente */ }
+  const soltar = async n => { try { await redisCmd(['DEL', marca]); if (n && def.clave) await redisCmd(['DECR', def.clave]); } catch(_){} }; // así se puede reintentar
 
   // Con Redis, la numeración empieza en #1 el primer día que publica el bot; sin Redis, cuenta días.
-  let number = null;
-  try { number = await redisCmd(['INCR', 'telegram:numero']); } catch(e){}
-  const quiz = number ? quizNumber(number) : quizForDay(day);
-  if (quiz.number > QUIZZES.length){
-    try { await redisCmd(['DEL', `telegram:publicado:${day}`]); if (number) await redisCmd(['DECR', 'telegram:numero']); } catch(_){}
-    await agotado(res, 'quiz'); return;
+  let n = null, item = null;
+  if (def.lista){
+    try { n = await redisCmd(['INCR', def.clave]); } catch(e){}
+    const number = n || diasDesdeInicio(day);
+    if (number > def.lista.length){ await soltar(n); await agotado(res, tipo); return; }
+    item = enLista(def.lista, number);
   }
   try {
-    await tg('sendPoll', {
-      chat_id: chat, question: `🃏 Mano del día #${quiz.number}\n${quiz.q}`,
-      options: quiz.opts.map(text => ({ text })), type: 'quiz', correct_option_id: quiz.ok,
-      explanation: quiz.why, is_anonymous: true
-    });
-    await tg('sendMessage', {
-      chat_id: chat, text: `📖 ¿Has votado? Aquí lo tienes explicado a fondo:\n${SITE}${quiz.link}?utm_source=telegram`,
-      link_preview_options: { is_disabled: true }
-    });
+    await def.publicar(tg, chat, item);
   } catch(e){
-    try { await redisCmd(['DEL', `telegram:publicado:${day}`]); if (number) await redisCmd(['DECR', 'telegram:numero']); } catch(_){} // así se puede reintentar
+    await soltar(n);
     console.error('No se pudo publicar en Telegram:', e.message); // se ve en Vercel → Logs
     res.status(502).json({ error: e.message }); return;
   }
-  res.status(200).json({ ok: true, day, tipo, number: quiz.number });
+  res.status(200).json({ ok: true, day, tipo, number: item ? item.number : undefined });
 }
 
 module.exports = handler;
@@ -126,3 +130,4 @@ module.exports.quizNumber = quizNumber;
 module.exports.tipoDelDia = tipoDelDia;
 module.exports.textoNumber = textoNumber;
 module.exports.today = today;
+module.exports.TIPOS_VALIDOS = TIPOS_VALIDOS;

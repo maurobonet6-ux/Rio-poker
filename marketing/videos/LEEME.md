@@ -82,19 +82,32 @@ El workflow `.github/workflows/video.yml` ejecuta todo en GitHub Actions y manda
 `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID` (Settings → Secrets and variables → Actions). n8n lo lanza con la API de GitHub
 (`POST /repos/<dueño>/Rio-poker/actions/workflows/video.yml/dispatches`, con `ref: main` e `inputs.mano` = el JSON como texto).
 
-## Qué se publica en el canal de Telegram (rotación semanal)
+## Qué se publica en el canal de Telegram
 
-| Día | Qué | Quién lo publica |
+El bot (`api/telegram.js`) tiene cinco tipos de publicación. Todos van **en orden y sin repetir**: al acabarse una lista, ese tipo deja de publicarse
+(en vez de volver a empezar) y, si defines `TELEGRAM_AVISO_CHAT` en Vercel (tu chat privado con el bot), te avisa una vez.
+
+| Tipo | Qué es | De dónde sale |
 | --- | --- | --- |
-| Lunes, miércoles, domingo | Pregunta del día (quiz) | Vercel, `api/telegram.js` |
-| Martes, viernes | Texto con un dato y el enlace a la web (`lib/telegram-textos.js`) | Vercel, `api/telegram.js` |
-| Jueves, sábado | Vídeo «¿Qué harías tú?» con una mano al azar | GitHub Actions, `.github/workflows/video.yml` |
+| `quiz` | Pregunta del día (cuestionario) + enlace a la web | `lib/telegram-quizzes.js` |
+| `texto` | Un dato útil con el enlace a la web | `lib/telegram-textos.js` |
+| `mito` | «¿Mito o realidad?» como cuestionario de 2 opciones | `lib/poker-mitos.js` |
+| `generada` | Cuestionario con una pregunta de cuentas generada y calculada; **nunca se acaba** | `lib/poker-preguntas.js` |
+| `encuesta` | Encuesta de opinión, sin respuesta correcta | `lib/telegram-encuestas.js` |
 
-- **No se repite nada**: las preguntas y los textos salen en orden y, al acabarse la lista, ese tipo deja de publicarse
-  (en vez de volver a empezar). Si defines `TELEGRAM_AVISO_CHAT` en Vercel (tu chat privado con el bot), te avisa una vez.
-  Para seguir, hay que añadir ideas nuevas a `lib/telegram-quizzes.js` o `lib/telegram-textos.js`.
-- Para el vídeo del canal, añade el secreto `TELEGRAM_CANAL` (por ejemplo `@riopoker_es`) en GitHub; el bot tiene que ser administrador del canal.
-- Desde Actions o n8n también se puede mandar un vídeo al canal con `destino = canal`.
+**Horarios** (hora de España en verano; en invierno es una hora antes):
+
+| Hora | Qué | Quién lo lanza |
+| --- | --- | --- |
+| 10:00 | `mito` | GitHub Actions, `.github/workflows/canal.yml` |
+| 13:00 | `generada` | GitHub Actions |
+| 17:30 | `encuesta` | GitHub Actions |
+| 19:00 | `quiz` o `texto` según el día (quiz dom, mar, jue, sáb; texto lun, mié, vie) | Vercel, cron de `vercel.json` |
+| cuando apruebes | el vídeo que pulses con ✅ | n8n |
+
+`canal.yml` necesita el secreto de GitHub `CRON_SECRET`, con el mismo valor que `CRON_SECRET` en Vercel. Se puede probar a mano desde
+Actions → Canal de Telegram → Run workflow, eligiendo el tipo. Para añadir ideas, edita el archivo de `lib/` del tipo correspondiente.
+- Para el vídeo del canal, el bot de n8n tiene que ser administrador del canal.
 
 ## Formatos de vídeo y lote diario
 
@@ -124,3 +137,12 @@ Los textos de mito y lista salen de las páginas de la web.
 **Lote diario con aprobación:** `.github/workflows/video.yml` se lanza cada día (cron `0 7 * * *` = 9:00 en España en verano), hace
 `VIDEOS_AL_DIA` vídeos (variable del repositorio; por defecto 5) y los manda a tu chat privado, cada uno con botones ✅ Aprobar / ❌ Descartar.
 Nada llega al canal sin que lo apruebes. Para cambiar la hora, edita el `cron` (está en UTC); para cambiar la cantidad, la variable `VIDEOS_AL_DIA`.
+
+## Velocidad
+
+- **Varios navegadores a la vez** (`motor.js`, `renderizarMudo`): los fotogramas de un vídeo se reparten entre tantos navegadores como núcleos tenga la máquina
+  (`TRABAJADORES=1` para ir de uno en uno). El resultado es visualmente idéntico (similitud 0,9999) y tarda entre 1,5 y 2 veces menos.
+- **Análisis rápido de la mano**: `generar.js` usa `SOLO_ANALISIS=1`, que se salta las capturas carta a carta (solo las necesita el vídeo «Qué es RÍO»).
+- **Cada vídeo en su máquina**: el workflow `video.yml` tiene tres tareas. `preparar` reparte el pedido (`node generar.js --plan "<pedido>" <cantidad>`),
+  `generar` hace un vídeo por máquina, todas a la vez (hasta 20), y `enviar` los manda juntos a Telegram. Un lote de 10 tarda casi lo mismo que uno solo.
+  Si alguno falla, se avisa en tu chat privado con el motivo y los demás llegan igualmente.
