@@ -284,7 +284,7 @@
 
   // ---------- Pintar la mesa ----------
   let timer = null, anim = { cartas: false, calle: false };
-  function carta(c, cls){ return c ? E.cardHTML(c, true).replace('mini-card big', 'mini-card big g-card ' + (cls || '')) : `<span class="mini-card big g-card g-back ${cls || ''}"></span>`; }
+  function carta(c, cls){ return c ? E.cardHTML(c, true).replace('class="pc ', 'class="pc g-card ' + (cls || '') + ' ') : `<span class="mini-card big g-card g-back ${cls || ''}"></span>`; }
   function pinta(){
     if (!H) return;
     anim = { cartas: H.nuevo.cartas, calle: H.nuevo.calle }; H.nuevo = { cartas: false, calle: false };
@@ -352,7 +352,7 @@
         ${o.puedePasar ? '<button type="button" class="g-b check" data-act="check">Pasar <kbd>C</kbd></button>'
           : `<button type="button" class="g-b call" data-act="call">Pagar ${fmt(o.toCall)}${o.toCall >= hero.stack ? ' (todo)' : ''} <kbd>C</kbd></button>`}
         ${o.puedeSubir ? `<button type="button" class="g-b raise" data-act="raise"><span id="gRaiseLbl"></span> <kbd>R</kbd></button>` : ''}
-        <button type="button" class="g-b hint" data-act="hint" title="Ver qué haría RÍO">💡</button>
+        <button type="button" class="g-b hint" data-act="hint" title="Ver qué haría RÍO" aria-label="Ver qué haría RÍO"><svg class="i"><use href="#i-sparkles"/></svg></button>
       </div>`;
     const amount = $('gAmount');
     const etiqueta = () => { const lbl = $('gRaiseLbl'); if (!lbl) return; const v = Number(amount.value);

@@ -579,7 +579,7 @@ test('historial interactivo: abrir una mano, ver su ficha y reanalizarla sin dup
   await analizar(page);
   await page.locator('#historyList .history-item').first().click();
   await expect(page.locator('#helpModal.show')).toBeVisible();
-  await expect(page.locator('#helpBody .hh-cards .mini-card')).toHaveCount(5);
+  await expect(page.locator('#helpBody .hh-cards .pc')).toHaveCount(5);
   await expect(page.locator('#helpBody')).toContainText('RÍO recomienda');
   await page.locator('#hhRe').click();
   await expect(page.locator('#helpModal.show')).toHaveCount(0);

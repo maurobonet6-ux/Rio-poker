@@ -39,3 +39,37 @@ test('lista · facil', async ({ page }, info) => {
   await ponerBote(page, 30, 10);
   await foto(page, `${info.project.name}-lista-2-mano`, false);
 });
+
+test('secciones', async ({ page }, info) => {
+  const d = info.project.name;
+  await preparar(page, 'facil');
+  for (const [m, b, bote, pagar] of [[['As', '5s'], ['Ks', '8d', '3s'], 30, 10], [['7c', '2d'], ['Ah', 'Kd', 'Qh'], 40, 20], [['Qs', 'Qh'], [], 9, 4]]){
+    await ponerMano(page, m, b); await ponerBote(page, bote, pagar); await analizar(page);
+    const otro = m[0] === 'As' ? 'CALL' : 'FOLD';
+    if (await page.locator(`#youDid [data-yd="${otro}"]`).count()) await page.locator(`#youDid [data-yd="${otro}"]`).click();
+    await page.locator('#againBtn').click();
+  }
+  for (const v of ['practicar', 'aprender', 'progreso', 'historial', 'cuenta']){
+    await page.goto('http://rio.test/app/#/' + v);
+    await page.waitForTimeout(500);
+    await foto(page, `${d}-vista-${v}`, false);
+  }
+});
+
+test('partida y entrenamiento', async ({ page }, info) => {
+  const d = info.project.name;
+  await preparar(page, 'facil', { storage: { rio_pp_speed: 'rapida' } });
+  await page.goto('http://rio.test/app/#/practicar');
+  await page.locator('[data-pr="train"]').click();
+  await page.waitForTimeout(600);
+  await foto(page, `${d}-entreno`, false);
+  await page.goto('http://rio.test/app/#/practicar'); await page.reload();
+  await page.locator('[data-pr="partida"]').click();
+  await page.waitForTimeout(1500);
+  await foto(page, `${d}-partida`, false);
+  await page.goto('http://rio.test/app/#/cuenta'); await page.reload();
+  await page.waitForTimeout(400);
+  await page.evaluate(() => document.getElementById('navPlan').click());
+  await page.waitForTimeout(500);
+  await foto(page, `${d}-planes`, false);
+});
