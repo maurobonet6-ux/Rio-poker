@@ -94,7 +94,7 @@ jobs:
           path: marketing/videos/modelos
           key: kokoro-v1.0
       - name: Instalar numpy (sonido), ffmpeg (vídeo) y la voz en off (Kokoro)
-        run: pip install numpy imageio-ffmpeg kokoro-onnx soundfile
+        run: pip install numpy imageio-ffmpeg kokoro-onnx soundfile edge-tts
       - name: Hacer el vídeo
         env:
           PEDIDO: ${{ matrix.pedido }}

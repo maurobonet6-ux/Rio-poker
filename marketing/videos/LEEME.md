@@ -165,3 +165,5 @@ Nada llega al canal sin que lo apruebes. Para cambiar la hora, edita el `cron` (
 - **Si una palabra suena mal** (siglas, palabras inglesas del póker): se corrige en `pronunciacion.js`, en la lista `SIGLAS` (escribe cómo se pronuncia).
 - **Fondos reales**: ver `fondos/LEEME.md`. El clip va detrás de la animación (no cuesta tiempo extra de verdad: ~25 s en lugar de ~14 s por vídeo corto).
 - `DEBUG_TIEMPOS=1` muestra cuánto tarda cada fase.
+
+**Voz principal: Edge TTS** (gratis, voces neuronales de Microsoft, sin clave; `es-ES-ElviraNeural` por defecto). Si falla, se usa Kokoro automáticamente. Para elegir otra, variable `VOZ` = `es-ES-AlvaroNeural`, `es-ES-XimenaNeural`… (o `ef_dora`/`em_alex`/`em_santa` para forzar Kokoro).
