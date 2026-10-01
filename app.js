@@ -212,6 +212,14 @@
       statsBtn.addEventListener('click', () => openAdminStats());
       document.getElementById('navInbox').insertAdjacentElement('beforebegin', statsBtn);
     } else if (!admin && statsBtn) statsBtn.remove();
+    let contentBtn = document.getElementById('navAdminContent');
+    if (admin && !contentBtn){
+      contentBtn = document.createElement('button');
+      contentBtn.type = 'button'; contentBtn.className = 'sidebar-link'; contentBtn.id = 'navAdminContent';
+      contentBtn.innerHTML = '<span class="ic">📬</span><span class="lbl">Contenidos</span><span class="admin-badge">ADMIN</span>';
+      contentBtn.addEventListener('click', () => openAdminContent());
+      document.getElementById('navInbox').insertAdjacentElement('beforebegin', contentBtn);
+    } else if (!admin && contentBtn) contentBtn.remove();
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
     document.getElementById('sidebarAccount').textContent = logged ? storageGet('rio_email', '') : 'Sin cuenta · tus datos solo en este navegador';
@@ -2353,6 +2361,49 @@
       renderProductStats(document.getElementById('prodStats'));
     } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar las estadísticas.')}</p>`; }
   }
+  // ---- Contenidos (cola del Content Engine; solo administrador) ----
+  // Lo normal es aprobar en Telegram a las 12:00; aquí se ve todo junto y se puede aprobar o descartar también.
+  const CT_ESTADOS = [['READY_FOR_REVIEW', 'Por revisar'], ['APPROVED', 'Aprobados'], ['SCHEDULED', 'Programados'], ['PUBLISHED', 'Publicados'],
+    ['IDEA', 'Ideas'], ['REJECTED', 'Descartados'], ['FAILED', 'Fallidos']];
+  const CT_RED = { tiktok: '🎵 TikTok', instagram: '📸 Instagram', youtube: '▶️ YouTube', telegram: '💬 Telegram', seo: '🔎 Web/SEO', otro: 'Otro' };
+  async function openAdminContent(estado){
+    closeSidebar();
+    const body = openModal('📬 Contenidos', '<p class="hint">Cargando…</p>', { wide: true });
+    const ver = estado || 'READY_FOR_REVIEW';
+    try {
+      const [rr, rl] = await Promise.all([fetch('/api/content?vista=resumen', { headers: authHeaders() }), fetch('/api/content?limit=40&status=' + ver, { headers: authHeaders() })]);
+      const r = await rr.json(), lista = await rl.json();
+      if (!rr.ok) throw new Error(r.error);
+      if (!rl.ok) throw new Error(lista.error);
+      const chips = CT_ESTADOS.map(([k, l]) => `<button type="button" class="tt-chip${k === ver ? ' on' : ''}" data-ct="${k}">${l} · ${r.porEstado[k] || 0}</button>`).join('');
+      const res = (p) => p.resultados ? `${p.resultados.usuarios} usuarios · ${p.resultados.cuentas} cuentas · ${p.resultados.analizaron} analizaron · ${p.resultados.pro} PRO` : '';
+      const met = (m) => m && m.views !== undefined ? ` · ${m.views} visualizaciones${m.likes !== undefined ? ', ' + m.likes + ' me gusta' : ''}` : '';
+      const piezas = lista.map(p => `<div class="ct-item">
+          <div class="ct-top"><b>#${escHTML(p.id)}</b> · ${CT_RED[p.platform] || escHTML(p.platform)} · ${escHTML(p.format)} · ${escHTML(p.category)}</div>
+          ${p.hook ? `<div class="ct-hook">${escHTML(p.hook)}</div>` : ''}
+          ${p.caption ? `<details><summary>Texto</summary><p class="hint" style="white-space:pre-wrap;">${escHTML(p.caption)}</p></details>` : ''}
+          ${p.script ? `<details><summary>Guion</summary><p class="hint" style="white-space:pre-wrap;">${escHTML(p.script)}</p></details>` : ''}
+          ${p.why ? `<p class="hint">Por qué: ${escHTML(p.why)}</p>` : ''}
+          <p class="hint">${escHTML(p.link)}${res(p) ? ' · ' + res(p) : ''}${met(p.metrics)}</p>
+          ${p.status === 'READY_FOR_REVIEW' ? `<div style="display:flex; gap:8px;"><button type="button" class="btn-primary" data-ok="${escHTML(p.id)}">✅ Aprobar</button><button type="button" class="btn-secondary" data-no="${escHTML(p.id)}">❌ Descartar</button></div>` : ''}
+        </div>`).join('');
+      body.innerHTML = `
+        <p class="hint">Esta semana: <b>${r.creadasSemana}</b> creados · <b>${r.publicadasSemana}</b> publicados. Cada pieza lleva su enlace <b>riopoker.es/v/&lt;id&gt;</b> para saber qué trae usuarios.</p>
+        <div class="train-topics" role="group" aria-label="Estado">${chips}</div>
+        ${piezas || '<p class="hint">No hay contenidos en este estado.</p>'}
+        ${r.mejores.length ? `<div class="sub-title" style="margin-top:16px;">Los que más usuarios traen</div>
+          <div class="stats-scroll"><table class="stats-tbl"><thead><tr><th>#</th><th>Red</th><th>Gancho</th><th>Usuarios</th><th>Analizaron</th><th>PRO</th></tr></thead>
+          <tbody>${r.mejores.map(p => `<tr><td>${escHTML(p.id)}</td><td>${CT_RED[p.platform] || escHTML(p.platform)}</td><td>${escHTML(p.hook || '')}</td><td>${p.resultados.usuarios}</td><td>${p.resultados.analizaron}</td><td>${p.resultados.pro}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
+      body.querySelectorAll('[data-ct]').forEach(b => b.addEventListener('click', () => openAdminContent(b.dataset.ct)));
+      const cambiar = async (id, status) => {
+        await fetch('/api/content', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ accion: 'actualizar', id, status }) });
+        openAdminContent(ver);
+      };
+      body.querySelectorAll('[data-ok]').forEach(b => b.addEventListener('click', () => cambiar(b.dataset.ok, 'APPROVED')));
+      body.querySelectorAll('[data-no]').forEach(b => b.addEventListener('click', () => cambiar(b.dataset.no, 'REJECTED')));
+    } catch(e){ body.innerHTML = `<p>${escHTML(e.message || 'No se pudieron cargar los contenidos.')}</p>`; }
+  }
+
   // Uso de RÍO (analítica de producto, sin datos personales): embudo, activos, retención, contenidos y errores comunes.
   const EV_ES = { app_open: 'Abre RÍO', landing_view: 'Ve la landing', signup_started: 'Pide código', signup_completed: 'Entra en su cuenta',
     analysis_started: 'Pulsa Analizar', analysis_completed: 'Analiza una mano', manual_analysis: '…a mano', screenshot_analysis: '…por captura',
