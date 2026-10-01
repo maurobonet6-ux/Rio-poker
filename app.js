@@ -1524,29 +1524,19 @@
     'CALL>RAISE': 'Pagas cuando convenía subir', 'RAISE>CALL': 'Subes cuando bastaba con pagar',
     'BET>CHECK': 'Apuestas cuando convenía pasar', 'RAISE>FOLD': 'Subes con manos para tirar'
   };
-  function openStats(){
+  // Datos de "Mi progreso": salen de lo que ya guarda RÍO (rio_reviews, rio_train_log y rio_history).
+  function progressData(){
     const reviews = Object.values(storageGet('rio_reviews', {}));
     const hand = reviews.flatMap(x => x.rows.map(r => ({ ...r, t: x.t })));
     const train = storageGet('rio_train_log', []);
     const hist = getHistory();
     const all = [...hand, ...train];
-    if (!all.length && !hist.length){
-      openModal('Tu progreso', `<p>Aún no hay datos. Se llenan de dos formas:</p><ul><li>Analizando tus manos (mejor con la <b>secuencia de apuestas</b> apuntada: así vemos qué hiciste tú).</li><li>Jugando al <b>modo entrenamiento</b>.</li></ul><button type="button" class="btn-primary" id="statsTrain" style="width:100%;">🎯 Empezar a entrenar</button>`)
-        .querySelector('#statsTrain').addEventListener('click', openTrainer);
-      return;
-    }
     const pct = (arr, g) => arr.length ? Math.round(arr.filter(r => r.g === g).length / arr.length * 100) : 0;
-    const fmt1 = (v) => (Math.round(v * 10) / 10).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-
-    // --- Tu progreso: manos analizadas, EV medio y qué te recomienda RÍO ---
     const evBB = hist.filter(h => typeof h.ev === 'number' && h.evU === 'BB').map(h => h.ev);
     const evAvg = evBB.length ? evBB.reduce((a, b) => a + b, 0) / evBB.length : null;
     const dec = { CALL: 0, RAISE: 0, FOLD: 0, CHECK: 0 };
     hist.forEach(h => { const k = h.decision === 'BET' ? 'RAISE' : h.decision; if (k in dec) dec[k]++; });
-    const decTotal = Object.values(dec).reduce((a, b) => a + b, 0) || 1;
-    const decRow = (k, label) => `<div class="final-row"><span>${label}</span><div class="bar"><i style="width:${Math.max(dec[k] ? 2 : 0, dec[k] / decTotal * 100)}%"></i></div><b>${Math.round(dec[k] / decTotal * 100)}%</b></div>`;
-
-    // --- Dónde pierdes más EV (estimado): agrupado por enfrentamiento, calle, bote con resubida y pagar en el river ---
+    // Dónde pierdes más EV (estimado): agrupado por enfrentamiento, calle, bote con resubida y pagar en el river
     const errs = hand.filter(r => r.g !== 'ok');
     const withLoss = errs.filter(r => typeof r.loss === 'number' && r.loss > 0);
     const groups = {};
@@ -1560,47 +1550,99 @@
     const topGroups = Object.entries(groups).sort((a, b) => b[1].loss - a[1].loss).slice(0, 5);
     const totalLoss = withLoss.reduce((a, r) => a + r.loss, 0);
     const raiseErrs = errs.filter(r => r.rec === 'RAISE' || r.act === 'RAISE').length;
-
-    // --- Errores más repetidos ---
+    // Errores más repetidos (los graves cuentan doble)
     const leaks = {};
     all.filter(r => r.g !== 'ok').forEach(r => { const k = r.act + '>' + r.rec; leaks[k] = (leaks[k] || 0) + (r.g === 'bad' ? 2 : 1); });
-    const topLeaks = Object.entries(leaks).sort((a, b) => b[1] - a[1]).slice(0, 3);
-
-    // --- Evolución: % de decisiones bien jugadas, últimas 4 semanas ---
+    const leakList = Object.entries(leaks).sort((a, b) => b[1] - a[1]);
+    // Evolución: % de decisiones bien jugadas, últimas 4 semanas
     const WEEK = 7 * 24 * 3600 * 1000, now = Date.now();
     const weeks = [3, 2, 1, 0].map(w => {
       const rs = hand.filter(r => r.t && now - r.t >= w * WEEK && now - r.t < (w + 1) * WEEK);
       return [w === 0 ? 'Esta semana' : w === 1 ? 'Semana pasada' : `Hace ${w} semanas`, rs.length, pct(rs, 'ok')];
     });
-
     const byStreet = STREET_NAMES.map((n, s) => { const rs = all.filter(r => r.s === s); return [n, rs.length, pct(rs, 'ok')]; });
-    const bars = (rows) => `<div class="finals">${rows.map(([n, c, p]) => `<div class="final-row"><span>${n} <small style="color:var(--cream-dim)">(${c})</small></span><div class="bar"><i style="width:${c ? Math.max(2, p) : 0}%"></i></div><b>${c ? p + '%' : '—'}</b></div>`).join('')}</div>`;
-
-    openModal('Tu progreso', `
-      <div class="stat-grid" style="margin-top:0; grid-template-columns:repeat(3,1fr);">
-        <div class="stat no-help"><b>${hist.length}</b><span>Manos analizadas</span></div>
-        <div class="stat no-help"><b style="color:${evAvg === null ? 'var(--cream)' : evAvg >= 0 ? 'var(--ok)' : 'var(--crimson)'}">${evAvg === null ? '—' : (evAvg >= 0 ? '+' : '') + fmt1(evAvg) + ' BB'}</b><span>EV medio</span></div>
-        <div class="stat no-help"><b style="color:var(--ok)">${pct(all, 'ok')}%</b><span>Decisiones bien jugadas</span></div>
-      </div>
-      ${evAvg === null && hist.length ? '<p class="hint" style="margin:6px 0 0;">El EV medio en ciegas grandes aparece cuando apuntas la secuencia de apuestas.</p>' : ''}
-      ${hist.length ? `<div class="sub-title">Lo que te recomienda RÍO</div><div class="finals">${decRow('CALL', 'Pagar')}${decRow('RAISE', 'Subir / apostar')}${decRow('FOLD', 'Tirar')}${decRow('CHECK', 'Pasar')}</div>` : ''}
-
-      <div class="sub-title">🔎 Dónde pierdes más EV <small style="color:var(--cream-dim); font-weight:500;">(estimado)</small></div>
-      ${topGroups.length ? `<p style="margin:0 0 8px;">En total, unas <b style="color:var(--crimson)">−${fmt1(totalLoss)} BB</b> en ${withLoss.length} decisiones mejorables.</p>
-        <div class="loss-list">${topGroups.map(([k, g]) => `<div class="loss-row"><span>${k}</span><b>−${fmt1(g.loss)} BB</b><small>${g.n} ${g.n === 1 ? 'vez' : 'veces'}</small></div>`).join('')}</div>`
-        : '<p style="margin:0;">Aún no hay errores de pagar, tirar, apostar o pasar con la secuencia apuntada. 👏</p>'}
-      ${raiseErrs ? `<p class="hint" style="margin:8px 0 0;">Además, <b>${raiseErrs}</b> ${raiseErrs === 1 ? 'decisión' : 'decisiones'} de subir mejorable${raiseErrs === 1 ? '' : 's'} (el EV al subir no se puede estimar bien, así que solo las contamos).</p>` : ''}
-
-      <div class="sub-title">Tus errores más repetidos</div>
-      ${topLeaks.length ? `<ol style="margin:0; padding-left:20px;">${topLeaks.map(([k]) => `<li>${LEAKS[k] || k.replace('>', ' en vez de ')}</li>`).join('')}</ol>` : '<p style="margin:0;">¡Ninguno por ahora! 👏</p>'}
-
-      <div class="sub-title">Tu evolución (% bien jugadas)</div>
-      ${bars(weeks)}
-      <div class="sub-title">Por calle (% bien jugadas)</div>
-      ${bars(byStreet)}
-      ${train.length ? `<div class="sub-title">Entrenamiento</div><p style="margin:0;">${train.length} manos · ${pct(train, 'ok')}% acertadas</p>` : ''}
-      <p class="hint" style="margin-top:14px;">El EV perdido es una estimación: depende de las manos que suponemos a tu rival. Solo cuenta las manos con la secuencia apuntada.</p>`, { wide: true });
+    return { hand, train, hist, all, pct, evAvg, dec, topGroups, totalLoss, withLoss, raiseErrs, leakList, weeks, byStreet };
   }
+  const leakText = (k) => LEAKS[k] || k.replace('>', ' en vez de ');
+  function progressHTML(){
+    const d = progressData();
+    const fmt1 = (v) => (Math.round(v * 10) / 10).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    if (!d.all.length && !d.hist.length){
+      return `<div class="pv-empty"><div class="pv-empty-ic">📈</div><h3>Aún no hay datos</h3>
+        <p>Tu progreso se llena solo de dos formas:</p>
+        <ul><li><b>Analizando tus manos</b> y diciendo qué hiciste tú (un toque después del resultado).</li><li>Jugando al <b>entrenamiento</b> o a la <b>partida de práctica</b>.</li></ul>
+        <div class="pv-actions"><button type="button" class="btn-primary" data-go="analizar">Analizar una mano</button><button type="button" class="btn-secondary" data-go="entrenar">🎯 Empezar a entrenar</button></div></div>`;
+    }
+    const decTotal = Object.values(d.dec).reduce((a, b) => a + b, 0) || 1;
+    const decRow = (k, label) => `<div class="final-row"><span>${label}</span><div class="bar"><i style="width:${Math.max(d.dec[k] ? 2 : 0, d.dec[k] / decTotal * 100)}%"></i></div><b>${Math.round(d.dec[k] / decTotal * 100)}%</b></div>`;
+    const bars = (rows) => `<div class="finals">${rows.map(([n, c, p]) => `<div class="final-row"><span>${n} <small>(${c})</small></span><div class="bar"><i style="width:${c ? Math.max(2, p) : 0}%"></i></div><b>${c ? p + '%' : '—'}</b></div>`).join('')}</div>`;
+    const rated = d.hand.length + d.train.length;
+    const top = d.leakList[0];
+    const card = (title, body, sub, foot) => `<section class="pv-card"><h3>${title}${sub ? ` <small>${sub}</small>` : ''}</h3>${body}${foot || ''}</section>`;
+    const kpi = (v, l, cls = '') => `<div class="pv-kpi ${cls}"><b>${v}</b><span>${l}</span></div>`;
+    return `
+      <div class="pv-kpis">
+        ${kpi(d.hist.length, 'Manos analizadas')}
+        ${kpi(d.evAvg === null ? '—' : (d.evAvg >= 0 ? '+' : '') + fmt1(d.evAvg) + ' BB', 'EV medio', d.evAvg === null ? '' : d.evAvg >= 0 ? 'pos' : 'neg')}
+        ${kpi(rated ? d.pct(d.all, 'ok') + '%' : '—', 'Decisiones correctas', rated ? 'pos' : '')}
+        ${kpi(d.leakList.length, d.leakList.length === 1 ? 'Leak detectado' : 'Leaks detectados', d.leakList.length ? 'neg' : '')}
+      </div>
+      ${top ? `<div class="pv-leak"><small>Tu mayor leak</small><b>${leakText(top[0])}</b>
+        <button type="button" class="btn-primary" data-go="errores">🎯 Entrenar mis errores</button></div>` : rated ? '' :
+        `<div class="pv-leak muted"><small>Tu mayor leak</small><b>Dinos qué hiciste en tus manos y aparecerá aquí.</b>
+        <span class="hint">Después de cada análisis, pulsa lo que hiciste (Tiré, Pagué, Subí…).</span></div>`}
+      ${d.evAvg === null && d.hist.length ? '<p class="hint">El EV medio en ciegas grandes aparece cuando apuntas la secuencia de apuestas.</p>' : ''}
+      <div class="pv-grid">
+      ${card('🔎 Dónde pierdes más EV', d.topGroups.length ? `<p class="pv-big">Unas <b class="neg">−${fmt1(d.totalLoss)} BB</b> en ${d.withLoss.length} decisiones mejorables.</p>
+        <div class="loss-list">${d.topGroups.map(([k, g]) => `<div class="loss-row"><span>${k}</span><b>−${fmt1(g.loss)} BB</b><small>${g.n} ${g.n === 1 ? 'vez' : 'veces'}</small></div>`).join('')}</div>`
+        : '<p>Aún no hay errores de pagar, tirar, apostar o pasar con EV calculable. 👏</p>', '(estimado)')}
+      ${card('Tus errores más frecuentes', d.leakList.length ? `<ol class="pv-leaks">${d.leakList.slice(0, 5).map(([k, n]) => `<li><span>${leakText(k)}</span><small>${n} ${n === 1 ? 'punto' : 'puntos'}</small></li>`).join('')}</ol>
+        ${d.raiseErrs ? `<p class="hint">Además, <b>${d.raiseErrs}</b> ${d.raiseErrs === 1 ? 'decisión' : 'decisiones'} de subir mejorable${d.raiseErrs === 1 ? '' : 's'} (el EV al subir no se puede estimar bien, así que solo las contamos).</p>` : ''}`
+        : '<p>¡Ninguno por ahora! 👏</p>')}
+      ${card('Tu evolución', bars(d.weeks), '% bien jugadas')}
+      ${card('Acierto por calle', bars(d.byStreet), '% bien jugadas')}
+      ${d.hist.length ? card('Lo que te recomienda RÍO', `<div class="finals">${decRow('CALL', 'Pagar')}${decRow('RAISE', 'Subir / apostar')}${decRow('FOLD', 'Tirar')}${decRow('CHECK', 'Pasar')}</div>`) : ''}
+      ${card('Por posición', isPro() ? patternsHTML(d.hist)
+        : `<p>Qué te recomienda RÍO en cada posición y tu acierto en cada una.</p><button type="button" class="btn-secondary" data-go="pro">Desbloquear con RÍO PRO</button>`, isPro() ? '' : 'PRO')}
+      ${card('🎯 Entrenamiento', d.train.length ? `<p class="pv-big"><b>${d.train.length}</b> situaciones · <b class="pos">${d.pct(d.train, 'ok')}%</b> acertadas</p>` : '<p>Aún no has entrenado.</p>',
+        '', '<button type="button" class="btn-secondary" data-go="entrenar">Entrenar ahora</button>')}
+      </div>
+      <p class="hint">El EV perdido es una estimación: depende de las manos que suponemos a tu rival. Solo cuenta las decisiones en las que sabemos qué hiciste (con la secuencia apuntada o con «¿Tú qué hiciste?»).</p>`;
+  }
+  // "Mi progreso" es una sección propia (#/progreso). openStats() se mantiene para los botones que ya la usaban.
+  function renderProgress(){
+    const body = document.getElementById('progressBody');
+    body.innerHTML = progressHTML();
+    body.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
+      const go = b.dataset.go;
+      if (go === 'entrenar') openTrainer();
+      else if (go === 'errores') openTrainer('errores');
+      else if (go === 'pro') openPaywall('plans');
+      else showView(null);
+    }));
+  }
+  function openStats(){ closeSidebar(); showView('progreso'); }
+
+  // ---- Secciones con dirección propia (#/progreso…) ----
+  // La portada (#/ o sin #) es el analizador. Cada sección es una vista a pantalla completa
+  // y el botón Atrás del navegador vuelve a la anterior.
+  const VIEWS = { progreso: { el: 'progressView', render: () => renderProgress() } };
+  function currentView(){ const m = location.hash.match(/^#\/([a-z]+)/); return m && VIEWS[m[1]] ? m[1] : null; }
+  let navInApp = false; // true si se ha llegado a la vista desde dentro de RÍO (así Atrás vuelve a donde estabas)
+  function showView(name){
+    const target = name ? '#/' + name : '#/';
+    if (location.hash !== target){ navInApp = true; location.hash = target; return; } // el cambio de # pinta la vista
+    applyView();
+  }
+  function applyView(){
+    const v = currentView();
+    Object.entries(VIEWS).forEach(([k, def]) => { document.getElementById(def.el).hidden = k !== v; });
+    document.body.classList.toggle('view-open', !!v);
+    if (v){ closeModal(); VIEWS[v].render(); window.scrollTo(0, 0); document.getElementById(VIEWS[v].el).scrollTop = 0; }
+  }
+  window.addEventListener('hashchange', applyView);
+  document.querySelectorAll('[data-view-back]').forEach(b => b.addEventListener('click', () => { if (navInApp) history.back(); else showView(null); }));
+  if (currentView()) applyView();
 
   // ---- Modo entrenamiento ----
   const TRAIN_SPOTS = [['BTN','BB'],['CO','BB'],['BB','BTN'],['SB','BB'],['UTG','BB'],['BTN','SB'],['HJ','BTN'],['BB','CO'],['CO','BTN']];
@@ -2292,7 +2334,9 @@
   }
   // Patrones reales del historial: qué te recomienda RÍO en cada posición y cómo juegas tú.
   function renderPatterns(hist){
-    const body = document.getElementById('histPatternsBody');
+    document.getElementById('histPatternsBody').innerHTML = patternsHTML(hist, true);
+  }
+  function patternsHTML(hist, withTop){
     const pctOf = (n, t) => t ? Math.round(n / t * 100) + '%' : '—';
     const withPos = hist.filter(h => h.hp);
     const byPos = {};
@@ -2303,12 +2347,12 @@
     });
     const rows = Object.entries(byPos).sort((a, b) => b[1].n - a[1].n);
     const rated = hist.filter(h => h.g);
-    body.innerHTML = `
-      <div class="pat-top"><div><b>${hist.length}</b><span>manos analizadas</span></div>
-        <div><b>${rated.length ? pctOf(rated.filter(h => h.g === 'ok').length, rated.length) : '—'}</b><span>bien jugadas${rated.length ? ` (${rated.length} con secuencia)` : ''}</span></div></div>
+    return `
+      ${withTop ? `<div class="pat-top"><div><b>${hist.length}</b><span>manos analizadas</span></div>
+        <div><b>${rated.length ? pctOf(rated.filter(h => h.g === 'ok').length, rated.length) : '—'}</b><span>bien jugadas${rated.length ? ` (${rated.length} con tu jugada)` : ''}</span></div></div>` : ''}
       ${rows.length ? `<div class="pat-table"><div class="pat-row pat-h"><span>Posición</span><span>Manos</span><span>Pagar</span><span>Subir</span><span>Tirar</span><span>Tu acierto</span></div>
         ${rows.map(([pos, p]) => `<div class="pat-row"><span><b>${pos}</b></span><span>${p.n}</span><span>${pctOf(p.CALL, p.n)}</span><span>${pctOf(p.RAISE, p.n)}</span><span>${pctOf(p.FOLD, p.n)}</span><span>${p.rated ? pctOf(p.ok, p.rated) : '—'}</span></div>`).join('')}</div>
-        <div class="hint" style="margin-top:6px;">Pagar / Subir / Tirar = lo que te recomendó RÍO en esa posición. Tu acierto solo cuenta las manos con la secuencia de apuestas apuntada.</div>`
+        <div class="hint" style="margin-top:6px;">Pagar / Subir / Tirar = lo que te recomendó RÍO en esa posición. Tu acierto solo cuenta las manos en las que sabemos qué hiciste.</div>`
         : '<div class="hint">El desglose por posición aparecerá con tus próximas manos analizadas.</div>'}`;
   }
   ['hfStreet', 'hfDec', 'hfEv', 'hfErr'].forEach(id => document.getElementById(id).addEventListener('change', renderHistory));

@@ -232,8 +232,10 @@ test('estadísticas: "Estadísticas y errores" abre el progreso del jugador, no 
   await abrir(page, { pro: true, storage: { rio_email: 'cliente@rio.test' } });
   await expect(page.locator('#navAdminStats')).toHaveCount(0);
   await page.evaluate(() => document.getElementById('navStats').click());
-  await expect(page.locator('#helpBody')).toContainText('Aún no hay datos');
-  await expect(page.locator('#helpBody .stats-tbl')).toHaveCount(0);
+  // "Mi progreso" es ahora una sección propia (#/progreso), no una ventana.
+  await expect(page).toHaveURL(/#\/progreso$/);
+  await expect(page.locator('#progressBody')).toContainText('Aún no hay datos');
+  await expect(page.locator('#progressBody .stats-tbl')).toHaveCount(0);
 });
 
 test('estadísticas: se guarda de dónde llega la persona y se manda al crear la cuenta', async ({ page }) => {
@@ -508,4 +510,20 @@ test('¿Tú qué hiciste?: se guarda en el historial y en tus errores, y se pued
   h = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history'))[0]);
   expect(h.g).toBe('ok');
   expect(await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('rio_reviews'))).flatMap(x => x.rows).length)).toBe(1);
+});
+
+test('Mi progreso: resume tus manos y tu mayor leak, y Atrás vuelve al analizador', async ({ page }) => {
+  const t = Date.now();
+  await abrir(page, { pro: true, storage: {
+    rio_history: [{ hand: 'A♠ K♦', equity: '60.0', decision: 'CALL', cls: 'warn', t, st: 1, ev: 2.5, evU: 'BB', g: 'bad', act: 'FOLD', hp: 'BTN', vp: 'BB', game: 'cash' }],
+    rio_reviews: { x: { t, rows: [{ s: 1, rec: 'CALL', act: 'FOLD', g: 'bad', pos: 'BTN vs BB', pt: '', bc: 0, loss: 2.5 }] } } } });
+  await page.evaluate(() => document.getElementById('navStats').click());
+  await expect(page.locator('#progressView')).toBeVisible();
+  await expect(page.locator('.pv-kpi').first()).toContainText('1');
+  await expect(page.locator('.pv-leak')).toContainText('Te retiras cuando convenía pagar');
+  await expect(page.locator('#progressBody')).toContainText('−2,5 BB');
+  await page.goBack();
+  await expect(page.locator('#progressView')).toBeHidden();
+  await page.goto('http://rio.test/#/progreso');
+  await expect(page.locator('#progressView')).toBeVisible();
 });
