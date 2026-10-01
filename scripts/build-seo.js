@@ -575,8 +575,8 @@ const desc = indexHtml.match(/<meta name="description" content="([^"]+)">/)[1];
 const ld = {
   '@context': 'https://schema.org',
   '@graph': [
-    { '@type': 'SoftwareApplication', '@id': `${SITE}/#app`, name: 'RÍO', alternateName: 'RÍO · Calculadora y entrenador de póker',
-      url: `${SITE}/`, description: desc, applicationCategory: 'GameApplication', applicationSubCategory: 'Calculadora de póker',
+    { '@type': 'SoftwareApplication', '@id': `${SITE}/#app`, name: 'RÍO', alternateName: 'RÍO · Coach de póker con IA y calculadora',
+      url: `${SITE}/`, description: desc, applicationCategory: 'GameApplication', applicationSubCategory: 'Coach de póker con IA y calculadora de póker',
       operatingSystem: 'Web, Android, iOS', inLanguage: 'es', image: `${SITE}/og-image.png`,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' } },
     { '@type': 'FAQPage', '@id': `${SITE}/#faq`, inLanguage: 'es', mainEntity: faq }
