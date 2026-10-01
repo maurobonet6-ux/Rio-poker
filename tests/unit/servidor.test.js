@@ -54,8 +54,9 @@ test('enlaces cortos para las redes: /ig, /yt… llevan a la portada con su orig
   const r = Object.fromEntries((cfg.redirects || []).map(x => [x.source, x]));
   assert.strictEqual(r['/ig'].destination, '/?utm_source=instagram');
   assert.strictEqual(r['/yt'].destination, '/?utm_source=youtube');
+  assert.strictEqual(r['/x'].destination, '/?utm_source=x');
   for (const x of cfg.redirects){
-    assert.match(x.source, /^\/[a-z]{2}$/);
+    assert.match(x.source, /^\/[a-z]{1,2}$/);
     assert.match(x.destination, /^\/\?utm_source=[a-z]+$/);
     assert.strictEqual(x.permanent, false); // temporal: así se pueden cambiar sin que los navegadores lo recuerden
   }
