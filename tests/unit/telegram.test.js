@@ -133,3 +133,22 @@ test('no se repite nada: el mismo tipo el mismo día sale una vez, y al acabarse
   const fin = await lanzar({ tipo: 'mito' }, memoria);
   assert.match(fin.res.body.skipped, /sin ideas nuevas/); assert.strictEqual(fin.llamadas.length, 0);
 });
+
+test('al contestar se ve claro cuál era la correcta: la explicación lo dice y las opciones llevan letra', async () => {
+  for (const tipo of ['quiz', 'mito', 'generada']){
+    for (let i = 0; i < (tipo === 'generada' ? 30 : 1); i++){
+      const { llamadas } = await lanzar({ tipo });
+      const p = llamadas.find(l => l.metodo === 'sendPoll').body;
+      assert.match(p.explanation, /^✅ /, tipo + ': la explicación empieza con ✅');
+      assert.ok(p.explanation.length <= 200 && p.explanation.split('\n').length <= 2, tipo + ': límites de la explicación');
+      if (tipo === 'mito'){
+        assert.deepStrictEqual(p.options.map(o => o.text), ['Es un mito', 'Es realidad']);
+        assert.match(p.explanation, p.correct_option_id === 1 ? /^✅ Es REALIDAD\./ : /^✅ Es un MITO\./);
+      } else {
+        p.options.forEach((o, k) => assert.ok(o.text.startsWith('ABCDEFGHIJ'[k] + ') '), tipo + ': opción con letra'));
+        const letra = 'ABCDEFGHIJ'[p.correct_option_id], texto = p.options[p.correct_option_id].text.slice(3);
+        assert.ok(p.explanation.startsWith(`✅ La correcta es la ${letra}: ${texto.slice(0, 20)}`), tipo + ': nombra la opción correcta');
+      }
+    }
+  }
+});
