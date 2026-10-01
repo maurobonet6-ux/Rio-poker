@@ -1,9 +1,13 @@
-# Genera el vídeo «¿Qué harías tú?» de una mano y lo manda al Telegram del dueño.
-# Lo lanza n8n (o a mano desde la pestaña Actions) pasando la mano como JSON.
-# Necesita dos secretos del repositorio: TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID.
+# Genera el vídeo «¿Qué harías tú?» de una mano y lo manda a Telegram.
+#  · Lanzado a mano o por n8n: va a tu chat privado (o al canal si destino = canal).
+#  · Lanzado por el horario (jueves y sábados): va al canal, con una mano al azar.
+# Secretos del repositorio: TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID (tu chat, también para los avisos de error)
+# y TELEGRAM_CANAL (el canal, por ejemplo @riopoker_es; el bot tiene que ser administrador).
 name: Generar vídeo
 
 on:
+  schedule:
+    - cron: '30 16 * * 4,6'   # jueves y sábados, 18:30 en España en verano (17:30 en invierno)
   workflow_dispatch:
     inputs:
       mano:
@@ -15,6 +19,12 @@ on:
         description: 'Texto que acompaña al vídeo en Telegram (opcional)'
         required: false
         type: string
+      destino:
+        description: 'Dónde mandar el vídeo'
+        required: false
+        default: 'chat'
+        type: choice
+        options: [chat, canal]
 
 jobs:
   video:
@@ -33,10 +43,12 @@ jobs:
         run: pip install numpy imageio-ffmpeg
       - name: Generar el vídeo y mandarlo a Telegram
         env:
-          MANO: ${{ inputs.mano }}
+          MANO: ${{ inputs.mano || 'auto' }}
           TEXTO: ${{ inputs.texto }}
           BOT: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CANAL: ${{ secrets.TELEGRAM_CANAL }}
+          DESTINO: ${{ github.event_name == 'schedule' && 'canal' || inputs.destino }}
         run: |
           set +e
           node marketing/videos/generar.js "$MANO" 2>&1 | tee log.txt
@@ -48,9 +60,14 @@ jobs:
           fi
           if [ "$estado" -eq 0 ]; then
             video=$(ls marketing/videos/salida/rio-*.mp4 | head -n1)
+            destino="$CHAT"; pie="$TEXTO"
+            if [ "$DESTINO" = "canal" ]; then
+              destino="$CANAL"
+              [ -n "$pie" ] || pie="🃏 ¿Qué harías tú? Mira qué dice RÍO y analiza tus manos gratis 👉 https://riopoker.es/tg"
+            fi
             curl -sS -f "https://api.telegram.org/bot${BOT}/sendVideo" \
-              -F chat_id="$CHAT" -F video=@"$video" -F supports_streaming=true \
-              -F caption="${TEXTO:0:1000}" > /dev/null
+              -F chat_id="$destino" -F video=@"$video" -F supports_streaming=true \
+              -F caption="${pie:0:1000}" > /dev/null
           else
             aviso=$(grep -E 'Mano no válida|no es válido' log.txt | tail -n1)
             curl -sS -f "https://api.telegram.org/bot${BOT}/sendMessage" \

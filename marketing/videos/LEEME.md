@@ -81,3 +81,17 @@ node generar.js '{"id":"fd-turn","mano":["Ah","5h"],"mesa":["Kh","9h","4c","2s"]
 El workflow `.github/workflows/video.yml` ejecuta todo en GitHub Actions y manda el mp4 a Telegram. Necesita los secretos
 `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID` (Settings → Secrets and variables → Actions). n8n lo lanza con la API de GitHub
 (`POST /repos/<dueño>/Rio-poker/actions/workflows/video.yml/dispatches`, con `ref: main` e `inputs.mano` = el JSON como texto).
+
+## Qué se publica en el canal de Telegram (rotación semanal)
+
+| Día | Qué | Quién lo publica |
+| --- | --- | --- |
+| Lunes, miércoles, domingo | Pregunta del día (quiz) | Vercel, `api/telegram.js` |
+| Martes, viernes | Texto con un dato y el enlace a la web (`lib/telegram-textos.js`) | Vercel, `api/telegram.js` |
+| Jueves, sábado | Vídeo «¿Qué harías tú?» con una mano al azar | GitHub Actions, `.github/workflows/video.yml` |
+
+- **No se repite nada**: las preguntas y los textos salen en orden y, al acabarse la lista, ese tipo deja de publicarse
+  (en vez de volver a empezar). Si defines `TELEGRAM_AVISO_CHAT` en Vercel (tu chat privado con el bot), te avisa una vez.
+  Para seguir, hay que añadir ideas nuevas a `lib/telegram-quizzes.js` o `lib/telegram-textos.js`.
+- Para el vídeo del canal, añade el secreto `TELEGRAM_CANAL` (por ejemplo `@riopoker_es`) en GitHub; el bot tiene que ser administrador del canal.
+- Desde Actions o n8n también se puede mandar un vídeo al canal con `destino = canal`.

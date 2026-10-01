@@ -5,6 +5,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const QUIZZES = require('../../lib/telegram-quizzes');
+const TEXTOS = require('../../lib/telegram-textos');
 const telegram = require('../../api/telegram');
 
 const ROOT = path.join(__dirname, '..', '..');
@@ -37,4 +38,26 @@ test('sin la clave del cron no publica nada', async () => {
   await telegram({ headers: {} }, res);
   assert.strictEqual(res.statusCode, 401);
   delete process.env.CRON_SECRET;
+});
+
+test('los textos del canal caben en Telegram y enlazan a páginas que existen', () => {
+  assert.ok(TEXTOS.length >= 10);
+  TEXTOS.forEach((t, i) => {
+    assert.ok(t.texto.length > 0 && t.texto.length <= 1000, `texto ${i + 1}: longitud`);
+    const dir = t.link === '/' ? '' : t.link;
+    assert.ok(fs.existsSync(path.join(ROOT, dir, 'index.html')), `texto ${i + 1}: no existe ${t.link}`);
+  });
+  assert.strictEqual(telegram.textoNumber(1).texto, TEXTOS[0].texto);
+  assert.strictEqual(telegram.textoNumber(TEXTOS.length + 1).texto, TEXTOS[0].texto);
+});
+
+test('el canal alterna quiz, texto y vídeo según el día de la semana', () => {
+  // 1 oct 2026 es jueves
+  assert.strictEqual(telegram.tipoDelDia('2026-10-01'), 'video');
+  assert.strictEqual(telegram.tipoDelDia('2026-10-02'), 'texto');
+  assert.strictEqual(telegram.tipoDelDia('2026-10-03'), 'video');
+  assert.strictEqual(telegram.tipoDelDia('2026-10-04'), 'quiz');
+  assert.strictEqual(telegram.tipoDelDia('2026-10-05'), 'quiz');
+  assert.strictEqual(telegram.tipoDelDia('2026-10-06'), 'texto');
+  assert.strictEqual(telegram.tipoDelDia('2026-10-07'), 'quiz');
 });
