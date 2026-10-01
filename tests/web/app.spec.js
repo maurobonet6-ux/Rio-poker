@@ -1,12 +1,15 @@
 // Pruebas de la web: lo importante que un usuario hace en RÍO.
 const { test, expect } = require('@playwright/test');
-const { abrir, carta, ponerMano, ponerBote, analizar, ORIGIN } = require('./ayuda');
+const { abrir, carta, ponerMano, ponerBote, analizar, ponerPosiciones, abrirDetalles, cerrarDetalles, abrirPartida, ORIGIN } = require('./ayuda');
 
 test('la página carga sin errores y enseña cómo introducir la mano', async ({ page }) => {
   const { errores } = await abrir(page);
-  await expect(page.locator('.entry-q')).toHaveText('¿Cómo quieres introducir tu mano?');
-  await expect(page.locator('#uploadBox')).toBeVisible();
-  await expect(page.locator('#manualBtn')).toBeVisible();
+  await expect(page.locator('#cardsPanel h2')).toHaveText('Tu mano');
+  await expect(page.locator('#uploadBox')).toBeVisible();          // rellenar con captura, voz o historial
+  await expect(page.locator('#storyBtn')).toBeVisible();
+  await expect(page.locator('#importBtn')).toBeVisible();
+  await expect(page.locator('#holeRow .cardslot')).toHaveCount(2); // o a mano, tocando los huecos de la mesa
+  await expect(page.locator('#mesaSeats [data-seat]')).toHaveCount(6);
   expect(errores).toEqual([]);
 });
 
@@ -23,7 +26,7 @@ test('bienvenida: explica RÍO y deja elegir modo con dos botones iguales', asyn
 
 test('elegir cartas: primero el valor, luego el palo, y las usadas se bloquean', async ({ page }) => {
   await abrir(page);
-  await page.locator('#manualBtn').click();
+  await page.locator('#holeRow .cardslot').first().click();
   await expect(page.locator('#pickerTitle')).toContainText('Tu carta 1 de 2');
   await expect(page.locator('.rank-btn')).toHaveCount(13);
   await page.locator('.rank-btn', { hasText: /^A$/ }).click();
@@ -42,25 +45,37 @@ test('comunitarias: se ve en qué calle estás y no hace falta poner las 5', asy
   await expect(page.locator('#overlay.show')).toHaveCount(0); // no salta solo al turn
 });
 
-test('modo Fácil: los detalles avanzados empiezan plegados', async ({ page }) => {
+test('los detalles avanzados empiezan plegados en una hoja aparte (también en Avanzado)', async ({ page }) => {
   await abrir(page);
-  await expect(page.locator('#heroPosInput')).toBeVisible();
+  await expect(page.locator('#detailsSheet')).toBeHidden();
   await expect(page.locator('#seqBox')).toBeHidden();
   await expect(page.locator('#rangeChips')).toBeHidden();
-  await page.locator('#moreToggle').click();
+  await abrirDetalles(page);
+  await expect(page.locator('#heroPosInput')).toBeVisible();
   await expect(page.locator('#seqBox')).toBeVisible();
   await expect(page.locator('#rangeChips')).toBeVisible();
+  await cerrarDetalles(page);
+  // Los asientos de la mesa cambian las mismas posiciones
+  await ponerPosiciones(page, 'CO', 'SB');
+  await expect(page.locator('#heroPosInput')).toHaveValue('CO');
+  await expect(page.locator('#villPosInput')).toHaveValue('SB');
+  await expect(page.locator('#detailsSummary')).toContainText('CO vs SB');
+  await ponerPosiciones(page, 'SB'); // tu sitio donde estaba el rival: se intercambian
+  await expect(page.locator('#heroPosInput')).toHaveValue('SB');
+  await expect(page.locator('#villPosInput')).toHaveValue('CO');
+  await page.locator('[data-mode="pro"]').click();
+  await expect(page.locator('#rangeGrid')).toBeHidden();
 });
 
 test('consejos conocidos antes del flop', async ({ page }) => {
   await abrir(page, { pro: true });
   // Abrir desde UTG sin subidas: tabla de apertura.
-  await page.selectOption('#heroPosInput', 'UTG');
+  await ponerPosiciones(page, 'UTG');
   await ponerMano(page, ['7s', '2h']);
   await ponerBote(page, 3, 2);
   expect(await analizar(page)).toContain('TIRA');
   await page.locator('#resetBtn').click();
-  await page.selectOption('#heroPosInput', 'UTG');
+  await ponerPosiciones(page, 'UTG');
   await ponerMano(page, ['As', 'Ks']);
   await ponerBote(page, 3, 2);
   expect(await analizar(page)).toContain('SUBE');
@@ -113,22 +128,28 @@ test('el ejemplo: en el móvil solo en modo Fácil; en ordenador también en Ava
   else await expect(page.locator('#demoPanel')).toBeVisible();
 });
 
-test('ordenador: dos columnas, pasos a la izquierda y ejemplo o resultado a la derecha; móvil: una columna', async ({ page }) => {
+test('ordenador: la mano a la izquierda y el resultado a la derecha; móvil: una columna', async ({ page }) => {
   await abrir(page);
   const caja = async (sel) => page.locator(sel).boundingBox();
-  const cartas = await caja('#cardsPanel'), ejemplo = await caja('#demoPanel');
+  const cartas = await caja('#cardsPanel');
   if (page.viewportSize().width >= 1100){
-    expect(ejemplo.x).toBeGreaterThan(cartas.x + cartas.width - 1);   // al lado
-    expect(Math.abs(ejemplo.y - cartas.y)).toBeLessThan(5);           // a la misma altura
-    expect((await caja('#tablePanel')).x).toBe(cartas.x);             // los pasos, uno debajo de otro
-    await page.locator('#demoLoadBtn').click();
+    const vacio = await caja('#resultEmpty');
+    expect(vacio.x).toBeGreaterThan(cartas.x + cartas.width - 1);    // al lado
+    expect(Math.abs(vacio.y - cartas.y)).toBeLessThan(5);            // a la misma altura
+    await ponerMano(page, ['Qs', 'Qh']);
+    await ponerBote(page, 9, 4);
     await analizar(page);
-    await expect(page.locator('#demoPanel')).toBeHidden();            // el resultado ocupa su sitio
+    await expect(page.locator('#resultEmpty')).toBeHidden();         // el resultado ocupa su sitio
     const res = await caja('#resultPanel');
     expect(res.x).toBeGreaterThan(cartas.x + cartas.width - 1);
   } else {
-    expect(Math.abs(ejemplo.x - cartas.x)).toBeLessThan(5);
-    expect(cartas.y).toBeGreaterThan(ejemplo.y + ejemplo.height - 1); // uno debajo de otro
+    await expect(page.locator('#resultEmpty')).toBeHidden();
+    await ponerMano(page, ['Qs', 'Qh']);
+    await ponerBote(page, 9, 4);
+    await analizar(page);
+    const [c, r] = await page.evaluate(() => ['#cardsPanel', '#resultPanel'].map(sel => { const b = document.querySelector(sel).getBoundingClientRect(); return { x: b.x, top: b.top + scrollY, bottom: b.bottom + scrollY }; }));
+    expect(Math.abs(r.x - c.x)).toBeLessThan(5);
+    expect(r.top).toBeGreaterThan(c.bottom - 1);                     // uno debajo de otro
   }
 });
 
@@ -155,14 +176,16 @@ test('secuencia de apuestas: repasa tus decisiones calle a calle', async ({ page
     await page.locator(`#seqControls [data-act="${a}"]`).click();
     if (amt){ await page.fill('#seqAmount', String(amt)); await page.locator('#seqAmountOk').click(); }
   };
-  await page.selectOption('#heroPosInput', 'BTN'); await page.selectOption('#villPosInput', 'BB');
+  await ponerPosiciones(page, 'BTN', 'BB');
   await ponerMano(page, ['As', 'Qd'], ['Qh', '7c', '3s']);
+  await abrirDetalles(page);
   await page.locator('#seqBox summary').click();
   await page.locator('#seqTabs [data-s="0"]').click();
   await act('hero', 'raise', 5); await act('vill', 'call');
   await page.locator('#seqTabs [data-s="1"]').click();
   await act('vill', 'check'); await act('hero', 'bet', 6); await act('vill', 'raise', 20);
   await expect(page.locator('#potInput')).toHaveValue(/\d/);
+  await cerrarDetalles(page);
   await analizar(page);
   await expect(page.locator('#timeline .tl-row')).toHaveCount(2);
   await expect(page.locator('#streetTrack .cur')).toHaveText('Flop');
@@ -189,7 +212,7 @@ test('compartir: el enlace abre la misma mano sin gastar análisis', async ({ pa
 
 test('historial: guarda la mano con posición, tipo de partida y patrones (PRO)', async ({ page }) => {
   await abrir(page, { pro: true });
-  await page.selectOption('#heroPosInput', 'CO');
+  await ponerPosiciones(page, 'CO');
   await ponerMano(page, ['Ts', '9s'], ['8s', '7d', '2c']);
   await ponerBote(page, 20, 10);
   await analizar(page);
@@ -318,14 +341,10 @@ test('"Ya he pagado, comprobar" activa PRO si el servidor ya ve el pago', async 
 test('modo Fácil: pasos con guía y bote en dos preguntas', async ({ page }) => {
   await abrir(page);
   await expect(page.locator('#stepTodo')).toContainText('elige tus dos cartas');
-  await expect(page.locator('#cardsPanel')).toHaveClass(/step-current/);
-  await expect(page.locator('#importBtn')).toBeHidden();      // en Fácil, "Importar historial" solo está en el menú
   await expect(page.locator('.steps-nav')).toBeHidden();      // sin la barra de calles de arriba
   await ponerMano(page, ['As', 'Ks']);
-  await expect(page.locator('#tablePanel')).toHaveClass(/step-current/);
-  await expect(page.locator('#stepGuide2')).toBeVisible();
-  await page.locator('#posOkBtn').click();
-  await expect(page.locator('#betsPanel')).toHaveClass(/step-current/);
+  await expect(page.locator('#stepTodo')).toContainText('Toca tu asiento');
+  await ponerPosiciones(page, 'BTN');
   await page.fill('#potBeforeInput', '30'); await page.fill('#betInput', '10');
   await expect(page.locator('#easyPotSum')).toContainText('Bote 40 · te toca pagar 10');
   await expect(page.locator('#potInput')).toHaveValue('40');
@@ -338,11 +357,10 @@ test('modo Fácil: pasos con guía y bote en dos preguntas', async ({ page }) =>
 
 test('detalles avanzados: cómo juega, rivales y tipo de partida, por ese orden', async ({ page }) => {
   await abrir(page);
-  await page.locator('#moreToggle').click();
-  // En ordenador, rivales y tipo de partida van en la misma fila; en el móvil, uno debajo del otro.
-  const [boton, comoJuega, rivales, partida] = await page.evaluate(() => ['#moreToggle', '#rangeChips', '#rivMinus', '#gameType']
+  await abrirDetalles(page);
+  const [posiciones, comoJuega, rivales, partida] = await page.evaluate(() => ['#heroPosInput', '#rangeChips', '#rivMinus', '#gameType']
     .map(s => document.querySelector(s).closest('.field').getBoundingClientRect().top));
-  expect(boton).toBeLessThan(comoJuega);
+  expect(posiciones).toBeLessThan(comoJuega);
   expect(comoJuega).toBeLessThan(rivales);
   expect(rivales).toBeLessThanOrEqual(partida);
 });
@@ -374,15 +392,14 @@ test('estadísticas: una guía también guarda de dónde llega la persona (y no 
   expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('pokerred');
 });
 
-test('móvil: las formas de meter la mano van en una fila y tus cartas se ven sin bajar', async ({ page }) => {
+test('móvil: rellenar con captura, voz o historial en una fila y tus cartas se ven sin bajar', async ({ page }) => {
   test.skip(page.viewportSize().width > 680, 'solo en el móvil');
   await abrir(page);
   const y = async (sel) => (await page.locator(sel).boundingBox()).y;
   const fila = await y('#uploadBox');
   expect(Math.abs(await y('#storyBtn') - fila)).toBeLessThan(3);
-  expect(Math.abs(await y('#manualBtn') - fila)).toBeLessThan(3);
+  expect(Math.abs(await y('#importBtn') - fila)).toBeLessThan(3);
   await expect(page.locator('#holeRow')).toBeInViewport();
-  await page.locator('#manualBtn').click(); // sigue funcionando como antes
 });
 
 test('ejemplo: "Ver el análisis completo" enseña el resultado entero sin gastar análisis', async ({ page }) => {
@@ -422,7 +439,7 @@ test('sin datos en la página pero con la cookie de sesión: recupera la sesión
 test('partida de práctica: mesa de 6 a pantalla completa, manos completas y repaso de decisiones', async ({ page }) => {
   test.setTimeout(150_000);
   await abrir(page, { storage: { rio_pp_speed: 'rapida' } });
-  await page.locator('#partidaLink').click();
+  await abrirPartida(page);
   await expect(page.locator('#gameView')).toBeVisible();
   await expect(page.locator('.g-seat')).toHaveCount(6);
   await expect(page.locator('.g-seat.hero .g-card:not(.g-back)')).toHaveCount(2);   // tus cartas, boca arriba
@@ -458,7 +475,7 @@ test('partida de práctica: mesa de 6 a pantalla completa, manos completas y rep
 test('partida de práctica: mano a mano, 3 jugadores y mesa variable (las fichas siempre cuadran)', async ({ page }) => {
   test.setTimeout(240_000);
   await abrir(page, { storage: { rio_pp_speed: 'rapida', rio_pp_jugadores: '2' } });
-  await page.locator('#partidaLink').click();
+  await abrirPartida(page);
   await expect(page.locator('.g-seat')).toHaveCount(2);
   // Mano a mano, el botón pone la ciega pequeña
   await expect(page.locator('.g-seat', { has: page.locator('.g-dealer') }).locator('.g-bubble')).toHaveText(/Ciega 1|Sube|Paga|Tira|Pasa/);
@@ -562,7 +579,7 @@ test('historial interactivo: abrir una mano, ver su ficha y reanalizarla sin dup
   await analizar(page);
   await page.locator('#historyList .history-item').first().click();
   await expect(page.locator('#helpModal.show')).toBeVisible();
-  await expect(page.locator('#helpBody .hh-cards .mini-card')).toHaveCount(5);
+  await expect(page.locator('#helpBody .hh-cards .pc')).toHaveCount(5);
   await expect(page.locator('#helpBody')).toContainText('RÍO recomienda');
   await page.locator('#hhRe').click();
   await expect(page.locator('#helpModal.show')).toHaveCount(0);
@@ -679,4 +696,22 @@ test('portada (landing): avisa de la visita y guarda el contenido de origen; al 
   expect(page.url()).not.toContain('/app/');
   await page.goto('http://rio.test/', { referer: 'https://checkout.stripe.com/c/pay/cs_test' });
   await page.waitForURL(/\/app\/$/);
+});
+
+test('meter la mano: «Mesa» por defecto y «Lista» como segunda opción (se recuerda)', async ({ page }) => {
+  await abrir(page);
+  await expect(page.locator('#mesaSeats [data-seat]').first()).toBeVisible();
+  await expect(page.locator('#listPos')).toBeHidden();
+  await page.locator('[data-entrada="lista"]').click();
+  await expect(page.locator('#mesaSeats [data-seat]').first()).toBeHidden();
+  await expect(page.locator('#listPos')).toBeVisible();
+  await page.selectOption('#listHeroPos', 'CO');
+  await expect(page.locator('#heroPosInput')).toHaveValue('CO');
+  await page.selectOption('#listVillPos', 'CO');                 // el mismo sitio: se intercambian
+  await expect(page.locator('#heroPosInput')).toHaveValue('BB');
+  await ponerMano(page, ['As', 'Kd'], ['Qs', '7c', '3h']);
+  await ponerBote(page, 30, 10);
+  expect(await analizar(page)).toBeTruthy();
+  await page.reload();
+  await expect(page.locator('#listPos')).toBeVisible();
 });
