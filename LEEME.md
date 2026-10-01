@@ -129,6 +129,12 @@ nunca el email. Todo está en `lib/eventos.js` y caduca solo en Redis.
   contenido a todo lo que haga quien llegue por él (en Estadísticas → «Contenidos que traen usuarios»).
 - `?sinestadisticas=1` (una vez en cada dispositivo tuyo) hace que tus propias visitas no cuenten.
 
+## Equipo de marketing automático
+
+Cada mañana una rutina de Claude investiga, escribe el plan del día y lo manda a producir (`.github/workflows/equipo.yml`);
+a las 12:00 te llegan a Telegram las piezas para cada red, cada una con ✅ ❌ ✏️ 🔄. Todo está en `marketing/PLAN.md`
+(qué falta configurar) y `marketing/equipo/GUIA.md` (cómo trabaja el equipo). La cola de contenidos está en el menú de administrador → **Contenidos**.
+
 ## Canal de Telegram (pregunta del día)
 
 `api/telegram.js` publica cada día, sobre las 19:00 (hora de España en verano; 18:00 en invierno),

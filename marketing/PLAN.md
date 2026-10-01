@@ -74,8 +74,23 @@ hand_data, assets, idea_id (las piezas de una misma idea comparten idea_id),
 created_at, scheduled_at, published_at, metrics { views, likes, comments, shares, saves, clicks, cuentas, analisis, pro }
 ```
 
-## Lo que tiene que hacer el dueño
+## Estado
 
-- [ ] ElevenLabs: crear la cuenta (plan con uso comercial) y poner la clave en GitHub → Settings → Secrets → `ELEVENLABS_API_KEY`.
-- [ ] Cuentas de empresa: Instagram profesional (vinculado a una página de Facebook), canal de YouTube y TikTok.
-- [ ] Aprobar o rechazar cada día a las 12:00 en Telegram (≈5 minutos).
+- [x] Etapa 1 · Medir: `lib/eventos.js`, `/api/track`, `/api/stats?vista=producto|recorridos`, enlace `/v/<id>`, panel «Estadísticas».
+- [x] Etapa 2 · Memoria: `lib/contenido.js`, `/api/content`, panel «Contenidos» (menú de administrador).
+- [x] Etapa 3 · Equipo diario: `marketing/equipo/` (GUIA.md, plan.js, carrusel.js, produccion.js), `.github/workflows/equipo.yml`,
+      botones de Telegram en `lib/content-telegram.js` y nodos de n8n en `marketing/n8n/equipo-botones.json`.
+- [ ] Etapa 4 · n8n: importar `marketing/n8n/equipo-botones.json` delante de «¿Es un botón?» (ver su nota). **Sesión de vídeos/n8n.**
+- [ ] Etapa 5 · Calidad: voz de ElevenLabs con subtítulos palabra a palabra en `marketing/videos` (`ELEVENLABS_API_KEY` ya llega a `equipo.yml`). **Sesión de vídeos/n8n.**
+- [ ] Etapas 6-7.
+
+## Lo que tiene que hacer el dueño (una sola vez)
+
+1. **Una clave de servicio** (`STATS_KEY`, 16+ caracteres, la misma en los tres sitios):
+   Vercel → Settings → Environment Variables · GitHub → Settings → Secrets → Actions · el entorno de Claude (variable `STATS_KEY`).
+2. **Acceso a riopoker.es** para la rutina: en el entorno de Claude, Network access → añadir `riopoker.es`.
+3. **El mismo bot** en `TELEGRAM_BOT_TOKEN` de Vercel y de GitHub (manda las tarjetas y recibe los botones). En Vercel también `TELEGRAM_CHANNEL` y `ANTHROPIC_API_KEY` (ya están).
+4. **n8n:** importar `marketing/n8n/equipo-botones.json` (ver su nota).
+5. **ElevenLabs:** la clave en GitHub → Secrets → `ELEVENLABS_API_KEY`.
+6. Cuentas de empresa: Instagram profesional, canal de YouTube y TikTok.
+7. Cada día a las 12:00, revisar en Telegram (≈5 minutos).
