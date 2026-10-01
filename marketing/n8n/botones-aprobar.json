@@ -1,0 +1,178 @@
+{
+ "nodes": [
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ $json.callback_query ? 'si' : 'no' }}",
+       "rightValue": "si",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "name": "¿Es un botón?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ $json.callback_query.data }}",
+       "rightValue": "ok",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "name": "¿Aprobar?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    260,
+    -100
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "sendVideo",
+    "chatId": "@riopoker_es",
+    "file": "={{ $json.callback_query.message.video.file_id }}",
+    "additionalFields": {
+     "caption": "🃏 ¿Qué harías tú? Mira qué dice RÍO y analiza tus manos gratis 👉 https://riopoker.es/tg"
+    }
+   },
+   "name": "Publicar en el canal",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    520,
+    -200
+   ],
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram account"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "resource": "callback",
+    "operation": "answerQuery",
+    "queryId": "={{ $('Telegram Trigger').item.json.callback_query.id }}",
+    "additionalFields": {
+     "text": "✅ Publicado en @riopoker_es"
+    }
+   },
+   "name": "Responder: Publicado",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    780,
+    -200
+   ],
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram account"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "resource": "callback",
+    "operation": "answerQuery",
+    "queryId": "={{ $('Telegram Trigger').item.json.callback_query.id }}",
+    "additionalFields": {
+     "text": "❌ Descartado"
+    }
+   },
+   "name": "Responder: Descartado",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    520,
+    0
+   ],
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram account"
+    }
+   }
+  }
+ ],
+ "connections": {
+  "¿Es un botón?": {
+   "main": [
+    [
+     {
+      "node": "¿Aprobar?",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    []
+   ]
+  },
+  "¿Aprobar?": {
+   "main": [
+    [
+     {
+      "node": "Publicar en el canal",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Responder: Descartado",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Publicar en el canal": {
+   "main": [
+    [
+     {
+      "node": "Responder: Publicado",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ }
+}
