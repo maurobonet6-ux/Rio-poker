@@ -145,13 +145,16 @@ window.setup = setup; window.render = render;
 }
 
 // Lo que dice la voz y cuándo (ver video-lista.js). Las opciones se leen con su letra y la cuenta atrás va sin voz.
+// Si la pregunta con sus 4 opciones es muy larga, la voz solo lee la pregunta (las opciones se ven en pantalla): así no hay pausas largas.
+const leerOpciones = p => (p.q + p.opts.join(' ')).length <= 90;
+// La explicación hablada se queda en la primera frase si es larga (completa se ve en pantalla).
+const corta = s => (s.length <= 110 ? s : (s.match(/^.+?[.!?](\s|$)/) || [s])[0].trim());
 function narracion(p){
   const L = 'ABCD';
   return [
     { id: 'intro', texto: `${require('./voz.js').gancho('concurso')} Nivel ${p.nivel}.`, en: T.intro + 0.1, limite: T.q },
-    { id: 'pregunta', texto: `${p.q} ${p.opts.map((o, i) => `${L[i]}: ${o}`).join('. ')}.`, en: T.q + 0.25, limite: T.cuenta },
-    { id: 'respuesta', texto: 'La respuesta correcta es…', en: T.resp, limite: T.reveal },
-    { id: 'revelacion', texto: `¡Es la ${L[p.ok]}! ${p.why}`, en: T.reveal + 0.2, limite: T.fin },
+    { id: 'pregunta', texto: leerOpciones(p) ? `${p.q} ${p.opts.map((o, i) => `${L[i]}: ${o}`).join('. ')}.` : `${p.q} ¿A, B, C o D?`, en: T.q + 0.25, limite: T.cuenta },
+    { id: 'revelacion', texto: `¡Es la ${L[p.ok]}! ${corta(p.why)}`, en: T.reveal + 0.2, limite: T.fin },
     { id: 'cta', texto: require('./voz.js').CTA, en: T.fin + 0.4, limite: T.total },
   ];
 }

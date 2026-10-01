@@ -14,6 +14,7 @@ function normalizarVoz(t){
   s = s.replace(/<span[^>]*data-to="(\d+)"[^>]*>[^<]*<\/span>\s*%?/g, '$1 por ciento');
   s = s.replace(/<[^>]+>/g, '').replace(/\*/g, '');
   s = s.replace(/([A-Z0-9])\)\s+/g, '$1: ');                         // «A) 25 %» → «A: 25 %»
+  s = s.replace(/(\d+)\.(\d{4,})/g, (m, a, b) => String(Math.round(+m * 10) / 10).replace('.', ','));   // 33.3333333 → 33,3
   s = s.replace(/(\d)\.(\d{3})(?!\d)/g, '$1$2');                      // 1.326 → 1326
   s = s.replace(/(\d),(\d)/g, '$1 coma $2');                          // 8,1 → 8 coma 1
   s = s.replace(/\s*%/g, ' por ciento').replace(/\s*÷\s*/g, ' entre ').replace(/\s*×\s*/g, ' por ').replace(/\s*=\s*/g, ' igual a ');

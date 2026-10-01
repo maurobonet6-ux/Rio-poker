@@ -10,11 +10,11 @@ const VOZ_EDGE = 'es-ES-ElviraNeural';
 const esEdge = v => /^es-[A-Z]{2}-\w+Neural$/.test(v || '');
 // La despedida de todos los vídeos (corta: con voz, cada segundo cuenta).
 const CTA = 'Analiza tus manos gratis en riopoker.es.';
-const VELOCIDAD_BASE = 1.12, VELOCIDAD_MAX = 1.4;
+const VELOCIDAD_BASE = 1.12, VELOCIDAD_MAX = 1.25;
 // Ganchos: lo primero que se oye, para que den ganas de seguir viendo. Sin cifras inventadas: solo curiosidad y retos.
 const GANCHOS = {
   mesa: ['¿Pagas o tiras? Piénsalo antes del final.', 'Esta mano parece fácil… no lo es.', '¿Qué harías tú aquí? Decide ya.', 'Un error aquí te cuesta todas las fichas.'],
-  concurso: ['¿Aciertas antes de que acabe la cuenta atrás?', '¿Te atreves con esta?', 'A ver cuánto sabes de póker.', 'Nadie debería fallar esta… ¿o sí?'],
+  concurso: ['¿Te atreves?', '¿Aciertas?', '¿Cuánto sabes?', 'A ver si aciertas.'],
   mito: ['Seguro que te lo han contado.', 'Esto lo dicen en todas las mesas.', 'Te lo han dicho mil veces.', 'Mucha gente se lo cree.'],
   lista: ['¿Cuántas conocías?', 'Tres cosas que te harán mejorar.', 'Quédate hasta la última.', 'La tercera es la que más se olvida.'],
 };
