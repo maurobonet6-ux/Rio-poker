@@ -6,7 +6,7 @@
   --panel-2: #1C1C1F;
   --line: rgba(255,255,255,0.10);
   --cream: #F5F2EC;
-  --cream-dim: rgba(245,242,236,0.58);
+  --cream-dim: rgba(245,242,236,0.68);
   --ink: #0A0A0B;
   --gold: #E8283F;
   --gold-soft: rgba(232,40,63,0.16);
@@ -159,7 +159,10 @@ section.panel {
   font-family: 'Space Grotesk', sans-serif; appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--cream-dim) 50%), linear-gradient(135deg, var(--cream-dim) 50%, transparent 50%);
   background-position: calc(100% - 20px) center, calc(100% - 15px) center; background-size: 5px 5px; background-repeat: no-repeat;
+  padding-right: 34px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
 }
+/* Las dos posiciones ocupan media fila cada una: con 4 columnas el texto salía cortado. */
+@media (min-width: 781px) { #tablePanel .inputs-row > .field:nth-child(-n+2) { grid-column: span 2; } #tablePanel .inputs-row { align-items: end; } }
 .field label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--cream-dim); margin-bottom: 7px; font-weight: 700; }
 .field-wide { grid-column: 1 / -1; }
 .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -183,8 +186,8 @@ section.panel {
   font-family: 'Space Grotesk', sans-serif;
 }
 .field input:focus, .cardslot:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-.hint { font-size: 0.76rem; color: var(--cream-dim); line-height: 1.45; }
-.field .hint { font-size: 0.76rem; color: var(--cream-dim); margin-top: 6px; }
+.hint { font-size: 0.8rem; color: var(--cream-dim); line-height: 1.5; }
+.field .hint { font-size: 0.8rem; color: var(--cream-dim); margin-top: 6px; }
 
 .actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
 .btn-primary {
@@ -237,6 +240,8 @@ section.panel {
 }
 @keyframes slideup { from { transform: translateY(24px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
 @media (min-width: 640px) { .picker { border-radius: 20px; } }
+.overlay.wide .picker { max-width: 720px; max-height: 90vh; }
+@media (min-width: 640px) { .overlay.wide .picker { padding: 26px 30px; } }
 .picker-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .picker-head h3 { font-family: 'Bricolage Grotesque', sans-serif; margin: 0; font-size: 1.2rem; }
 .picker-head button { background: none; border: none; color: var(--cream-dim); font-size: 1.5rem; cursor: pointer; }

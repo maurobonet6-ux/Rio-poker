@@ -1409,7 +1409,8 @@
   const cardHTML = (c, big) => `<span class="mini-card${big ? ' big' : ''}${SUIT_CRIMSON[c.suit] ? ' crimson' : ''}">${RANK_LABEL(c.rank)}<span>${SUIT_SYMBOL[c.suit]}</span></span>`;
 
   // Ventana genérica (reutiliza la de ayuda)
-  function openModal(title, html){
+  function openModal(title, html, opts){
+    helpModal.classList.toggle('wide', !!(opts && opts.wide));
     document.getElementById('helpTitle').textContent = title;
     document.getElementById('helpBody').innerHTML = html;
     helpModal.classList.add('show');
@@ -1560,7 +1561,7 @@
       <div class="sub-title">Por calle (% bien jugadas)</div>
       ${bars(byStreet)}
       ${train.length ? `<div class="sub-title">Entrenamiento</div><p style="margin:0;">${train.length} manos · ${pct(train, 'ok')}% acertadas</p>` : ''}
-      <p class="hint" style="margin-top:14px;">El EV perdido es una estimación: depende de las manos que suponemos a tu rival. Solo cuenta las manos con la secuencia apuntada.</p>`);
+      <p class="hint" style="margin-top:14px;">El EV perdido es una estimación: depende de las manos que suponemos a tu rival. Solo cuenta las manos con la secuencia apuntada.</p>`, { wide: true });
   }
 
   // ---- Modo entrenamiento ----
@@ -1613,7 +1614,7 @@
       ${q.board.length ? `<div><div class="zone-label">Mesa</div>${q.board.map(c => cardHTML(c, true)).join('')}</div>` : ''}</div>
       <p>${question}</p>
       <div class="train-opts">${opts.map(([v, l]) => `<button type="button" class="btn-secondary" data-ans="${v}">${l}</button>`).join('')}</div>
-      <div id="trainResult"></div>`);
+      <div id="trainResult"></div>`, { wide: true });
     body.querySelectorAll('[data-ans]').forEach(b => b.addEventListener('click', () => answerTrainer(b.dataset.ans)));
     body.querySelector('#trainToGame').addEventListener('click', openPartida);
   }

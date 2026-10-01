@@ -158,13 +158,14 @@ body.game-open { overflow: hidden; }
   .g-side { position: static; max-height: none; }
 }
 @media (max-width: 700px) {
-  .g-top { padding-left: 12px; padding-right: 12px; gap: 8px; }
-  .g-back span { display: none; }
-  .g-title { font-size: 1rem; } .g-title small { display: none; }
-  .g-stats { order: 3; width: 100%; margin-left: 0; justify-content: center; }
-  .g-stats span { font-size: 0.72rem; padding: 4px 9px; }
-  .g-speed { font-size: 0.75rem; padding: 6px 10px; }
-  .g-players { margin-left: auto; } .g-players span { display: none; } .g-players select { font-size: 0.75rem; padding: 6px 8px; }
+  /* Cabecera en dos filas compactas: [← · título · jugadores · velocidad] y debajo los contadores. */
+  .g-top { padding-left: 10px; padding-right: 10px; gap: 6px 8px; flex-wrap: wrap; }
+  .g-back { padding: 6px 11px; } .g-back span { display: none; }
+  .g-title { font-size: 0.95rem; flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .g-title small { display: none; }
+  .g-stats { order: 3; width: 100%; margin-left: 0; justify-content: center; gap: 6px; flex-wrap: nowrap; }
+  .g-stats span { font-size: 0.7rem; padding: 3px 8px; white-space: nowrap; }
+  .g-speed { font-size: 0.72rem; padding: 6px 9px; flex: none; }
+  .g-players { flex: none; } .g-players span { display: none; } .g-players select { font-size: 0.72rem; padding: 6px 6px; max-width: 76px; }
   .g-main { padding: 8px 10px 16px; gap: 12px; }
   .g-table { width: calc(100% - 64px); aspect-ratio: 0.72; margin: 62px auto 80px; }
   .g-felt { border-width: 11px; }
