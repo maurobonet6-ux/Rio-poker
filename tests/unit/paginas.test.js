@@ -79,6 +79,6 @@ test('portada: datos para Google válidos y FAQ igual al que se ve', () => {
   const visibles = [...html.matchAll(/<details class="faq-item"><summary>([^<]+)<\/summary>/g)].map(m => m[1]);
   assert.deepStrictEqual(faq.map(q => q.name), visibles);
   assert.ok(faq.every(q => q.acceptedAnswer.text.length > 20));
-  assert.match(html, /<h1>RÍO <span class="h1-sub">Calculadora y entrenador de póker en español<\/span><\/h1>/);
+  assert.match(html, /<h1>RÍO <span class="h1-sub">Coach de póker con IA y calculadora en español<\/span><\/h1>/);
   assert.strictEqual((html.match(/<h1[\s>]/g) || []).length, 1, 'la portada debe tener un solo H1');
 });
