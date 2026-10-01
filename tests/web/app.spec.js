@@ -600,3 +600,27 @@ test('landing pública: sin errores, con la mano de ejemplo real y llevando a la
   await expect(page.locator('a.btn', { hasText: 'Empezar gratis' }).first()).toHaveAttribute('href', '/');
   expect(errores).toEqual([]);
 });
+
+test('analítica: avisa de lo que hace el usuario con un identificador anónimo, sin email', async ({ page }) => {
+  const eventos = [];
+  page.on('request', (req) => { if (new URL(req.url()).pathname === '/api/track') eventos.push(JSON.parse(req.postData() || '{}')); });
+  await abrir(page, { pro: true, storage: { rio_email: 'yo@rio.test' }, path: '/?utm_source=contenido&c=v42' });
+  await ponerMano(page, ['7c', '2d'], ['As', 'Kd', 'Qh']);
+  await ponerBote(page, 20, 20);
+  await analizar(page);
+  await page.locator('#youDid [data-yd="CALL"]').click();
+  await page.goto('http://rio.test/#/progreso');
+  await expect.poll(() => eventos.map(e => e.e)).toEqual(expect.arrayContaining(['app_open', 'analysis_started', 'analysis_completed', 'manual_analysis', 'user_action_recorded', 'progress_viewed']));
+  const an = eventos.find(e => e.e === 'analysis_completed');
+  expect(an.aid).toMatch(/^[a-z0-9]{8,32}$/);
+  expect(an.c).toBe('v42'); // llegó por el contenido v42
+  expect(an.p).toMatchObject({ via: 'manual', n: 1 });
+  expect(eventos.find(e => e.e === 'user_action_recorded').p).toMatchObject({ act: 'CALL' });
+  expect(JSON.stringify(eventos)).not.toContain('yo@rio.test');
+  // Con ?sinestadisticas no se manda nada
+  const antes = eventos.length;
+  await page.goto('http://rio.test/?sinestadisticas=1');
+  await page.goto('http://rio.test/#/progreso');
+  await page.waitForTimeout(300);
+  expect(eventos.length).toBe(antes);
+});

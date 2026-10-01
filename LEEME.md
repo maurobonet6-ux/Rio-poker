@@ -114,6 +114,21 @@ Las carpetas `glosario/` y `tablas/`, `seo.css`, `sitemap.xml` y `robots.txt` se
 
 Vuelve a ejecutarlo si cambias los textos del glosario o los rangos (están en ese mismo archivo) y sube los cambios. Cuando la web esté publicada, puedes dar de alta `https://rio-poker.vercel.app/sitemap.xml` en Google Search Console para que Google las encuentre antes.
 
+## Analítica de producto (qué hacen los usuarios)
+
+La web avisa a `/api/track` de lo que hace cada usuario (abrir RÍO, analizar —a mano, por captura o contándola—,
+decir qué hizo, entrenar, mirar PRO, pagar…). Va con un identificador **anónimo y aleatorio** del navegador (`rio_aid`),
+nunca el email. Todo está en `lib/eventos.js` y caduca solo en Redis.
+
+- Menú de administrador → **Estadísticas**: embudo (abren → cuenta → 1.ª mano → 2.ª mano → PRO), usuarios activos,
+  si vuelven al día siguiente y a los 7 días, qué funciones usan, los errores más comunes de la semana (anónimos)
+  y qué hacen los nuevos y los que pagaron en sus primeros pasos.
+- Para n8n o el equipo de marketing: `GET /api/stats?vista=producto` y `GET /api/stats?vista=recorridos&tipo=nuevos|pagaron`
+  con la cabecera `x-api-key: STATS_KEY`.
+- **Enlace propio de cada contenido**: `riopoker.es/v/<id>` (por ejemplo `/v/tt-17`). Lleva a la portada y apunta ese
+  contenido a todo lo que haga quien llegue por él (en Estadísticas → «Contenidos que traen usuarios»).
+- `?sinestadisticas=1` (una vez en cada dispositivo tuyo) hace que tus propias visitas no cuenten.
+
 ## Canal de Telegram (pregunta del día)
 
 `api/telegram.js` publica cada día, sobre las 19:00 (hora de España en verano; 18:00 en invierno),
