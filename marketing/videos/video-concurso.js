@@ -148,7 +148,7 @@ window.setup = setup; window.render = render;
 function narracion(p){
   const L = 'ABCD';
   return [
-    { id: 'intro', texto: `¿Quién sabe más de póker? Nivel ${p.nivel}.`, en: T.intro + 0.1, limite: T.q },
+    { id: 'intro', texto: `${require('./voz.js').gancho('concurso')} Nivel ${p.nivel}.`, en: T.intro + 0.1, limite: T.q },
     { id: 'pregunta', texto: `${p.q} ${p.opts.map((o, i) => `${L[i]}: ${o}`).join('. ')}.`, en: T.q + 0.25, limite: T.cuenta },
     { id: 'respuesta', texto: 'La respuesta correcta es…', en: T.resp, limite: T.reveal },
     { id: 'revelacion', texto: `¡Es la ${L[p.ok]}! ${p.why}`, en: T.reveal + 0.2, limite: T.fin },

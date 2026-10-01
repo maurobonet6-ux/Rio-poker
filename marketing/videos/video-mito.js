@@ -56,7 +56,7 @@ window.render = render;`;
 
 // Lo que dice la voz y cuándo (ver video-lista.js).
 const narracion = m => [
-  { id: 'afirmacion', texto: `¿Mito o realidad? ${m.dice}`, en: T.card + 0.3, limite: T.cuenta },
+  { id: 'afirmacion', texto: `${require('./voz.js').gancho('mito')} ¿Mito o realidad? ${m.dice}`, en: T.card + 0.3, limite: T.cuenta },
   { id: 'veredicto', texto: `${m.verdad ? 'Es realidad' : 'Es un mito'}. ${m.why}`, en: T.flip + 0.25, limite: T.fin },
   { id: 'cta', texto: require('./voz.js').CTA, en: T.fin + 0.4, limite: T.total },
 ];
