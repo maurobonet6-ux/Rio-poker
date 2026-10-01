@@ -1720,7 +1720,7 @@
     ].filter(x => x[3]);
     const list = document.getElementById('accountList');
     list.innerHTML = items.map(([ic, l, id]) => `<button type="button" class="av-item" data-click="${id}"><span>${ic}</span><b>${l}</b><i>›</i></button>`).join('')
-      + `<div class="av-legal"><a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/guias/">Guías</a></div>`;
+      + `<div class="av-legal"><a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/guias/">Guías</a> · <a href="/descubre/">Qué es RÍO</a></div>`;
     list.querySelectorAll('[data-click]').forEach(b => b.addEventListener('click', () => {
       document.getElementById(b.dataset.click).click();
       if (b.dataset.click === 'navLogout') setTimeout(renderAccount, 300);

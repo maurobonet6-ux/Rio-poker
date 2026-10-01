@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RÍO — Tu coach de póker con IA, en español</title>
+<meta name="description" content="Analiza tus manos de póker, entiende tus errores y descubre cómo jugar mejor. Con captura, voz o historial. Gratis para empezar.">
+<link rel="canonical" href="https://riopoker.es/descubre/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RÍO">
+<meta property="og:title" content="RÍO — Tu coach de póker con IA">
+<meta property="og:description" content="Analiza tus manos, entiende tus errores y descubre cómo jugar mejor.">
+<meta property="og:url" content="https://riopoker.es/descubre/">
+<meta property="og:image" content="https://riopoker.es/og-image.png">
+<meta property="og:locale" content="es_ES">
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/descubre/descubre.css">
+<script>(function(){try{if(localStorage.getItem('rio_sin_estadisticas')==='1')return}catch(e){}window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};var s=document.createElement('script');s.defer=true;s.src='/_vercel/insights/script.js';document.head.appendChild(s)})();try{if(!localStorage.getItem('rio_src')){var q=new URLSearchParams(location.search),src=q.get('utm_source')||'',ref='';try{ref=document.referrer?new URL(document.referrer).hostname:''}catch(e){}if(!src&&ref&&ref!==location.hostname){var r={instagram:'instagram',youtube:'youtube',youtu:'youtube',tiktok:'tiktok',facebook:'facebook',google:'google',chatgpt:'chatgpt',reddit:'reddit',t:'telegram',telegram:'telegram',discord:'discord',x:'x',twitter:'x'},p=ref.replace(/^(www|m|l|lm)\./,'').split('.');src=r[p[0]]||p[0]}localStorage.setItem('rio_src',(src||'directo').toLowerCase().slice(0,40))}}catch(e){}</script>
+</head>
+<body>
+<!-- Landing pública de RÍO: para quien llega de fuera. La app (el analizador) sigue en riopoker.es/.
+     Todo lo que se muestra es real: la mano de ejemplo es la de la app y el resultado es el que da su motor. -->
+<header class="top">
+  <a class="logo" href="/descubre/">RÍO</a>
+  <nav class="top-links"><a href="#demo">Cómo funciona</a><a href="#precios">Precios</a><a href="#faq">Preguntas</a></nav>
+  <a class="btn btn-sm" href="/">Abrir RÍO</a>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <p class="kicker">Calculadora y entrenador de póker en español</p>
+      <h1>Tu coach de póker <span>con IA.</span></h1>
+      <p class="lead">Analiza tus manos, entiende tus errores y descubre cómo jugar mejor.</p>
+      <div class="cta-row">
+        <a class="btn" href="/">Empezar gratis</a>
+        <a class="btn btn-ghost" href="#demo">Ver cómo funciona</a>
+      </div>
+      <p class="fine">1 análisis de prueba sin registrarte · 10 más con tu cuenta gratis · sin tarjeta</p>
+    </div>
+    <div class="hero-card" aria-hidden="true">
+      <div class="hc-row"><span class="card">A<i>♠</i></span><span class="card">5<i>♠</i></span><span class="arrow">→</span><span class="card">K<i>♠</i></span><span class="card red">8<i>♦</i></span><span class="card">3<i>♠</i></span></div>
+      <div class="hc-badge">PAGA</div>
+      <div class="hc-line">Ganas <b>~52%</b> · necesitas <b>25%</b></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="demo">
+  <div class="wrap">
+    <p class="kicker">Demo del producto</p>
+    <h2>Una mano real, analizada por RÍO</h2>
+    <p class="sub">Es la mano de ejemplo de la app. Estos son los datos que devuelve su motor (la probabilidad sale de una simulación y puede variar un punto o dos).</p>
+    <div class="demo">
+      <div class="demo-in">
+        <div class="zone"><small>Tu mano</small><div class="cards"><span class="card">A<i>♠</i></span><span class="card">5<i>♠</i></span></div></div>
+        <div class="zone"><small>Mesa (flop)</small><div class="cards"><span class="card">K<i>♠</i></span><span class="card red">8<i>♦</i></span><span class="card">3<i>♠</i></span></div></div>
+        <p class="sit">Estás en el <b>botón</b> contra la <b>ciega grande</b>. Hay <b>30</b> en el bote y te toca pagar <b>10</b>.</p>
+      </div>
+      <div class="demo-out">
+        <div class="verdict"><span class="badge">🟡 PAGA</span><span>RÍO recomienda <b>pagar 10</b></span></div>
+        <div class="chips"><div><b>~52%</b><span>Ganas</span></div><div><b>25%</b><span>Necesitas</span></div><div class="pos"><b>+11,4</b><span>de media si pagas</span></div><div><b>15</b><span>Cartas que te ayudan</span></div></div>
+        <ul class="why">
+          <li>🎯 Ganas ~52% de las veces y necesitas 25% para que pagar compense.</li>
+          <li>⚠️ Contra sus manos fuertes (las que pagarían una subida) solo ganas ~40%: paga, pero no subas.</li>
+          <li>🃏 Tienes 15 cartas que mejoran tu jugada en la próxima calle.</li>
+        </ul>
+        <a class="btn btn-sm" href="/">Probar con mi mano →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt">
+  <div class="wrap">
+    <p class="kicker">3 formas de analizar</p>
+    <h2>Mete la mano como te sea más cómodo</h2>
+    <div class="grid3">
+      <article class="feat"><span class="ic">📸</span><h3>Captura</h3><p>Sube una captura de la mesa y RÍO lee tus cartas, la mesa, el bote, las apuestas y las posiciones.</p><small>PRO · 1 crédito de IA</small></article>
+      <article class="feat"><span class="ic">🎙️</span><h3>Voz</h3><p>Cuéntale la mano como se la contarías a un amigo, dictada o escrita, y RÍO la rellena por ti.</p><small>PRO · 1 crédito de IA</small></article>
+      <article class="feat"><span class="ic">📋</span><h3>Historial</h3><p>Pega el historial de una mano de PokerStars o GGPoker y RÍO la importa con su secuencia de apuestas.</p><small>PRO</small></article>
+    </div>
+    <p class="note">¿Sin PRO? Mete la mano <b>a mano</b>, carta a carta, gratis.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap split">
+    <div>
+      <p class="kicker">RÍO explica el porqué</p>
+      <h2>No solo qué hacer: por qué</h2>
+      <p class="sub">Cada análisis te da la decisión, la explicación en palabras sencillas y los datos técnicos si los quieres.</p>
+      <ul class="ticks">
+        <li><b>Decisión:</b> pagar, subir, apostar, pasar o tirar.</li>
+        <li><b>Explicación:</b> cuánto ganas, cuánto necesitas y qué hace tu rival.</li>
+        <li><b>Plan:</b> qué hacer si te vuelven a subir y en la siguiente calle.</li>
+        <li><b>Modo Avanzado:</b> equity, pot odds, EV, SPR, outs y rango del rival.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="p-title">📋 Tu plan</div>
+      <p>Paga 10.</p>
+      <p>Si alguien vuelve a subir después: puedes pagar casi cualquier resubida; contra su rango fuerte ganas ~46%, casi la mitad de las veces.</p>
+      <p>En la siguiente calle, vuelve a analizar con la carta nueva.</p>
+      <small>Plan real de la mano de ejemplo.</small>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt">
+  <div class="wrap split rev">
+    <div class="panel leak">
+      <small>Tu mayor leak</small>
+      <b>Pagas cuando convenía retirarse</b>
+      <span>Ejemplo de uno de los errores que RÍO detecta.</span>
+    </div>
+    <div>
+      <p class="kicker">RÍO detecta tus leaks</p>
+      <h2>Descubre el error que más te cuesta</h2>
+      <p class="sub">Después de cada análisis dices qué hiciste tú con un toque. RÍO lo compara con su consejo y junta tus errores más repetidos: pagar de más, retirarte de más, no apostar cuando tocaba…</p>
+      <p class="sub">Y te estima dónde pierdes más EV: por posición, por calle, en botes con 3-bet o pagando en el river.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <p class="kicker">Entrenamiento</p>
+    <h2>Convierte tus errores en práctica</h2>
+    <p class="sub">Entrena decisiones sueltas por tema o deja que RÍO elija situaciones del tipo que más fallas. Gratis.</p>
+    <div class="topics"><span>Preflop</span><span>Flop</span><span>Turn</span><span>River</span><span>3-bet</span><span>C-bet</span><span>Faroles</span><span>Pot odds</span><span class="hot">🎯 Mis errores</span></div>
+    <div class="grid2">
+      <article class="feat"><span class="ic">🎯</span><h3>Entrenamiento</h3><p>¿Pagas, subes o tiras? Respondes y RÍO te corrige al momento con el mismo motor del analizador.</p></article>
+      <article class="feat"><span class="ic">🃏</span><h3>Partida de práctica</h3><p>Manos completas contra 2 a 6 rivales con estilos distintos. Al acabar, RÍO repasa tus decisiones.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt">
+  <div class="wrap">
+    <p class="kicker">Progreso</p>
+    <h2>Tu panel, siempre a mano</h2>
+    <p class="sub">Todo lo que analizas y entrenas se junta en «Mi progreso». Así se ve (se llena con tus propias manos):</p>
+    <div class="dash" aria-hidden="true">
+      <div class="kpis"><div><b>—</b><span>Manos analizadas</span></div><div><b>—</b><span>EV medio</span></div><div><b>—</b><span>Decisiones correctas</span></div><div><b>—</b><span>Leaks detectados</span></div></div>
+      <div class="rows"><div><span>Dónde pierdes más EV</span><i></i></div><div><span>Errores más frecuentes</span><i></i></div><div><span>Evolución semanal</span><i></i></div><div><span>Acierto por calle</span><i></i></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="precios">
+  <div class="wrap">
+    <p class="kicker">Precios</p>
+    <h2>Empieza gratis</h2>
+    <div class="prices">
+      <article class="price"><h3>Gratis</h3><p class="amt">0 €</p>
+        <ul><li>1 análisis de prueba + 10 con tu cuenta gratis</li><li>Entrenamiento, partida de práctica, tablas y glosario</li><li>Tu progreso y estadísticas</li><li>Historial: tu última mano</li></ul>
+        <a class="btn btn-ghost" href="/">Empezar gratis</a></article>
+      <article class="price pro"><h3>RÍO PRO</h3><p class="amt">9,99 € <small>/ mes</small></p>
+        <ul><li><b>Análisis manuales ilimitados</b></li><li>200 créditos de IA al mes (captura o voz)</li><li>Importa manos de PokerStars y GGPoker</li><li>Historial de 200 manos con filtros y tus patrones</li></ul>
+        <a class="btn" href="/#/cuenta">Ver RÍO PRO</a></article>
+      <article class="price"><h3>RÍO PRO anual</h3><p class="amt">79,99 € <small>/ año</small></p>
+        <ul><li>Todo lo de RÍO PRO</li><li>Sale a 6,67 €/mes · ahorras un 33 %</li><li>Cancela cuando quieras</li></ul>
+        <a class="btn btn-ghost" href="/#/cuenta">Ver plan anual</a></article>
+    </div>
+    <p class="note">¿Necesitas más IA? Packs de créditos desde 2,99 €, pago único (solo con PRO).</p>
+  </div>
+</section>
+
+<section class="sec alt" id="faq">
+  <div class="wrap narrow">
+    <h2>Preguntas frecuentes</h2>
+    <details><summary>¿Qué es RÍO?</summary><p>RÍO es una calculadora y entrenador de póker en español. Le dices tus cartas, la mesa, el bote y lo que te toca pagar, y te dice si pagar, subir o tirar en cada calle, con la probabilidad de ganar, los outs, las odds del bote y el EV explicados fácil.</p></details>
+    <details><summary>¿Es gratis?</summary><p>Sí. Tienes un análisis de prueba sin registrarte y 10 más al crear tu cuenta gratis, solo con tu email. El entrenamiento, el glosario y las tablas de manos son gratis. RÍO PRO (9,99 €/mes o 79,99 €/año) da análisis manuales ilimitados y funciones con IA como analizar una captura.</p></details>
+    <details><summary>¿Puedo usar RÍO mientras juego?</summary><p>No. RÍO es una herramienta de estudio para repasar tus manos después de jugar. La mayoría de salas online prohíben las ayudas en tiempo real.</p></details>
+    <details><summary>¿Qué diferencia hay entre el modo Fácil y el Avanzado?</summary><p>El modo Fácil te guía paso a paso y te pregunta el bote con dos preguntas sencillas. El Avanzado muestra todos los datos: rango del rival, EV, SPR y más detalles de cada calle.</p></details>
+    <details><summary>¿Funciona en el móvil?</summary><p>Sí. RÍO funciona en el navegador del móvil y del ordenador, y puedes instalarlo en la pantalla de inicio como una app.</p></details>
+    <details><summary>¿Qué necesito saber de póker para usarlo?</summary><p>Solo las reglas básicas de Texas Hold'em. Si no conoces un término como equity, pot odds u outs, tienes el <a href="/glosario/">glosario de póker</a> y las <a href="/tablas/">tablas de manos iniciales</a> por posición.</p></details>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Deja de preguntarte si jugaste bien.</h2>
+    <p>Pregúntaselo a RÍO.</p>
+    <a class="btn" href="/">Empezar gratis</a>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>RÍO es una herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas prohíben las ayudas en tiempo real.</p>
+    <p><span class="age">+18</span> Juega con responsabilidad · <a href="https://www.jugarbien.es" rel="noopener">jugarbien.es</a></p>
+    <p><a href="/guias/">Guías</a> · <a href="/manos/">Manos iniciales</a> · <a href="/glosario/">Glosario</a> · <a href="/tablas/">Tablas</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a></p>
+  </div>
+</footer>
+</body>
+</html>

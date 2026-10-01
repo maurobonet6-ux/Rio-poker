@@ -591,3 +591,12 @@ test('entrenar mis errores: con errores reales saca situaciones de ese tipo', as
   await expect(page.locator('#helpBody')).toContainText('river');
   await expect(page.locator('[data-ans="CALL"]')).toBeVisible();
 });
+
+test('landing pública: sin errores, con la mano de ejemplo real y llevando a la app', async ({ page }) => {
+  const { errores } = await abrir(page, { path: '/descubre/' });
+  await expect(page.locator('h1')).toContainText('Tu coach de póker');
+  await expect(page.locator('#demo')).toContainText('RÍO recomienda');
+  await expect(page.locator('#precios')).toContainText('9,99 €');
+  await expect(page.locator('a.btn', { hasText: 'Empezar gratis' }).first()).toHaveAttribute('href', '/');
+  expect(errores).toEqual([]);
+});
