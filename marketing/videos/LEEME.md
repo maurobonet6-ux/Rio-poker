@@ -82,19 +82,32 @@ El workflow `.github/workflows/video.yml` ejecuta todo en GitHub Actions y manda
 `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID` (Settings → Secrets and variables → Actions). n8n lo lanza con la API de GitHub
 (`POST /repos/<dueño>/Rio-poker/actions/workflows/video.yml/dispatches`, con `ref: main` e `inputs.mano` = el JSON como texto).
 
-## Qué se publica en el canal de Telegram (rotación semanal)
+## Qué se publica en el canal de Telegram
 
-| Día | Qué | Quién lo publica |
+El bot (`api/telegram.js`) tiene cinco tipos de publicación. Todos van **en orden y sin repetir**: al acabarse una lista, ese tipo deja de publicarse
+(en vez de volver a empezar) y, si defines `TELEGRAM_AVISO_CHAT` en Vercel (tu chat privado con el bot), te avisa una vez.
+
+| Tipo | Qué es | De dónde sale |
 | --- | --- | --- |
-| Lunes, miércoles, domingo | Pregunta del día (quiz) | Vercel, `api/telegram.js` |
-| Martes, viernes | Texto con un dato y el enlace a la web (`lib/telegram-textos.js`) | Vercel, `api/telegram.js` |
-| Jueves, sábado | Vídeo «¿Qué harías tú?» con una mano al azar | GitHub Actions, `.github/workflows/video.yml` |
+| `quiz` | Pregunta del día (cuestionario) + enlace a la web | `lib/telegram-quizzes.js` |
+| `texto` | Un dato útil con el enlace a la web | `lib/telegram-textos.js` |
+| `mito` | «¿Mito o realidad?» como cuestionario de 2 opciones | `lib/poker-mitos.js` |
+| `generada` | Cuestionario con una pregunta de cuentas generada y calculada; **nunca se acaba** | `lib/poker-preguntas.js` |
+| `encuesta` | Encuesta de opinión, sin respuesta correcta | `lib/telegram-encuestas.js` |
 
-- **No se repite nada**: las preguntas y los textos salen en orden y, al acabarse la lista, ese tipo deja de publicarse
-  (en vez de volver a empezar). Si defines `TELEGRAM_AVISO_CHAT` en Vercel (tu chat privado con el bot), te avisa una vez.
-  Para seguir, hay que añadir ideas nuevas a `lib/telegram-quizzes.js` o `lib/telegram-textos.js`.
-- Para el vídeo del canal, añade el secreto `TELEGRAM_CANAL` (por ejemplo `@riopoker_es`) en GitHub; el bot tiene que ser administrador del canal.
-- Desde Actions o n8n también se puede mandar un vídeo al canal con `destino = canal`.
+**Horarios** (hora de España en verano; en invierno es una hora antes):
+
+| Hora | Qué | Quién lo lanza |
+| --- | --- | --- |
+| 10:00 | `mito` | GitHub Actions, `.github/workflows/canal.yml` |
+| 13:00 | `generada` | GitHub Actions |
+| 17:30 | `encuesta` | GitHub Actions |
+| 19:00 | `quiz` o `texto` según el día (quiz dom, mar, jue, sáb; texto lun, mié, vie) | Vercel, cron de `vercel.json` |
+| cuando apruebes | el vídeo que pulses con ✅ | n8n |
+
+`canal.yml` necesita el secreto de GitHub `CRON_SECRET`, con el mismo valor que `CRON_SECRET` en Vercel. Se puede probar a mano desde
+Actions → Canal de Telegram → Run workflow, eligiendo el tipo. Para añadir ideas, edita el archivo de `lib/` del tipo correspondiente.
+- Para el vídeo del canal, el bot de n8n tiene que ser administrador del canal.
 
 ## Formatos de vídeo y lote diario
 

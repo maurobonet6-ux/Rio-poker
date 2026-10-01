@@ -1,0 +1,43 @@
+# Reloj del canal de Telegram: a distintas horas pide a la web (api/telegram.js) que publique algo.
+# Hace falta porque el plan de Vercel solo permite un horario al día (el de las 19:00, en vercel.json).
+# Hace falta el secreto del repositorio CRON_SECRET, con el MISMO valor que CRON_SECRET en Vercel.
+name: Canal de Telegram
+
+on:
+  schedule:
+    - cron: '0 8 * * *'    # 10:00 en España en verano (9:00 en invierno): ¿mito o realidad?
+    - cron: '0 11 * * *'   # 13:00 (12:00): cuestionario con una pregunta de cuentas generada
+    - cron: '30 15 * * *'  # 17:30 (16:30): encuesta de opinión
+  workflow_dispatch:
+    inputs:
+      tipo:
+        description: 'Qué publicar ahora'
+        required: true
+        default: 'mito'
+        type: choice
+        options: [mito, generada, encuesta, quiz, texto]
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Pedir la publicación
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          HORARIO: ${{ github.event.schedule }}
+          TIPO: ${{ inputs.tipo }}
+        run: |
+          set -u
+          if [ -z "$TIPO" ]; then
+            case "$HORARIO" in
+              '0 8 * * *') TIPO=mito ;;
+              '0 11 * * *') TIPO=generada ;;
+              '30 15 * * *') TIPO=encuesta ;;
+              *) echo "::error::Horario desconocido: $HORARIO"; exit 1 ;;
+            esac
+          fi
+          if [ -z "${CRON_SECRET:-}" ]; then echo "::error::Falta el secreto CRON_SECRET en GitHub (Settings → Secrets and variables → Actions)"; exit 1; fi
+          echo "Publicando: $TIPO"
+          curl -sS -f -m 60 -H "Authorization: Bearer ${CRON_SECRET}" "https://riopoker.es/api/telegram?tipo=${TIPO}"
+          echo
