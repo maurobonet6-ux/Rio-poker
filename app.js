@@ -2260,15 +2260,22 @@
   }
   function shareUrl(){ return `${location.origin}/#m=${encodeHand()}`; }
 
+  function decodeHand(code){
+    try { const o = JSON.parse(unb64url(code)); return o && o.v === 1 ? o : null; } catch(e){ return null; }
+  }
   function loadSharedHand(){
     const m = location.hash.match(/^#m=([A-Za-z0-9_-]+)$/);
     if (!m) return;
     history.replaceState(null, '', location.pathname + location.search);
-    let o;
-    try { o = JSON.parse(unb64url(m[1])); } catch(e){ return; }
-    if (!o || o.v !== 1) return;
+    applyEncodedHand(m[1], true);
+  }
+  // Carga una mano codificada (enlace compartido o mano del historial) y la analiza.
+  // Ni las compartidas ni volver a analizar una mano tuya gastan análisis.
+  function applyEncodedHand(code, shared){
+    const o = decodeHand(code);
+    if (!o) return false;
     const hc = parseTokens(String(o.h || '')), bc = parseTokens(String(o.b || ''));
-    if (!hc[0] || !hc[1]) return;
+    if (!hc[0] || !hc[1]) return false;
     hole = [hc[0], hc[1]]; board = [0, 1, 2, 3, 4].map(i => bc[i] || null);
     if (VALID_POS.includes(o.hp)) document.getElementById('heroPosInput').value = o.hp;
     if (VALID_POS.includes(o.vp)) document.getElementById('villPosInput').value = o.vp;
@@ -2294,6 +2301,7 @@
     if (seq.some(x => x.length)) document.getElementById('seqBox').open = true;
     updateOrderHint(); render(); renderRangeUI();
     const banner = document.getElementById('sharedBanner');
+    if (!shared){ banner.style.display = 'none'; freeRun = true; setTimeout(() => analyzeBtn.click(), 300); return true; }
     banner.innerHTML = '👀 <b>Te han compartido esta mano.</b> Abajo tienes el análisis de RÍO. ¿Tú qué habrías hecho?' +
       (storageGet('rio_token', '') ? '' : ' <a class="inline-link" id="sharedSignup">Crea tu cuenta gratis</a> para analizar las tuyas.');
     banner.style.display = 'block';
@@ -2301,10 +2309,11 @@
     if (su) su.addEventListener('click', () => openPaywall('free'));
     freeRun = true;
     setTimeout(() => analyzeBtn.click(), 300);
+    return true;
   }
 
-  async function shareHand(){
-    const url = shareUrl();
+  async function shareHand(code){
+    const url = typeof code === 'string' ? `${location.origin}/#m=${code}` : shareUrl();
     const text = `¿Tú qué harías con ${lastHandLabel || 'esta mano'}? Mírala en RÍO:`;
     const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
     if (navigator.share && touch){
@@ -2391,7 +2400,10 @@
     const YOU = { ok: '✅', meh: '≈', bad: '❌' };
     visible.forEach(h => {
       const row = document.createElement('div');
-      row.className = 'history-item';
+      row.className = 'history-item clickable';
+      row.tabIndex = 0; row.setAttribute('role', 'button'); row.title = 'Ver la mano';
+      row.addEventListener('click', () => openHistoryHand(h));
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openHistoryHand(h); } });
       const street = typeof h.st === 'number' ? STREET_NAMES[h.st] + ' · ' : '';
       const where = h.hp ? `${h.hp} vs ${h.vp} · ${h.game === 'torneo' ? 'Torneo' : 'Cash'} · ` : '';
       const date = h.t ? new Date(h.t).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : h.when;
@@ -2413,6 +2425,32 @@
       lock.innerHTML = `+${hist.length-1} manos más guardadas. <a id="unlockHistoryLink">Desbloquea el historial completo con filtros y tus errores con RÍO PRO →</a>`;
       historyList.appendChild(lock);
       document.getElementById('unlockHistoryLink').addEventListener('click', () => openPaywall('plans'));
+    }
+  }
+  // Ficha de una mano del historial: lo que se guardó al analizarla, y Reanalizar con el motor de siempre.
+  var rerunOf = null; // t de la mano del historial que se está reanalizando
+  function openHistoryHand(h){
+    const o = h.m ? decodeHand(h.m) : null;
+    const hc = o ? parseTokens(String(o.h || '')).filter(Boolean) : [], bc = o ? parseTokens(String(o.b || '')).filter(Boolean) : [];
+    const date = h.t ? new Date(h.t).toLocaleString('es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : (h.when || '');
+    const VERD = { ok: '✓ Bien jugado', meh: '≈ Aceptable', bad: '✗ Mejorable' };
+    const evTxt = typeof h.ev === 'number' ? `${h.ev >= 0 ? '+' : ''}${String(h.ev).replace('.', ',')} ${h.evU || ''}` : '—';
+    const body = openModal(`Mano: ${h.hand}`, `
+      <div class="hh-meta">${typeof h.st === 'number' ? STREET_NAMES[h.st] : ''}${h.hp ? ` · ${h.hp} vs ${h.vp}` : ''}${h.game ? ` · ${h.game === 'torneo' ? 'Torneo' : 'Cash'}` : ''} · ${escHTML(date)}</div>
+      ${hc.length ? `<div class="train-cards hh-cards"><div><div class="zone-label">Tu mano</div>${hc.map(c => cardHTML(c, true)).join('')}</div>
+        ${bc.length ? `<div><div class="zone-label">Mesa</div>${bc.map(c => cardHTML(c, true)).join('')}</div>` : ''}</div>` : ''}
+      <div class="yd-cmp hh-cmp ${h.g || ''}"><div><small>RÍO recomienda</small><b>${decisionHTML(h.decision)}</b></div>
+        <div><small>Tú hiciste</small><b>${h.act ? decisionHTML(h.act) : '—'}</b></div>
+        ${h.g ? `<div class="yd-verdict">${VERD[h.g]}</div>` : ''}</div>
+      <div class="hh-stats"><div><b>${String(h.equity).replace('.', ',')}%</b><span>Prob. de ganar</span></div><div><b class="${typeof h.ev === 'number' ? (h.ev >= 0 ? 'pos' : 'neg') : ''}">${evTxt}</b><span>EV</span></div>
+        ${o && o.c ? `<div><b>${fmtN(o.c)}</b><span>Te tocaba pagar</span></div>` : ''}${o && o.p ? `<div><b>${fmtN(o.p)}</b><span>Bote</span></div>` : ''}</div>
+      ${h.w ? `<div class="sub-title">Por qué</div><p class="hh-why">${escHTML(h.w)}</p>` : ''}
+      ${o ? `<div class="hh-actions"><button type="button" class="btn-primary" id="hhRe">🔄 Reanalizar</button><button type="button" class="btn-secondary" id="hhShare">📤 Compartir</button></div>
+        <p class="hint">Reanalizar carga la mano en el analizador con el análisis completo (explicación, plan y datos). No gasta análisis.</p>`
+        : '<p class="hint">Esta mano se guardó con una versión anterior de RÍO y no se puede reanalizar. Las nuevas sí.</p>'}`, { wide: true });
+    if (o){
+      body.querySelector('#hhRe').addEventListener('click', () => { closeModal(); showView(null); rerunOf = h.t || null; applyEncodedHand(h.m, false); });
+      body.querySelector('#hhShare').addEventListener('click', () => shareHand(h.m));
     }
   }
   // Patrones reales del historial: qué te recomienda RÍO en cada posición y cómo juegas tú.
@@ -3157,15 +3195,17 @@
 
       // Tu jugada en esa mano (solo si apuntaste lo que hiciste en la secuencia): la peor nota.
       const worst = reviewRows.reduce((w, r) => (!w || ['ok', 'meh', 'bad'].indexOf(r.g) > ['ok', 'meh', 'bad'].indexOf(w.g)) ? r : w, null);
-      const historyT = Date.now();
-      pushHistory({
+      const historyT = rerunOf || Date.now(); // al reanalizar una mano del historial se reutiliza su entrada
+      if (!rerunOf) pushHistory({
         hand: handLabel, equity: win.toFixed(1), rivals: numRivals,
         decision: text, cls: cls, t: historyT, st: aStreet,
         ev: evShown === null ? null : Math.round((inBB ? evShown / bbSize() : evShown) * 10) / 10, evU: inBB ? 'BB' : unitLabel,
  g: worst ? worst.g : null, act: worst ? worst.act : null,
         hp: heroPos, vp: villPos, game: tourney ? 'torneo' : 'cash',
+        m: encodeHand(), w: (why[0] || '').replace(/<[^>]+>/g, '').slice(0, 160),
         when: new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})
       });
+      rerunOf = null;
       updateUsageBadge();
       renderHistory();
       renderYouDid(reviewRows.length || demo ? null : {

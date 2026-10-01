@@ -554,3 +554,18 @@ test('navegación: el historial se ve en su sección y vuelve al analizador al s
   await expect(page.locator('#historyView #historyPanel')).toHaveCount(0);
   await expect(page.locator('.wrap #historyPanel')).toBeVisible();
 });
+
+test('historial interactivo: abrir una mano, ver su ficha y reanalizarla sin duplicarla', async ({ page }) => {
+  await abrir(page, { pro: true });
+  await ponerMano(page, ['Ah', '9h'], ['Kh', '7h', '2c']);
+  await ponerBote(page, 30, 15);
+  await analizar(page);
+  await page.locator('#historyList .history-item').first().click();
+  await expect(page.locator('#helpModal.show')).toBeVisible();
+  await expect(page.locator('#helpBody .hh-cards .mini-card')).toHaveCount(5);
+  await expect(page.locator('#helpBody')).toContainText('RÍO recomienda');
+  await page.locator('#hhRe').click();
+  await expect(page.locator('#helpModal.show')).toHaveCount(0);
+  await expect(page.locator('#resultPanel')).toHaveClass(/show/);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history')).length)).toBe(1);
+});

@@ -1081,3 +1081,16 @@ body.view-open { overflow: hidden; }
 .av-item { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; text-align: left; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); color: var(--cream); font: inherit; cursor: pointer; }
 .av-item:hover { border-color: var(--gold); } .av-item span { font-size: 1.2rem; text-align: center; } .av-item i { font-style: normal; color: var(--cream-dim); font-size: 1.3rem; }
 .av-legal { margin-top: 14px; text-align: center; font-size: 0.8rem; color: var(--cream-dim); } .av-legal a { color: var(--cream-dim); }
+/* Historial interactivo */
+.history-item.clickable { cursor: pointer; border-radius: 10px; transition: background .15s; }
+.history-item.clickable:hover, .history-item.clickable:focus-visible { background: var(--panel-2); outline: none; }
+.hh-meta { color: var(--cream-dim); font-size: 0.85rem; margin: -6px 0 12px; }
+.hh-cards { margin-bottom: 14px; }
+.hh-cmp { margin-bottom: 12px; }
+.hh-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.hh-stats div { background: var(--panel-2); border-radius: 10px; padding: 10px 12px; display: grid; gap: 2px; }
+.hh-stats b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.2rem; } .hh-stats b.pos { color: var(--ok); } .hh-stats b.neg { color: var(--crimson); }
+.hh-stats span { font-size: 0.7rem; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+.hh-why { margin: 0 0 12px; color: var(--cream); }
+.hh-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-top: 6px; }
+.hh-actions .btn-primary, .hh-actions .btn-secondary { width: 100%; min-width: 0; }
