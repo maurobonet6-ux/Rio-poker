@@ -510,3 +510,33 @@ body.mode-pro .sheet .easy-extra, body.easy-more .sheet .easy-extra { display: b
 #resultPanel .nd-kicker { color: var(--c-text-3) !important; font-size: var(--fs-12); font-weight: 500; letter-spacing: 0.06em; }
 #resultPanel .nd-q { font-size: var(--fs-16); font-weight: 600; }
 #resultPanel .demo-next, #resultPanel .trial-nudge, #resultPanel .more-nudge { padding: var(--sp-4); font-size: var(--fs-14); color: var(--c-text-2); }
+
+/* ---------- Dos formas de meter la mano: Mesa (por defecto) y Lista ---------- */
+.an-title { display: flex; align-items: center; gap: var(--sp-3); }
+.list-pos { display: none; }
+body.entrada-lista .mesa-felt, body.entrada-lista .mesa-seats, body.entrada-lista .mesa-pot, body.entrada-lista .seat-mode { display: none !important; }
+body.entrada-lista .an-hand { display: flex; flex-direction: column; }
+body.entrada-lista .an-head { order: 0; }
+body.entrada-lista .hero-zone { order: 1; align-items: flex-start; margin: var(--sp-3) 0 0; }
+body.entrada-lista .hero-zone::before { content: 'Tus cartas'; font-size: var(--fs-13); font-weight: 500; color: var(--c-text-2); }
+body.entrada-lista .mesa { order: 2; height: auto; margin-top: var(--sp-4); }
+body.entrada-lista .mesa-center { position: static; inset: auto; align-items: flex-start; gap: 6px; }
+body.entrada-lista .mesa .street-now { order: -1; font-size: var(--fs-13); letter-spacing: 0; text-transform: none; font-weight: 500; color: var(--c-text-2); }
+body.entrada-lista .mesa .street-now::before { content: 'Mesa · '; }
+body.entrada-lista .mesa .grp-tag { display: block; font-size: 11px; color: var(--c-text-3); margin-top: 4px; font-weight: 500; }
+body.entrada-lista .mesa .board-groups { gap: 10px; }
+body.entrada-lista .list-pos { order: 3; display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin-top: var(--sp-4); }
+body.entrada-lista .list-pos .field { margin: 0; }
+body.entrada-lista .current-hand { order: 4; text-align: left; }
+body.entrada-lista .pot-fields { order: 5; }
+body.entrada-lista .details-row { order: 6; }
+body.entrada-lista .an-hand .actions { order: 7; }
+body.entrada-lista .step-todo, body.entrada-lista .usage-row { order: 8; }
+body.entrada-lista .shared-banner, body.entrada-lista #screenshotStatus { order: 1; }
+body.entrada-lista .mesa .cardslot { --w: 46px; }
+body.entrada-lista .hero-zone .cardslot { --w: 46px; }
+body.entrada-lista .mesa-center > * { align-self: flex-start; }
+body.entrada-lista .mesa .grp-tag small, body.entrada-lista .mesa .grp-tag .hint { display: none; }
+body.entrada-lista .mesa .grp-tag { letter-spacing: 0.04em; }
+body.entrada-lista .mesa .board-groups > div { align-items: flex-start; }
+body.entrada-lista .mesa .street-now { padding: 0 !important; margin: 0 !important; }

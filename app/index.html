@@ -162,7 +162,13 @@
   <div class="an-input">
   <section class="panel an-hand" id="cardsPanel">
     <div class="an-head">
-      <h2>Tu mano</h2>
+      <div class="an-title">
+        <h2>Tu mano</h2>
+        <div class="entry-switch seg sm" role="group" aria-label="Cómo meter la mano">
+          <button type="button" data-entrada="mesa">Mesa</button>
+          <button type="button" data-entrada="lista">Lista</button>
+        </div>
+      </div>
       <div class="fill-with">
         <span class="fill-lbl">Rellenar con</span>
         <label class="fill-chip" for="screenshotInput" id="uploadBox"><svg class="i"><use href="#i-camera"/></svg><span>Captura</span><span class="pro-badge" id="uploadProBadge">PRO</span><small id="uploadSub" hidden>1 crédito de IA</small><input type="file" id="screenshotInput" accept="image/*" hidden></label>
@@ -173,6 +179,10 @@
     </div>
     <div class="shared-banner" id="sharedBanner" style="display:none;"></div>
     <div class="hint" id="screenshotStatus" style="display:none; text-align:center; margin:-4px 0 12px;"></div>
+    <div class="list-pos" id="listPos">
+      <div class="field"><label for="listHeroPos">Tu posición</label><select id="listHeroPos"></select></div>
+      <div class="field"><label for="listVillPos">Rival</label><select id="listVillPos"></select></div>
+    </div>
     <div class="mesa" id="mesa">
       <div class="mesa-felt" aria-hidden="true"></div>
       <div class="mesa-seats" id="mesaSeats" role="group" aria-label="Posiciones en la mesa"></div>

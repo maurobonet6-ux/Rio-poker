@@ -697,3 +697,21 @@ test('portada (landing): avisa de la visita y guarda el contenido de origen; al 
   await page.goto('http://rio.test/', { referer: 'https://checkout.stripe.com/c/pay/cs_test' });
   await page.waitForURL(/\/app\/$/);
 });
+
+test('meter la mano: «Mesa» por defecto y «Lista» como segunda opción (se recuerda)', async ({ page }) => {
+  await abrir(page);
+  await expect(page.locator('#mesaSeats [data-seat]').first()).toBeVisible();
+  await expect(page.locator('#listPos')).toBeHidden();
+  await page.locator('[data-entrada="lista"]').click();
+  await expect(page.locator('#mesaSeats [data-seat]').first()).toBeHidden();
+  await expect(page.locator('#listPos')).toBeVisible();
+  await page.selectOption('#listHeroPos', 'CO');
+  await expect(page.locator('#heroPosInput')).toHaveValue('CO');
+  await page.selectOption('#listVillPos', 'CO');                 // el mismo sitio: se intercambian
+  await expect(page.locator('#heroPosInput')).toHaveValue('BB');
+  await ponerMano(page, ['As', 'Kd'], ['Qs', '7c', '3h']);
+  await ponerBote(page, 30, 10);
+  expect(await analizar(page)).toBeTruthy();
+  await page.reload();
+  await expect(page.locator('#listPos')).toBeVisible();
+});

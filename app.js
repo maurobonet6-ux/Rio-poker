@@ -550,7 +550,7 @@
       const tag = document.getElementById(g.el);
       tag.classList.toggle('done', g.done);
       const isNext = g.street === cs + 1;
-      tag.innerHTML = g.name + (g.done ? ' ✓' : '') + (!g.done && isNext && cs > 1 ? '<small>solo si ya salió</small>' : '');
+      tag.innerHTML = g.name + (!g.done && isNext && cs > 1 ? '<small>solo si ya salió</small>' : '');
       divs[i].classList.toggle('next', isNext);
       divs[i].classList.toggle('cur', g.street === cs);
     });
@@ -3763,6 +3763,27 @@
     const rival = villRange && villRange.unknown ? 'rival medio' : `rival ${rangeLabel().toLowerCase()}`;
     el.textContent = `${heroSel.value} vs ${villSel.value} · ${numRivals} rival${numRivals > 1 ? 'es' : ''} · ${game} · ${rival}`;
   }
+  // Dos formas de meter la mano: «Mesa» (visual, por defecto) o «Lista» (la de siempre, más compacta).
+  // En Lista, las posiciones van en dos selectores que copian a los de «Ajustar detalles».
+  const listHero = document.getElementById('listHeroPos'), listVill = document.getElementById('listVillPos');
+  const POS_CORTA = { UTG: 'UTG · primera', HJ: 'HJ · media', CO: 'CO · cutoff', BTN: 'BTN · botón', SB: 'SB · ciega peq.', BB: 'BB · ciega gr.' };
+  listHero.innerHTML = listVill.innerHTML = Object.entries(POS_CORTA).map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+  const syncList = () => { listHero.value = heroSel.value; listVill.value = villSel.value; };
+  [[listHero, heroSel], [listVill, villSel]].forEach(([from, to]) => from.addEventListener('change', () => {
+    const other = to === heroSel ? villSel : heroSel;
+    if (other.value === from.value){ other.value = to.value; other.dispatchEvent(new Event('change', { bubbles: true })); }
+    to.value = from.value; to.dispatchEvent(new Event('change', { bubbles: true }));
+  }));
+  [heroSel, villSel].forEach(sel => sel.addEventListener('change', syncList));
+  function setEntrada(modo){
+    const lista = modo === 'lista';
+    document.body.classList.toggle('entrada-lista', lista);
+    document.querySelectorAll('[data-entrada]').forEach(b => { b.classList.toggle('active', (b.dataset.entrada === 'lista') === lista); b.setAttribute('aria-pressed', String((b.dataset.entrada === 'lista') === lista)); });
+    try { localStorage.setItem('rio_entrada', lista ? 'lista' : 'mesa'); } catch (e) {}
+  }
+  document.querySelectorAll('[data-entrada]').forEach(b => b.addEventListener('click', () => setEntrada(b.dataset.entrada)));
+  setEntrada(rawStorage('rio_entrada') === 'lista' ? 'lista' : 'mesa');
+  syncList();
   renderSeats(); renderMesaPot(); updateDetailsSummary();
   setInterval(() => { if (sheet.hidden) renderMesaPot(); }, 1500); // también tras rellenar por captura, voz o enlace compartido
 

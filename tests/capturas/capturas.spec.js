@@ -32,3 +32,10 @@ for (const modo of ['facil', 'pro']){
     await foto(page, `${disp}-${modo}-3-resultado-entero`);
   });
 }
+
+test('lista · facil', async ({ page }, info) => {
+  await preparar(page, 'facil', { storage: { rio_entrada: 'lista' } });
+  await ponerMano(page, ['As', '5s'], ['Ks', '8d', '3s']);
+  await ponerBote(page, 30, 10);
+  await foto(page, `${info.project.name}-lista-2-mano`, false);
+});
