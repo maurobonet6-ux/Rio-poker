@@ -177,7 +177,7 @@ test('compartir: el enlace abre la misma mano sin gastar análisis', async ({ pa
   expect(enlace).toBe(ORIGIN);
   await page.locator('#shareBtn').click();
   const wa = await page.locator('.share-wa').getAttribute('href');
-  const url = decodeURIComponent(wa).match(/http:\/\/rio\.test\/#m=[\w-]+/)[0];
+  const url = decodeURIComponent(wa).match(/http:\/\/rio\.test\/app\/#m=[\w-]+/)[0];
   const amigo = await browser.newPage();
   const { llamadas } = await abrir(amigo, { path: url.replace(ORIGIN, '') });
   await expect(amigo.locator('#sharedBanner')).toBeVisible();
@@ -239,7 +239,7 @@ test('estadísticas: "Estadísticas y errores" abre el progreso del jugador, no 
 });
 
 test('estadísticas: se guarda de dónde llega la persona y se manda al crear la cuenta', async ({ page }) => {
-  const { llamadas } = await abrir(page, { path: '/?utm_source=Instagram' });
+  const { llamadas } = await abrir(page, { path: '/app/?utm_source=Instagram' });
   expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('instagram');
   expect(await page.evaluate(() => [...document.scripts].some(s => s.src.includes('/_vercel/insights')))).toBe(true);
   let cuerpo = null;
@@ -524,7 +524,7 @@ test('Mi progreso: resume tus manos y tu mayor leak, y Atrás vuelve al analizad
   await expect(page.locator('#progressBody')).toContainText('−2,5 BB');
   await page.goBack();
   await expect(page.locator('#progressView')).toBeHidden();
-  await page.goto('http://rio.test/#/progreso');
+  await page.goto('http://rio.test/app/#/progreso');
   await expect(page.locator('#progressView')).toBeVisible();
 });
 
@@ -548,9 +548,9 @@ test('navegación: secciones con su dirección, pestaña activa y Atrás del nav
 
 test('navegación: el historial se ve en su sección y vuelve al analizador al salir', async ({ page }) => {
   await abrir(page, { storage: { rio_history: [{ hand: 'A♠ K♦', equity: '60.0', decision: 'CALL', cls: 'warn', t: Date.now(), st: 1 }] } });
-  await page.goto('http://rio.test/#/historial');
+  await page.goto('http://rio.test/app/#/historial');
   await expect(page.locator('#historyView #historyPanel')).toBeVisible();
-  await page.goto('http://rio.test/#/');
+  await page.goto('http://rio.test/app/#/');
   await expect(page.locator('#historyView #historyPanel')).toHaveCount(0);
   await expect(page.locator('.wrap #historyPanel')).toBeVisible();
 });
@@ -593,23 +593,36 @@ test('entrenar mis errores: con errores reales saca situaciones de ese tipo', as
 });
 
 test('landing pública: sin errores, con la mano de ejemplo real y llevando a la app', async ({ page }) => {
-  const { errores } = await abrir(page, { path: '/descubre/' });
+  const { errores } = await abrir(page, { path: '/' });
   await expect(page.locator('h1')).toContainText('Tu coach de póker');
   await expect(page.locator('.laptop .screen')).toContainText('Pagar 10'); // la mano de ejemplo con el resultado del motor
   await expect(page.locator('#precios')).toContainText('9,99 €');
-  await expect(page.locator('a.btn', { hasText: 'Empezar gratis' }).first()).toHaveAttribute('href', '/');
+  await expect(page.locator('a.btn', { hasText: 'Empezar gratis' }).first()).toHaveAttribute('href', '/app/');
   expect(errores).toEqual([]);
+  expect(await page.locator('link[rel="canonical"]').getAttribute('href')).toBe('https://riopoker.es/');
+});
+
+test('portada: los enlaces viejos con #/… (y #m=…) abren la app en /app/ sin quedarse en la landing', async ({ page }) => {
+  await abrir(page, { path: '/#/practicar' });
+  await expect(page).toHaveURL('http://rio.test/app/#/practicar');
+  await expect(page.locator('#practiceView')).toBeVisible();
+});
+
+test('portada: la atribución de la visita (utm_source) se guarda ya en la landing', async ({ page }) => {
+  await abrir(page, { path: '/?utm_source=Instagram' });
+  expect(await page.evaluate(() => localStorage.getItem('rio_src'))).toBe('instagram');
+  await expect(page.locator('h1')).toContainText('Tu coach de póker'); // sigue siendo la landing
 });
 
 test('analítica: avisa de lo que hace el usuario con un identificador anónimo, sin email', async ({ page }) => {
   const eventos = [];
   page.on('request', (req) => { if (new URL(req.url()).pathname === '/api/track') eventos.push(JSON.parse(req.postData() || '{}')); });
-  await abrir(page, { pro: true, storage: { rio_email: 'yo@rio.test' }, path: '/?utm_source=contenido&c=v42' });
+  await abrir(page, { pro: true, storage: { rio_email: 'yo@rio.test' }, path: '/app/?utm_source=contenido&c=v42' });
   await ponerMano(page, ['7c', '2d'], ['As', 'Kd', 'Qh']);
   await ponerBote(page, 20, 20);
   await analizar(page);
   await page.locator('#youDid [data-yd="CALL"]').click();
-  await page.goto('http://rio.test/#/progreso');
+  await page.goto('http://rio.test/app/#/progreso');
   await expect.poll(() => eventos.map(e => e.e)).toEqual(expect.arrayContaining(['app_open', 'analysis_started', 'analysis_completed', 'manual_analysis', 'user_action_recorded', 'progress_viewed']));
   const an = eventos.find(e => e.e === 'analysis_completed');
   expect(an.aid).toMatch(/^[a-z0-9]{8,32}$/);
@@ -619,8 +632,8 @@ test('analítica: avisa de lo que hace el usuario con un identificador anónimo,
   expect(JSON.stringify(eventos)).not.toContain('yo@rio.test');
   // Con ?sinestadisticas no se manda nada
   const antes = eventos.length;
-  await page.goto('http://rio.test/?sinestadisticas=1');
-  await page.goto('http://rio.test/#/progreso');
+  await page.goto('http://rio.test/app/?sinestadisticas=1');
+  await page.goto('http://rio.test/app/#/progreso');
   await page.waitForTimeout(300);
   expect(eventos.length).toBe(antes);
 });
@@ -655,4 +668,15 @@ test('administrador: ve el uso de RÍO (embudo, retención, errores) y la cola d
   await page.locator('#helpBody [data-ok="17"]').click();
   await expect.poll(() => cambios).toEqual([{ accion: 'actualizar', id: '17', status: 'APPROVED' }]);
   expect(errores).toEqual([]);
+});
+
+test('portada (landing): avisa de la visita y guarda el contenido de origen; al volver de pagar en Stripe se abre la app', async ({ page }) => {
+  const eventos = [];
+  page.on('request', (req) => { if (new URL(req.url()).pathname === '/api/track') eventos.push(JSON.parse(req.postData() || '{}')); });
+  await abrir(page, { path: '/?utm_source=contenido&c=v7' });
+  await expect.poll(() => eventos.map(e => e.e)).toContain('landing_view');
+  expect(eventos.find(e => e.e === 'landing_view').c).toBe('v7');
+  expect(page.url()).not.toContain('/app/');
+  await page.goto('http://rio.test/', { referer: 'https://checkout.stripe.com/c/pay/cs_test' });
+  await page.waitForURL(/\/app\/$/);
 });

@@ -55,10 +55,10 @@ test('enlaces cortos para las redes: /ig, /yt… llevan a la portada con su orig
   assert.strictEqual(r['/ig'].destination, '/?utm_source=instagram');
   assert.strictEqual(r['/yt'].destination, '/?utm_source=youtube');
   assert.strictEqual(r['/x'].destination, '/?utm_source=x');
-  // /v/<id>: enlace propio de cada contenido (vídeo, post…), para saber cuál trae usuarios.
-  assert.strictEqual(r['/v/:id'].destination, '/?utm_source=contenido&c=:id');
+  // /v/<id>: enlace propio de cada contenido (vídeo, post…), para saber cuál trae usuarios. Va directo a la app («Analiza tu mano»).
+  assert.strictEqual(r['/v/:id'].destination, '/app/?utm_source=contenido&c=:id');
   assert.strictEqual(r['/v/:id'].permanent, false);
-  for (const x of cfg.redirects.filter(x => x.source !== '/v/:id')){
+  for (const x of cfg.redirects.filter(x => !x.source.startsWith('/descubre') && x.source !== '/v/:id')){ // /descubre es otra redirección (301 a la portada)
     assert.match(x.source, /^\/[a-z]{1,2}$/);
     assert.match(x.destination, /^\/\?utm_source=[a-z]+$/);
     assert.strictEqual(x.permanent, false); // temporal: así se pueden cambiar sin que los navegadores lo recuerden

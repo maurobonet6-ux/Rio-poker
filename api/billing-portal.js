@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       if (subs.data && subs.data.length > 0) { customerId = customer.id; break; }
     }
 
-    const returnUrl = `https://${req.headers.host}/`;
+    const returnUrl = `https://${req.headers.host}/app/`;
     const r = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${stripeKey}`, 'Content-Type': 'application/x-www-form-urlencoded' },

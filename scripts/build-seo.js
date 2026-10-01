@@ -1,6 +1,6 @@
 // Genera las páginas estáticas para buscadores: /glosario/…, /tablas/…, /guias/…
 // y /manos/… (una por cada una de las 169 manos iniciales), más sitemap.xml,
-// robots.txt y las etiquetas SEO de la portada (index.html).
+// robots.txt y las etiquetas SEO de la app (app/index.html).
 // Usa el mismo ranking de manos que app.js. La dirección de la web está en sitio.json.
 // Ejecutar después de cambiar textos o rangos:  node scripts/build-seo.js
 const fs = require('fs');
@@ -164,13 +164,14 @@ function page({ url, title, desc, crumbs, body, related, faq }){
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${SITE}${url}">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="RÍO">
+<meta property="og:site_name" content="RÍO Poker">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${SITE}${url}">
 <meta property="og:image" content="${SITE}/og-image.png">
 <meta property="og:locale" content="es_ES">
 <meta name="theme-color" content="#0A0A0B">
+<link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/icons/icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -181,10 +182,10 @@ ${ORIGEN_JS}
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><a class="logo" href="/">RÍO</a><a class="go" href="/">Analizar una mano</a></div>
+  <div class="top"><a class="logo" href="/">RÍO</a><a class="go" href="/app/">Analizar una mano</a></div>
   <div class="crumbs">${crumbs.map(([n, u]) => u ? `<a href="${u}">${n}</a>` : n).join(' › ')}</div>
 ${body}${faqHTML(faq)}
-  <div class="cta"><p><b>¿Tienes una mano que no sabes si jugaste bien?</b><br>RÍO te dice si pagar, subir o tirar, explicado fácil.</p><a href="/">Analiza tu mano gratis →</a></div>
+  <div class="cta"><p><b>¿Tienes una mano que no sabes si jugaste bien?</b><br>RÍO te dice si pagar, subir o tirar, explicado fácil.</p><a href="/app/">Analiza tu mano gratis →</a></div>
 ${related || ''}
   <footer>RÍO es una herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas prohíben las ayudas en tiempo real. <b>+18</b> · Juega con responsabilidad · <a href="https://www.jugarbien.es" rel="noopener">jugarbien.es</a><br>
   <a href="/guias/">Guías</a> · <a href="/manos/">Manos iniciales</a> · <a href="/glosario/">Glosario</a> · <a href="/tablas/">Tablas de manos</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a></footer>
@@ -198,7 +199,7 @@ function write(rel, content){
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, content);
 }
-const urls = ['/'];
+const urls = ['/', '/app/'];
 const guidesFor = (gloss) => {
   const list = GUIDES.filter(g => g.gloss.includes(gloss));
   return list.length ? `  <h2>Guías relacionadas</h2><ul class="cards">${list.map(g => `<li><a href="/guias/${g.slug}/">${g.title}</a></li>`).join('')}</ul>\n` : '';
@@ -562,29 +563,29 @@ Disallow: /api/
 Sitemap: ${SITE}/sitemap.xml
 `);
 
-// Portada: canonical, og:url, imágenes y datos estructurados (SoftwareApplication + FAQ).
-// Las preguntas del FAQ se leen del bloque visible «Preguntas frecuentes» de index.html,
+// La app (/app/): canonical, og:url, imágenes y datos estructurados (SoftwareApplication + FAQ). La portada (/) es la landing y se escribe a mano.
+// Las preguntas del FAQ se leen del bloque visible «Preguntas frecuentes» de app/index.html,
 // así lo que ve Google y lo que ve la gente es siempre lo mismo.
-const indexFile = path.join(ROOT, 'index.html');
+const indexFile = path.join(ROOT, 'app', 'index.html');
 const indexHtml = fs.readFileSync(indexFile, 'utf8');
 const text = h => h.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
 const faq = [...indexHtml.matchAll(/<details class="faq-item"><summary>([\s\S]*?)<\/summary><p>([\s\S]*?)<\/p><\/details>/g)]
   .map(([, q, a]) => ({ '@type': 'Question', name: text(q), acceptedAnswer: { '@type': 'Answer', text: text(a) } }));
-if (faq.length < 3) throw new Error('No encuentro las preguntas frecuentes en index.html');
+if (faq.length < 3) throw new Error('No encuentro las preguntas frecuentes en app/index.html');
 const desc = indexHtml.match(/<meta name="description" content="([^"]+)">/)[1];
 const ld = {
   '@context': 'https://schema.org',
   '@graph': [
-    { '@type': 'SoftwareApplication', '@id': `${SITE}/#app`, name: 'RÍO', alternateName: 'RÍO · Coach de póker con IA y calculadora',
-      url: `${SITE}/`, description: desc, applicationCategory: 'GameApplication', applicationSubCategory: 'Coach de póker con IA y calculadora de póker',
+    { '@type': 'SoftwareApplication', '@id': `${SITE}/app/#app`, name: 'RÍO', alternateName: 'RÍO · Coach de póker con IA y calculadora',
+      url: `${SITE}/app/`, description: desc, applicationCategory: 'GameApplication', applicationSubCategory: 'Coach de póker con IA y calculadora de póker',
       operatingSystem: 'Web, Android, iOS', inLanguage: 'es', image: `${SITE}/og-image.png`,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' } },
-    { '@type': 'FAQPage', '@id': `${SITE}/#faq`, inLanguage: 'es', mainEntity: faq }
+    { '@type': 'FAQPage', '@id': `${SITE}/app/#faq`, inLanguage: 'es', mainEntity: faq }
   ]
 };
 const seoBlock = `<!-- SEO: lo escribe scripts/build-seo.js con la dirección de sitio.json. No lo edites a mano. -->
-<link rel="canonical" href="${SITE}/">
-<meta property="og:url" content="${SITE}/">
+<link rel="canonical" href="${SITE}/app/">
+<meta property="og:url" content="${SITE}/app/">
 <meta property="og:image" content="${SITE}/og-image.png">
 <meta name="twitter:image" content="${SITE}/og-image.png">
 <script type="application/ld+json">
@@ -592,7 +593,7 @@ ${JSON.stringify(ld).replace(/</g, '\\u003c')}
 </script>
 <!-- /SEO -->`;
 const re = /<!-- SEO: [\s\S]*?<!-- \/SEO -->/;
-if (!re.test(indexHtml)) throw new Error('Falta el bloque <!-- SEO: … <!-- /SEO --> en index.html');
+if (!re.test(indexHtml)) throw new Error('Falta el bloque <!-- SEO: … <!-- /SEO --> en app/index.html');
 fs.writeFileSync(indexFile, indexHtml.replace(re, seoBlock));
 
 console.log(`${urls.length} URLs generadas`);

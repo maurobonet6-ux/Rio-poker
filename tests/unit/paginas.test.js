@@ -35,7 +35,7 @@ test('ninguna página para buscadores tiene enlaces internos rotos', () => {
 test('las páginas generadas están al día con scripts/build-seo.js', () => {
   // Si falla: ejecuta  node scripts/build-seo.js  y sube los cambios.
   const { execFileSync } = require('child_process');
-  const leer = () => ['sitemap.xml', 'glosario/spr/index.html', 'manos/aks/index.html', 'index.html'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('');
+  const leer = () => ['sitemap.xml', 'glosario/spr/index.html', 'manos/aks/index.html', 'app/index.html'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('');
   const before = leer();
   execFileSync('node', [path.join(ROOT, 'scripts/build-seo.js')], { stdio: 'ignore' });
   const after = leer();
@@ -70,8 +70,8 @@ test('portada: la dirección de la web solo está en sitio.json', () => {
   assert.doesNotMatch(fuera, /https:\/\/[a-z0-9.-]*vercel\.app/, 'hay una dirección escrita a mano fuera del bloque SEO');
 });
 
-test('portada: datos para Google válidos y FAQ igual al que se ve', () => {
-  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+test('app (/app/): datos para Google válidos y FAQ igual al que se ve', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8');
   const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
   const tipos = ld['@graph'].map(n => n['@type']);
   assert.deepStrictEqual(tipos, ['SoftwareApplication', 'FAQPage']);
@@ -80,5 +80,5 @@ test('portada: datos para Google válidos y FAQ igual al que se ve', () => {
   assert.deepStrictEqual(faq.map(q => q.name), visibles);
   assert.ok(faq.every(q => q.acceptedAnswer.text.length > 20));
   assert.match(html, /<h1>RÍO <span class="h1-sub">Coach de póker con IA y calculadora en español<\/span><\/h1>/);
-  assert.strictEqual((html.match(/<h1[\s>]/g) || []).length, 1, 'la portada debe tener un solo H1');
+  assert.strictEqual((html.match(/<h1[\s>]/g) || []).length, 1, 'la app debe tener un solo H1');
 });
