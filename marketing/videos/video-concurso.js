@@ -144,6 +144,18 @@ window.setup = setup; window.render = render;
   return html;
 }
 
+// Lo que dice la voz y cuándo (ver video-lista.js). Las opciones se leen con su letra y la cuenta atrás va sin voz.
+function narracion(p){
+  const L = 'ABCD';
+  return [
+    { id: 'intro', texto: `¿Quién sabe más de póker? Nivel ${p.nivel}.`, en: T.intro + 0.1, limite: T.q },
+    { id: 'pregunta', texto: `${p.q} ${p.opts.map((o, i) => `${L[i]}: ${o}`).join('. ')}.`, en: T.q + 0.25, limite: T.cuenta },
+    { id: 'respuesta', texto: 'La respuesta correcta es…', en: T.resp, limite: T.reveal },
+    { id: 'revelacion', texto: `¡Es la ${L[p.ok]}! ${p.why}`, en: T.reveal + 0.2, limite: T.fin },
+    { id: 'cta', texto: require('./voz.js').CTA, en: T.fin + 0.4, limite: T.total },
+  ];
+}
+
 // Sonidos: whoosh de entrada, tic de la cuenta atrás, suspense, ding + pop al acertar.
 function eventos(){
   const e = [{ t: T.intro, tipo: 'whoosh' }, { t: T.q, tipo: 'whoosh' }];
@@ -155,12 +167,12 @@ function eventos(){
 
 // Hace un vídeo concurso. p: pregunta (si no se da, al azar). snap: instantes de los que sacar captura (para revisar el diseño).
 async function hacerConcurso({ p = pregunta(), id = 'concurso-' + Date.now().toString(36), snap } = {}){
-  const f = await grabar({ html: pagina(p), nombre: id, total: T.total, eventos: eventos(), snap });
+  const f = await grabar({ html: pagina(p), nombre: id, total: T.total, eventos: eventos(), snap, narracion: narracion(p) });
   if (f) console.log('LISTO ' + f + ' · concurso nivel ' + p.nivel);
   return { ok: true, id, archivo: f };
 }
 
-module.exports = { hacerConcurso, pagina, T };
+module.exports = { hacerConcurso, pagina, narracion, T };
 
 if (require.main === module){
   const snap = (process.env.SNAP || '').split(',').filter(Boolean);

@@ -1,22 +1,46 @@
 // Motor común de los vídeos: abre una página con una función render(t), saca un fotograma por cada 1/30 s,
-// los une con ffmpeg y les pone el sonido (audio_eventos.py). Lo usan los formatos nuevos (concurso, mito, lista…).
-// Los formatos con página animada (concurso, mito, lista) usan grabar(); el de la mesa (video-mesa.js) usa solo renderizarMudo().
+// los une con ffmpeg y les pone el sonido (audio_eventos.py), con voz en off y vídeo de fondo si los hay.
+// Los formatos con página animada (concurso, mito, lista) y el de la mesa usan grabar().
 const { chromium } = require('@playwright/test');
-const fs = require('fs'), path = require('path'), { spawn, execFileSync } = require('child_process');
+const fs = require('fs'), path = require('path'), os = require('os'), { execFileSync } = require('child_process');
 const { SALIDA, ffmpeg, unirAudio, fontRoute } = require('./comun.js');
+const { ajustar } = require('./tiempos.js');
+const voz = require('./voz.js');
 
-const os = require('os');
 const FPS = 30;
 // Cuántos navegadores sacan fotogramas a la vez (por defecto, uno por núcleo; TRABAJADORES=1 para ir de uno en uno).
 const TRABAJADORES = Math.max(1, Math.min(+process.env.TRABAJADORES || os.cpus().length, 6));
 const FUENTES = '<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">';
 
+// Con un vídeo de fondo, el fotograma del clip va detrás de la página (una imagen a pantalla completa) y encima queda un tinte
+// oscuro con el rojo de la marca, para que se lea todo. (Sacar la página con transparencia era 7 veces más lento.)
+const CSS_FONDO = `html{background:#000!important}body{background:radial-gradient(900px 700px at 50% 0, rgba(232,40,63,.20), transparent 60%), rgba(8,8,14,.58)!important}#bg{opacity:.32!important}`;
+
+// Clip de fondo: FONDO=ruta, o uno al azar de marketing/videos/fondos (si hay). SIN_FONDO=1 lo desactiva.
+function elegirFondo(){
+  if (process.env.SIN_FONDO === '1') return null;
+  if (process.env.FONDO) return fs.existsSync(process.env.FONDO) ? process.env.FONDO : null;
+  const dir = path.join(__dirname, 'fondos');
+  if (!fs.existsSync(dir)) return null;
+  const clips = fs.readdirSync(dir).filter(f => /\.(mp4|mov|webm|m4v)$/i.test(f));
+  return clips.length ? path.join(dir, clips[Math.floor(Math.random() * clips.length)]) : null;
+}
+
 // Saca los fotogramas de una página con window.render(t) repartidos entre varios navegadores y los une en un mp4 sin sonido.
 // Cada fotograma depende solo de t, así que da igual qué navegador saque cuál. Es 2 a 4 veces más rápido que ir de uno en uno.
-async function renderizarMudo({ archivoHtml, total, salida }){
+// tiempo(t): de la hora real del vídeo a la hora de diseño (las pausas de la voz congelan la animación). fondo: clip de fondo.
+async function renderizarMudo({ archivoHtml, total, salida, tiempo = t => t, fondo = null }){
   const frames = Math.round(total * FPS);
-  const dir = path.join(SALIDA, 'fotogramas-' + path.basename(salida, '.mp4'));
+  const base = path.basename(salida, '.mp4');
+  const dir = path.join(SALIDA, 'fotogramas-' + base), dirFondo = path.join(SALIDA, 'fondo-' + base);
   fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
+  const FF = ffmpeg(), t0 = Date.now();
+  if (fondo){
+    // El clip se repite en bucle desde un punto al azar, se recorta a vertical y se pasa a fotogramas (el fondo sigue en movimiento aunque la voz haga una pausa).
+    fs.rmSync(dirFondo, { recursive: true, force: true }); fs.mkdirSync(dirFondo, { recursive: true });
+    execFileSync(FF, ['-y', '-loglevel', 'error', '-stream_loop', '-1', '-ss', (Math.random() * 3).toFixed(2), '-i', fondo, '-t', String(total + 0.5),
+      '-vf', `fps=${FPS},scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=saturation=0.9`, '-q:v', '5', path.join(dirFondo, '%05d.jpg')]);
+  }
   const b = await chromium.launch();
   const W = Math.min(TRABAJADORES, frames);
   try {
@@ -24,44 +48,69 @@ async function renderizarMudo({ archivoHtml, total, salida }){
       const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
       await p.route('**/*', r => fontRoute(r) || r.continue());
       await p.goto('file://' + archivoHtml);
+      if (fondo){
+        await p.addStyleTag({ content: CSS_FONDO });
+        await p.evaluate(() => { const im = document.createElement('img'); im.id = '__fondo'; im.style.cssText = 'position:fixed;left:0;top:0;width:1080px;height:1920px;object-fit:cover;z-index:-1'; document.body.appendChild(im); });
+      }
       await p.evaluate(() => document.fonts.ready);
       await p.evaluate(() => window.setup && window.setup());
       for (let i = w; i < frames; i += W){
-        await p.evaluate(x => window.render(x), i / FPS);
+        if (fondo) await p.evaluate(src => { const im = document.getElementById('__fondo'); im.src = src; return im.decode(); }, 'file://' + path.join(dirFondo, String(i + 1).padStart(5, '0') + '.jpg'));
+        await p.evaluate(x => window.render(x), tiempo(i / FPS));
         await p.screenshot({ type: 'jpeg', quality: 92, path: path.join(dir, String(i).padStart(5, '0') + '.jpg') });
       }
       await p.close();
     }));
   } finally { await b.close(); }
-  execFileSync(ffmpeg(), ['-y', '-loglevel', 'error', '-framerate', String(FPS), '-i', path.join(dir, '%05d.jpg'), '-vf', 'format=yuv420p', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-movflags', '+faststart', salida]);
-  fs.rmSync(dir, { recursive: true, force: true });
+  if (process.env.DEBUG_TIEMPOS) console.log(`[tiempos] capturas: ${((Date.now() - t0) / 1000).toFixed(1)} s (${frames} fotogramas, ${W} navegadores${fondo ? ', con fondo' : ''})`);
+  const t1 = Date.now();
+  execFileSync(FF, ['-y', '-loglevel', 'error', '-framerate', String(FPS), '-i', path.join(dir, '%05d.jpg'), '-vf', 'format=yuv420p', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-movflags', '+faststart', salida]);
+  if (process.env.DEBUG_TIEMPOS) console.log(`[tiempos] ffmpeg: ${((Date.now() - t1) / 1000).toFixed(1)} s`);
+  fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dirFondo, { recursive: true, force: true });
 }
 
 // html: página completa con window.setup() (opcional) y window.render(t).
 // eventos: sonidos [{ t, tipo }] (whoosh, tick, ding, riser, pop). snap: segundos de los que sacar una captura en vez del vídeo.
-async function grabar({ html, nombre, total, eventos = [], snap }){
-  const FF = ffmpeg();
+// narracion: [{ id, texto, en, limite }] frases de la voz en off (en = cuándo empieza, limite = el siguiente momento que no debe pisar).
+async function grabar({ html, nombre, total, eventos = [], snap, narracion = null }){
   const f = path.join(SALIDA, nombre + '.html');
   fs.writeFileSync(f, html);
-  const b = await chromium.launch();
-  const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
-  await p.route('**/*', r => fontRoute(r) || r.continue());
-  await p.goto('file://' + f);
-  await p.evaluate(() => document.fonts.ready);
-  await p.evaluate(() => window.setup && window.setup());
   if (snap){
+    const b = await chromium.launch();
+    const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
+    await p.route('**/*', r => fontRoute(r) || r.continue());
+    await p.goto('file://' + f); await p.evaluate(() => document.fonts.ready); await p.evaluate(() => window.setup && window.setup());
     fs.mkdirSync(path.join(SALIDA, 'snap'), { recursive: true });
     for (const t of snap){ await p.evaluate(x => window.render(x), +t); await p.screenshot({ path: path.join(SALIDA, 'snap', `${nombre}-${t}.png`) }); }
     await b.close(); fs.rmSync(f); return null;
   }
-  await b.close();
+
+  // 1. Voz en off (si falla o no está instalada, el vídeo sale igualmente, sin voz)
+  let ajuste = { fuera: d => d, diseno: t => t, inicios: {}, total }, sintesis = null;
+  if (narracion && voz.activa()){
+    try {
+      sintesis = voz.sintetizar(narracion, nombre);
+      ajuste = ajustar(narracion, sintesis.dur, total);
+      if (process.env.DEBUG_VOZ) for (const fr of narracion) console.log(`[voz] ${fr.id}: empieza en ${ajuste.inicios[fr.id].toFixed(2)} s, dura ${sintesis.dur[fr.id]} s → termina ${(ajuste.inicios[fr.id] + sintesis.dur[fr.id]).toFixed(2)} s`);
+      console.log(`Voz en off: ${narracion.length} frases, ${ajuste.pausas.length} pausa(s) añadida(s), el vídeo dura ${ajuste.total.toFixed(1)} s`);
+    } catch (e){ console.warn('Sin voz en off: ' + e.message); sintesis = null; }
+  }
+
+  // 2. Fotogramas y vídeo mudo
+  const fondo = elegirFondo();
+  if (fondo) console.log('Fondo: ' + path.basename(fondo));
   const mudo = path.join(SALIDA, `${nombre}-mudo.mp4`);
-  await renderizarMudo({ archivoHtml: f, total, salida: mudo });
+  await renderizarMudo({ archivoHtml: f, total: ajuste.total, salida: mudo, tiempo: ajuste.diseno, fondo });
   fs.rmSync(f);
+
+  // 3. Sonido: efectos en su sitio (ya con las pausas) y la voz encima
+  const sonidos = eventos.map(e => ({ ...e, t: ajuste.fuera(e.t) }));
+  if (sintesis) for (const fr of narracion) sonidos.push({ t: ajuste.inicios[fr.id], tipo: 'voz', archivo: sintesis.archivo(fr.id) });
   const wav = path.join(SALIDA, nombre + '.wav'), final = path.join(SALIDA, `rio-${nombre}.mp4`);
-  execFileSync('python3', [path.join(__dirname, 'audio_eventos.py'), wav, String(total), JSON.stringify(eventos)]);
-  unirAudio(mudo, wav, final);
+  execFileSync('python3', [path.join(__dirname, 'audio_eventos.py'), wav, String(ajuste.total), JSON.stringify(sonidos)]);
+  unirAudio(mudo, wav, final, !!sintesis);
+  if (sintesis) fs.rmSync(sintesis.dir, { recursive: true, force: true });
   return final;
 }
 
-module.exports = { grabar, renderizarMudo, FUENTES };
+module.exports = { grabar, renderizarMudo, elegirFondo, FUENTES };

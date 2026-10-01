@@ -32,14 +32,22 @@ window.render = render;`;
   return documento(css, cuerpo, js);
 }
 
+const ORDINAL = ['uno', 'dos', 'tres'];
+// Lo que dice la voz y cuándo: cada frase no debe pisar el siguiente momento de la animación (si no cabe, se hace una pausa).
+const narracion = l => [
+  { id: 'tit', texto: l.titulo, en: T.titulo + 0.2, limite: T.items[0] },
+  ...l.items.map((it, i) => ({ id: 'i' + i, texto: `Número ${ORDINAL[i]}. ${it.t}. ${it.s}`, en: T.items[i] + 0.25, limite: i < 2 ? T.items[i + 1] : T.fin })),
+  { id: 'cta', texto: require('./voz.js').CTA, en: T.fin + 0.4, limite: T.total },
+];
+
 const eventos = () => [{ t: T.titulo, tipo: 'whoosh' }, ...T.items.flatMap(a => [{ t: a, tipo: 'whoosh' }, { t: a + .3, tipo: 'tick' }]), { t: T.fin, tipo: 'whoosh' }];
 
 async function hacerLista({ l = LISTAS[Math.floor(Math.random() * LISTAS.length)], id = 'lista-' + Date.now().toString(36), snap } = {}){
-  const f = await grabar({ html: pagina(l), nombre: id, total: T.total, eventos: eventos(), snap });
+  const f = await grabar({ html: pagina(l), nombre: id, total: T.total, eventos: eventos(), snap, narracion: narracion(l) });
   if (f) console.log('LISTO ' + f + ' · lista');
   return { ok: true, id, archivo: f };
 }
-module.exports = { hacerLista, pagina, T };
+module.exports = { hacerLista, pagina, narracion, T };
 if (require.main === module){
   const snap = (process.env.SNAP || '').split(',').filter(Boolean);
   hacerLista({ snap: snap.length ? snap : undefined }).catch(e => { console.error(e); process.exit(1); });
