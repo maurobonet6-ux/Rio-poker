@@ -1,0 +1,144 @@
+# Equipo de marketing de RÍO: produce el plan del día y lo manda a tu Telegram a las 12:00 para que lo apruebes.
+# Lo lanza la rutina diaria de Claude (que investiga y escribe el plan; ver marketing/equipo/GUIA.md), o tú a mano
+# desde Actions → «Equipo de marketing» → Run workflow, pegando un plan.
+#
+#  1. registrar: comprueba el plan y apunta cada pieza en la cola de RÍO (/api/content), con su enlace riopoker.es/v/<id>.
+#  2. videos:    hace los vídeos de las piezas que lo necesitan (cada uno en su máquina, todos a la vez).
+#  3. enviar:    hace los carruseles, espera a las 12:00 y te manda cada pieza con su tarjeta (✅ ❌ ✏️ 🔄).
+#
+# Secretos del repositorio: STATS_KEY (la misma clave que en Vercel), TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID (tu chat).
+# Variable opcional: RIO_URL (por defecto https://riopoker.es).
+name: Equipo de marketing
+
+on:
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: 'El plan del día en JSON (formato en marketing/equipo/GUIA.md)'
+        required: true
+        type: string
+      sin_espera:
+        description: 'Mandarlo ya, sin esperar a las 12:00'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: equipo-marketing
+  cancel-in-progress: false
+
+jobs:
+  registrar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      videos: ${{ steps.reg.outputs.videos }}
+      hay_videos: ${{ steps.reg.outputs.hay_videos }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: reg
+        env:
+          PLAN: ${{ inputs.plan }}
+          STATS_KEY: ${{ secrets.STATS_KEY }}
+          RIO_URL: ${{ vars.RIO_URL }}
+        run: |
+          node marketing/equipo/produccion.js registrar > salida.json
+          node -e 'const s=require("./salida.json");require("fs").writeFileSync("plan.json",JSON.stringify(s.plan));console.log("videos="+JSON.stringify(s.videos));console.log("hay_videos="+(s.videos.include.length?"si":"no"))' >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plan
+          path: plan.json
+          retention-days: 3
+
+  videos:
+    needs: registrar
+    if: needs.registrar.outputs.hay_videos == 'si'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.registrar.outputs.videos) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Guardar el navegador entre ejecuciones
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Instalar el navegador
+        run: npx playwright install --with-deps chromium
+      - name: Guardar el modelo de la voz entre ejecuciones
+        uses: actions/cache@v4
+        with:
+          path: marketing/videos/modelos
+          key: kokoro-v1.0
+      - name: Instalar numpy (sonido), ffmpeg (vídeo) y la voz en off
+        run: pip install numpy imageio-ffmpeg kokoro-onnx soundfile edge-tts
+      - name: Hacer el vídeo
+        env:
+          PEDIDO: ${{ matrix.pedido }}
+          ID: ${{ matrix.id }}
+          VOZ: ${{ vars.VOZ }}
+          SIN_VOZ: ${{ vars.SIN_VOZ }}
+          SIN_FONDO: ${{ vars.SIN_FONDO }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          set +e
+          mkdir -p marketing/videos/salida piezas
+          node marketing/videos/generar.js "$PEDIDO" 1 2>&1 | tee log.txt
+          video=$(ls marketing/videos/salida/rio-*.mp4 2>/dev/null | head -n1)
+          if [ -n "$video" ]; then mv "$video" "piezas/pieza-$ID.mp4"
+          else (grep -E 'Mano no válida|no es válido|Error' log.txt | tail -n1 || echo 'error inesperado') > "piezas/pieza-$ID.mp4.error"; fi
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pieza-${{ matrix.id }}
+          path: piezas/
+          retention-days: 3
+
+  enviar:
+    needs: [registrar, videos]
+    if: always() && needs.registrar.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Guardar el navegador entre ejecuciones
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Instalar el navegador (para los carruseles)
+        run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: plan
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: pieza-*
+          merge-multiple: true
+          path: piezas
+      - name: Mandar el plan a Telegram (a las 12:00)
+        env:
+          STATS_KEY: ${{ secrets.STATS_KEY }}
+          RIO_URL: ${{ vars.RIO_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SIN_ESPERA: ${{ inputs.sin_espera && '1' || '0' }}
+        run: |
+          mkdir -p piezas
+          node marketing/equipo/produccion.js enviar plan.json piezas

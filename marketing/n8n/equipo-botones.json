@@ -1,0 +1,80 @@
+{
+  "name": "RÍO · equipo de marketing (botones)",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "e1",
+              "leftValue": "={{ ($json.callback_query && String($json.callback_query.data || '').startsWith('c:')) || ($json.message && $json.message.reply_to_message && $json.message.text) ? 'si' : 'no' }}",
+              "rightValue": "si",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "¿Es del equipo de marketing?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://riopoker.es/api/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ accion: 'telegram', update: $json }) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Pasárselo a RÍO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        -160
+      ]
+    }
+  ],
+  "connections": {
+    "¿Es del equipo de marketing?": {
+      "main": [
+        [
+          {
+            "node": "Pasárselo a RÍO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Es un botón?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "nota": "Pega estos dos nodos en tu workflow de n8n: conecta la salida del Telegram Trigger a «¿Es del equipo de marketing?» (en lugar de a «¿Es un botón?»). La salida «false» sigue a «¿Es un botón?», así los vídeos de siempre funcionan igual. En «Pasárselo a RÍO» crea una credencial Header Auth con Name = x-api-key y Value = tu STATS_KEY. En el Telegram Trigger marca las actualizaciones callback_query y message."
+  }
+}

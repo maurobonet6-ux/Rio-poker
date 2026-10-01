@@ -14,7 +14,8 @@ const routes = {
   'free-use': require('../lib/routes/free-use'),
   'photo-usage': require('../lib/routes/photo-usage'),
   'track': require('../lib/routes/track'),
-  'stats': require('../lib/routes/stats')
+  'stats': require('../lib/routes/stats'),
+  'content': require('../lib/routes/content')
 };
 
 module.exports = async (req, res) => {
