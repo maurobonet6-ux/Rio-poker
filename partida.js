@@ -284,7 +284,7 @@
 
   // ---------- Pintar la mesa ----------
   let timer = null, anim = { cartas: false, calle: false };
-  function carta(c, cls){ return c ? E.cardHTML(c, true).replace('class="pc ', 'class="pc g-card ' + (cls || '') + ' ') : `<span class="mini-card big g-card g-back ${cls || ''}"></span>`; }
+  function carta(c, cls){ return c ? E.cardHTML(c, true).replace(/class="pc \w+ /, 'class="pc g-card ' + (cls || '') + ' ') : `<span class="mini-card big g-card g-back ${cls || ''}"></span>`; }
   function pinta(){
     if (!H) return;
     anim = { cartas: H.nuevo.cartas, calle: H.nuevo.calle }; H.nuevo = { cartas: false, calle: false };
@@ -315,6 +315,19 @@
     pintaPanel();
     $('gFin').hidden = true;
   }
+  // En el móvil la mesa se encoge lo justo para verse entera entre la cabecera y la barra de acciones.
+  function encajaMesa(){
+    const mesa = view.querySelector('.g-table');
+    mesa.style.zoom = ''; mesa.style.width = '';
+    mesa.classList.toggle('baja', innerWidth <= 700 && innerHeight < 760);
+    if (view.hidden || innerWidth > 700) return;
+    const cs = getComputedStyle(mesa), alto = mesa.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+    const hueco = innerHeight - view.querySelector('.g-top').offsetHeight - 8 - Math.max(150, $('gActions').offsetHeight);
+    const z = Math.max(0.6, Math.min(1, hueco / alto));
+    // Con zoom el ancho en % no encoge: se fija en píxeles y el zoom lo reduce.
+    if (z < 0.99){ mesa.style.width = mesa.offsetWidth + 'px'; mesa.style.zoom = z.toFixed(3); }
+  }
+  addEventListener('resize', () => encajaMesa());
   function pintaAcciones(){
     const bar = $('gActions');
     if (H && H.over){
@@ -425,7 +438,7 @@
     if (location.hash !== '#partida') history.pushState(null, '', '#partida');
     if (!H || H.over) nuevaMano();
     view.dataset.tab = view.dataset.tab || 'mano';
-    pinta(); turnoRivales();
+    pinta(); turnoRivales(); encajaMesa();
     $('gClose').focus({ preventScroll: true });
   }
   function cerrar(desdeHistorial){

@@ -2,7 +2,7 @@
 // Service worker de RÍO: permite instalar la web como app y abrirla sin
 // conexión. Siempre intenta la red primero (para tener la última versión) y
 // solo usa la copia guardada si no hay conexión. Nunca guarda llamadas a /api.
-const CACHE = 'rio-v6';
+const CACHE = 'rio-v7';
 const SHELL = ['/app/', '/app.css', '/app.js', '/partida.css', '/partida.js', '/ui.css', '/fonts/inter-var-latin.woff2', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
