@@ -55,9 +55,11 @@ window.render = render;`;
 }
 
 // Lo que dice la voz y cuándo (ver video-lista.js).
+// La explicación hablada es solo la primera frase y solo si es breve (completa se lee en pantalla): así no se alarga el vídeo.
+const corta = s => { const f = (String(s).match(/^.+?[.!?](\s|$)/) || [String(s)])[0].trim(); return f.length <= 60 ? f : ''; };
 const narracion = m => [
-  { id: 'afirmacion', texto: `${require('./voz.js').gancho('mito')} ¿Mito o realidad? ${m.dice}`, en: T.card + 0.3, limite: T.cuenta },
-  { id: 'veredicto', texto: `${m.verdad ? 'Es realidad' : 'Es un mito'}. ${m.why}`, en: T.flip + 0.25, limite: T.fin },
+  { id: 'afirmacion', texto: `${require('./voz.js').gancho('mito')} ¿Mito o realidad? ${m.dice}`, en: T.card + 0.3, limite: T.flip },
+  { id: 'veredicto', texto: `${m.verdad ? 'Es realidad' : 'Es un mito'}. ${corta(m.why)}`.trim(), en: T.flip + 0.25, limite: T.fin },
   { id: 'cta', texto: require('./voz.js').CTA, en: T.fin + 0.4, limite: T.total },
 ];
 
