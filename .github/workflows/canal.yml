@@ -39,5 +39,9 @@ jobs:
           fi
           if [ -z "${CRON_SECRET:-}" ]; then echo "::error::Falta el secreto CRON_SECRET en GitHub (Settings → Secrets and variables → Actions)"; exit 1; fi
           echo "Publicando: $TIPO"
-          curl -sS -f -m 60 -H "Authorization: Bearer ${CRON_SECRET}" "https://riopoker.es/api/telegram?tipo=${TIPO}"
-          echo
+          # Se muestra lo que contesta la web (si falla, aquí sale el motivo: por ejemplo «chat not found»).
+          respuesta=$(curl -sS -m 60 -w '\n%{http_code}' -H "Authorization: Bearer ${CRON_SECRET}" "https://riopoker.es/api/telegram?tipo=${TIPO}")
+          codigo=$(echo "$respuesta" | tail -n1)
+          cuerpo=$(echo "$respuesta" | sed '$d')
+          echo "Respuesta ($codigo): $cuerpo"
+          if [ "$codigo" != "200" ]; then echo "::error::La web respondió $codigo: $cuerpo"; exit 1; fi
