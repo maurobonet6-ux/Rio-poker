@@ -326,6 +326,8 @@
     <div class="why-title" id="whyTitle">¿Por qué?</div>
     <ul class="why-list" id="whyList"></ul>
     <div class="plan" id="planBox"></div>
+    <!-- ¿Tú qué hiciste? Alimenta tus patrones y errores (rio_history / rio_reviews). Lo pinta app.js. -->
+    <div class="you-did" id="youDid" hidden></div>
 
     <details class="full-analysis" id="fullAnalysis">
       <summary>Ver análisis completo ↓</summary>
@@ -440,11 +442,23 @@
     Herramienta de estudio para repasar tus manos. No la uses mientras juegas una mano: la mayoría de salas online prohíben las ayudas en tiempo real.
     <div class="footer-links">
       <span class="age-badge">+18</span> Juega con responsabilidad · <a href="https://www.jugarbien.es" target="_blank" rel="noopener">jugarbien.es</a><br>
-      <a href="/guias/">Guías de póker</a> · <a href="/manos/">Manos iniciales</a> · <a href="/glosario/">Glosario</a> · <a href="/tablas/">Tablas de manos</a><br>
+      <a href="/descubre/">Qué es RÍO</a> · <a href="/guias/">Guías de póker</a> · <a href="/manos/">Manos iniciales</a> · <a href="/glosario/">Glosario</a> · <a href="/tablas/">Tablas de manos</a><br>
       <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#cookies">Cookies</a> · <a href="/legal.html#condiciones">Condiciones</a>
     </div>
   </footer>
 </div>
+
+<!-- Navegación principal: barra superior en ordenador y barra inferior en el móvil. Rutas por # (app.js → showView). -->
+<nav class="appnav" id="appNav" aria-label="Secciones de RÍO">
+  <a class="an-brand" href="#/" data-route="">RÍO</a>
+  <a class="an-link" href="#/" data-route=""><span class="an-ic">🔍</span><span>Analizar</span></a>
+  <a class="an-link" href="#/practicar" data-route="practicar"><span class="an-ic">🎯</span><span>Practicar</span></a>
+  <a class="an-link" href="#/progreso" data-route="progreso"><span class="an-ic">📈</span><span>Progreso</span></a>
+  <a class="an-link an-desk" href="#/historial" data-route="historial"><span class="an-ic">📜</span><span>Historial</span></a>
+  <span class="an-gap"></span>
+  <button type="button" class="an-pro an-desk" id="anPro">💎 <span id="anProTxt">RÍO PRO</span></button>
+  <a class="an-link" href="#/cuenta" data-route="cuenta"><span class="an-ic">👤</span><span>Cuenta</span></a>
+</nav>
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <nav class="sidebar" id="sidebar" aria-label="Menú principal">
@@ -467,17 +481,17 @@
 
   <div class="sidebar-nav">
     <div class="nav-section">Analizar</div>
-    <button type="button" class="sidebar-link" id="navAnalyzer"><span class="ic">🃏</span><span class="lbl">Analizador</span></button>
+    <button type="button" class="sidebar-link nav-dup" id="navAnalyzer"><span class="ic">🔍</span><span class="lbl">Analizador</span></button>
     <button type="button" class="sidebar-link" id="navImport"><span class="ic">📋</span><span class="lbl">Importar historial</span><span class="pro-badge">PRO</span></button>
 
     <div class="nav-section">Aprender</div>
-    <button type="button" class="sidebar-link nav-hot" id="navPartida"><span class="ic">🃏</span><span class="lbl">Partida de práctica<small>Juega contra rivales · 2 a 6</small></span><span class="free-badge">NUEVO</span></button>
-    <button type="button" class="sidebar-link" id="navTrain"><span class="ic">🎯</span><span class="lbl">Entrenamiento</span><span class="free-badge">GRATIS</span></button>
+    <button type="button" class="sidebar-link nav-hot nav-dup" id="navPartida"><span class="ic">🃏</span><span class="lbl">Partida de práctica<small>Juega contra rivales · 2 a 6</small></span><span class="free-badge">NUEVO</span></button>
+    <button type="button" class="sidebar-link nav-dup" id="navTrain"><span class="ic">🎯</span><span class="lbl">Entrenamiento</span><span class="free-badge">GRATIS</span></button>
     <button type="button" class="sidebar-link" id="navCharts"><span class="ic">📊</span><span class="lbl">Tablas de manos</span></button>
     <button type="button" class="sidebar-link" id="navGlossary"><span class="ic">📖</span><span class="lbl">Glosario de póker</span></button>
 
-    <div class="nav-section">Tu progreso</div>
-    <button type="button" class="sidebar-link" id="navStats"><span class="ic">📈</span><span class="lbl">Estadísticas y errores</span></button>
+    <div class="nav-section nav-dup">Tu progreso</div>
+    <button type="button" class="sidebar-link nav-dup" id="navStats"><span class="ic">📈</span><span class="lbl">Estadísticas y errores</span></button>
 
     <div class="nav-section">Cuenta</div>
     <button type="button" class="sidebar-link" id="navLogin"><span class="ic">🔑</span><span class="lbl">Entrar o crear cuenta</span></button>
@@ -649,7 +663,7 @@
     <p class="paywall-copy" id="paywallCopy">Ya usaste tus <b>10 análisis gratis</b>.</p>
     <div class="pw-pitch sub-part"><b>RÍO PRO</b>Aprende de tus manos sin límite.</div>
     <ul class="paywall-features sub-part">
-      <li>✓ <b>Análisis manuales ilimitados</b> (sin PRO: 5 con tu cuenta gratis)</li>
+      <li>✓ <b>Análisis manuales ilimitados</b> (sin PRO: 10 con tu cuenta gratis)</li>
       <li>✓ <b>Sube una captura</b> y RÍO lee cartas, bote, apuestas y posiciones</li>
       <li>✓ <b>Cuéntale la mano</b> por voz o por escrito y la rellenamos</li>
       <li>✓ <b>Importa manos</b> de PokerStars y GGPoker</li>
@@ -700,6 +714,48 @@
     <p class="paywall-fine">1 captura o 1 mano contada = 1 crédito. Los créditos comprados no caducan. Al comprar aceptas las <a href="/legal.html#condiciones" target="_blank">condiciones</a>.</p>
   </div>
 </div>
+
+<!-- Secciones propias de la app (#/progreso…). Las abre showView() en app.js. -->
+<section class="app-view" id="progressView" hidden aria-labelledby="progressTitle">
+  <div class="av-wrap">
+    <header class="av-head">
+      <button type="button" class="av-back" data-view-back aria-label="Volver al analizador">←</button>
+      <div><h2 id="progressTitle">Mi progreso</h2><p>Tus manos, tus errores y tu evolución, en un solo sitio.</p></div>
+    </header>
+    <div id="progressBody"></div>
+  </div>
+</section>
+
+<section class="app-view" id="practiceView" hidden aria-labelledby="practiceTitle">
+  <div class="av-wrap">
+    <header class="av-head">
+      <button type="button" class="av-back" data-view-back aria-label="Volver al analizador">←</button>
+      <div><h2 id="practiceTitle">Practicar</h2><p>Entrena decisiones sueltas o juega manos completas. Gratis.</p></div>
+    </header>
+    <div id="practiceBody"></div>
+  </div>
+</section>
+
+<section class="app-view" id="historyView" hidden aria-labelledby="historyTitle">
+  <div class="av-wrap">
+    <header class="av-head">
+      <button type="button" class="av-back" data-view-back aria-label="Volver al analizador">←</button>
+      <div><h2 id="historyTitle">Historial</h2><p>Las manos que has analizado, con lo que dijo RÍO y lo que hiciste tú.</p></div>
+    </header>
+    <div id="historyViewBody"></div>
+  </div>
+</section>
+
+<section class="app-view" id="accountView" hidden aria-labelledby="accountTitle">
+  <div class="av-wrap av-narrow">
+    <header class="av-head">
+      <button type="button" class="av-back" data-view-back aria-label="Volver al analizador">←</button>
+      <div><h2 id="accountTitle">Cuenta</h2><p>Tu plan, tus créditos y tus ajustes.</p></div>
+    </header>
+    <div id="accountViewCard"></div>
+    <div class="av-list" id="accountList"></div>
+  </div>
+</section>
 
 <!-- Partida de práctica: mesa de 6 a pantalla completa (partida.js) -->
 <section class="game-view" id="gameView" hidden aria-label="Partida de práctica">

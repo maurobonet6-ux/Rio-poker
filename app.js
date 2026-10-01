@@ -179,6 +179,7 @@
     document.getElementById('manageSubBtn').style.display = canManage ? 'inline-block' : 'none';
     document.getElementById('manageSubHint').style.display = canManage ? 'block' : 'none';
     document.getElementById('sidebarAccount').textContent = logged ? storageGet('rio_email', '') : 'Sin cuenta · tus datos solo en este navegador';
+    const anPro = document.getElementById('anProTxt'); if (anPro) anPro.textContent = isPro() ? 'PRO ✓' : 'Hazte PRO';
     const cta = document.getElementById('acctCta');
     if (!logged){ cta.textContent = 'Entrar o crear cuenta gratis'; cta.dataset.go = 'login'; cta.className = 'acct-cta'; }
     else if (!isPro()){ cta.textContent = `⭐ Hazte PRO · ${PRO_PRICE_LABEL}/mes`; cta.dataset.go = 'plans'; cta.className = 'acct-cta gold'; }
@@ -390,7 +391,7 @@
   let analyzeInView = false, resultInView = false;
   function updateSticky(){
     // Solo antes de analizar: con el resultado a la vista ya no hace falta.
-    const show = !!(hole[0] && hole[1]) && !analyzeInView && !resultInView && !resultPanel.classList.contains('show');
+    const show = !!(hole[0] && hole[1]) && !document.body.classList.contains('view-open') && !analyzeInView && !resultInView && !resultPanel.classList.contains('show');
     document.getElementById('stickyAnalyze').classList.toggle('show', show);
     document.body.classList.toggle('has-sticky', show);
   }
@@ -1320,6 +1321,44 @@
     }).join('');
   }
 
+  // ---- ¿Tú qué hiciste? ----
+  // Después de cada análisis (si no apuntaste tu jugada en la secuencia), un toque para decir qué hiciste.
+  // Se guarda en los mismos sitios que la secuencia: la mano del historial (g, act) y rio_reviews,
+  // con el mismo EV perdido que reviewDecisions(). Así alimenta "Tus patrones" y "Tu progreso".
+  function youDidLoss(c, act){
+    let loss = null;
+    if (c.toCall > 0 && (c.rec === 'CALL' || c.rec === 'RAISE') && act === 'FOLD') loss = Math.max(0, c.evCall);
+    else if (c.toCall > 0 && c.rec === 'FOLD' && act === 'CALL') loss = Math.max(0, -c.evCall);
+    else if (c.toCall === 0 && c.bc && c.rec === 'BET' && act === 'CHECK') loss = Math.max(0, c.bc.evBet - c.bc.evCheck);
+    else if (c.toCall === 0 && c.bc && c.rec === 'CHECK' && act === 'BET') loss = Math.max(0, c.bc.evCheck - c.bc.evBet);
+    else if (c.rec === act) loss = 0;
+    return loss === null ? null : Math.round(loss / c.bb * 10) / 10;
+  }
+  function renderYouDid(c, chosen){
+    const box = document.getElementById('youDid');
+    if (!c){ box.hidden = true; box.innerHTML = ''; return; }
+    const opts = c.toCall > 0 ? [['FOLD', 'Tiré'], ['CALL', 'Pagué'], ['RAISE', 'Subí']]
+      : c.isOpen ? [['FOLD', 'Tiré'], ['RAISE', 'Subí']] : [['CHECK', 'Pasé'], ['BET', 'Aposté']];
+    box.hidden = false;
+    const g = chosen ? grade(c.rec, chosen) : null;
+    const loss = chosen ? youDidLoss(c, chosen) : null;
+    const VERD = { ok: '✓ Bien jugado', meh: '≈ Aceptable', bad: '✗ Mejorable' };
+    box.innerHTML = `<div class="yd-title">¿Tú qué hiciste?</div>
+      <div class="yd-btns">${opts.map(([v, l]) => `<button type="button" class="yd-btn${chosen === v ? ' on' : ''}" data-yd="${v}">${l}</button>`).join('')}</div>
+      ${chosen ? `<div class="yd-cmp ${g}"><div><small>RÍO recomienda</small><b>${decisionHTML(c.rec)}</b></div><div><small>Tú hiciste</small><b>${decisionHTML(chosen)}</b></div>
+        <div class="yd-verdict">${VERD[g]}${loss > 0 ? ` · unas <b>−${String(loss).replace('.', ',')} BB</b> de media (estimado)` : ''}</div></div>
+        <div class="hint">Guardado en tu historial y en <b>Tu progreso</b>: así RÍO detecta tus errores más repetidos.</div>`
+      : '<div class="hint">Un toque y RÍO lo compara con su consejo para detectar tus errores más repetidos.</div>'}`;
+    box.querySelectorAll('[data-yd]').forEach(b => b.addEventListener('click', () => {
+      const act = b.dataset.yd, g2 = grade(c.rec, act);
+      const hist = getHistory(), h = hist.find(x => x.t === c.t);
+      if (h){ h.g = g2; h.act = act; storageSet('rio_history', hist); }
+      saveReviews([{ s: c.s, rec: c.rec, act, g: g2, pos: c.pos, pt: c.pt, bc: c.river, loss: youDidLoss(c, act) }], c.sig);
+      renderHistory();
+      renderYouDid(c, act);
+    }));
+  }
+
   // ---- Recomendación (la usan el análisis, el repaso y el entrenamiento) ----
   // c = { heroCards, boardCards, pot, toCall, rivals, pool, oop, street, heroPos, unraised, premium, eq?, iters? }
   function recommend(c){
@@ -1409,7 +1448,8 @@
   const cardHTML = (c, big) => `<span class="mini-card${big ? ' big' : ''}${SUIT_CRIMSON[c.suit] ? ' crimson' : ''}">${RANK_LABEL(c.rank)}<span>${SUIT_SYMBOL[c.suit]}</span></span>`;
 
   // Ventana genérica (reutiliza la de ayuda)
-  function openModal(title, html){
+  function openModal(title, html, opts){
+    helpModal.classList.toggle('wide', !!(opts && opts.wide));
     document.getElementById('helpTitle').textContent = title;
     document.getElementById('helpBody').innerHTML = html;
     helpModal.classList.add('show');
@@ -1472,10 +1512,10 @@
 
   // ---- Estadísticas ----
   function handSignature(){ return JSON.stringify([hole, board, seq]); }
-  function saveReviews(rows){
+  function saveReviews(rows, sig){
     if (!rows.length) return;
     const all = storageGet('rio_reviews', {});
-    all[handSignature()] = { t: Date.now(), rows: rows.map(r => ({ s: r.s, rec: r.rec, act: r.act, g: r.g, pos: r.pos, pt: r.pt, bc: r.bc, loss: r.loss })) };
+    all[sig || handSignature()] = { t: Date.now(), rows: rows.map(r => ({ s: r.s, rec: r.rec, act: r.act, g: r.g, pos: r.pos, pt: r.pt, bc: r.bc, loss: r.loss })) };
     const keys = Object.keys(all).sort((a, b) => all[b].t - all[a].t).slice(0, 100);
     storageSet('rio_reviews', Object.fromEntries(keys.map(k => [k, all[k]])));
   }
@@ -1485,29 +1525,19 @@
     'CALL>RAISE': 'Pagas cuando convenía subir', 'RAISE>CALL': 'Subes cuando bastaba con pagar',
     'BET>CHECK': 'Apuestas cuando convenía pasar', 'RAISE>FOLD': 'Subes con manos para tirar'
   };
-  function openStats(){
+  // Datos de "Mi progreso": salen de lo que ya guarda RÍO (rio_reviews, rio_train_log y rio_history).
+  function progressData(){
     const reviews = Object.values(storageGet('rio_reviews', {}));
     const hand = reviews.flatMap(x => x.rows.map(r => ({ ...r, t: x.t })));
     const train = storageGet('rio_train_log', []);
     const hist = getHistory();
     const all = [...hand, ...train];
-    if (!all.length && !hist.length){
-      openModal('Tu progreso', `<p>Aún no hay datos. Se llenan de dos formas:</p><ul><li>Analizando tus manos (mejor con la <b>secuencia de apuestas</b> apuntada: así vemos qué hiciste tú).</li><li>Jugando al <b>modo entrenamiento</b>.</li></ul><button type="button" class="btn-primary" id="statsTrain" style="width:100%;">🎯 Empezar a entrenar</button>`)
-        .querySelector('#statsTrain').addEventListener('click', openTrainer);
-      return;
-    }
     const pct = (arr, g) => arr.length ? Math.round(arr.filter(r => r.g === g).length / arr.length * 100) : 0;
-    const fmt1 = (v) => (Math.round(v * 10) / 10).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-
-    // --- Tu progreso: manos analizadas, EV medio y qué te recomienda RÍO ---
     const evBB = hist.filter(h => typeof h.ev === 'number' && h.evU === 'BB').map(h => h.ev);
     const evAvg = evBB.length ? evBB.reduce((a, b) => a + b, 0) / evBB.length : null;
     const dec = { CALL: 0, RAISE: 0, FOLD: 0, CHECK: 0 };
     hist.forEach(h => { const k = h.decision === 'BET' ? 'RAISE' : h.decision; if (k in dec) dec[k]++; });
-    const decTotal = Object.values(dec).reduce((a, b) => a + b, 0) || 1;
-    const decRow = (k, label) => `<div class="final-row"><span>${label}</span><div class="bar"><i style="width:${Math.max(dec[k] ? 2 : 0, dec[k] / decTotal * 100)}%"></i></div><b>${Math.round(dec[k] / decTotal * 100)}%</b></div>`;
-
-    // --- Dónde pierdes más EV (estimado): agrupado por enfrentamiento, calle, bote con resubida y pagar en el river ---
+    // Dónde pierdes más EV (estimado): agrupado por enfrentamiento, calle, bote con resubida y pagar en el river
     const errs = hand.filter(r => r.g !== 'ok');
     const withLoss = errs.filter(r => typeof r.loss === 'number' && r.loss > 0);
     const groups = {};
@@ -1521,68 +1551,268 @@
     const topGroups = Object.entries(groups).sort((a, b) => b[1].loss - a[1].loss).slice(0, 5);
     const totalLoss = withLoss.reduce((a, r) => a + r.loss, 0);
     const raiseErrs = errs.filter(r => r.rec === 'RAISE' || r.act === 'RAISE').length;
-
-    // --- Errores más repetidos ---
+    // Errores más repetidos (los graves cuentan doble)
     const leaks = {};
     all.filter(r => r.g !== 'ok').forEach(r => { const k = r.act + '>' + r.rec; leaks[k] = (leaks[k] || 0) + (r.g === 'bad' ? 2 : 1); });
-    const topLeaks = Object.entries(leaks).sort((a, b) => b[1] - a[1]).slice(0, 3);
-
-    // --- Evolución: % de decisiones bien jugadas, últimas 4 semanas ---
+    const leakList = Object.entries(leaks).sort((a, b) => b[1] - a[1]);
+    // Evolución: % de decisiones bien jugadas, últimas 4 semanas
     const WEEK = 7 * 24 * 3600 * 1000, now = Date.now();
     const weeks = [3, 2, 1, 0].map(w => {
       const rs = hand.filter(r => r.t && now - r.t >= w * WEEK && now - r.t < (w + 1) * WEEK);
       return [w === 0 ? 'Esta semana' : w === 1 ? 'Semana pasada' : `Hace ${w} semanas`, rs.length, pct(rs, 'ok')];
     });
-
     const byStreet = STREET_NAMES.map((n, s) => { const rs = all.filter(r => r.s === s); return [n, rs.length, pct(rs, 'ok')]; });
-    const bars = (rows) => `<div class="finals">${rows.map(([n, c, p]) => `<div class="final-row"><span>${n} <small style="color:var(--cream-dim)">(${c})</small></span><div class="bar"><i style="width:${c ? Math.max(2, p) : 0}%"></i></div><b>${c ? p + '%' : '—'}</b></div>`).join('')}</div>`;
-
-    openModal('Tu progreso', `
-      <div class="stat-grid" style="margin-top:0; grid-template-columns:repeat(3,1fr);">
-        <div class="stat no-help"><b>${hist.length}</b><span>Manos analizadas</span></div>
-        <div class="stat no-help"><b style="color:${evAvg === null ? 'var(--cream)' : evAvg >= 0 ? 'var(--ok)' : 'var(--crimson)'}">${evAvg === null ? '—' : (evAvg >= 0 ? '+' : '') + fmt1(evAvg) + ' BB'}</b><span>EV medio</span></div>
-        <div class="stat no-help"><b style="color:var(--ok)">${pct(all, 'ok')}%</b><span>Decisiones bien jugadas</span></div>
-      </div>
-      ${evAvg === null && hist.length ? '<p class="hint" style="margin:6px 0 0;">El EV medio en ciegas grandes aparece cuando apuntas la secuencia de apuestas.</p>' : ''}
-      ${hist.length ? `<div class="sub-title">Lo que te recomienda RÍO</div><div class="finals">${decRow('CALL', 'Pagar')}${decRow('RAISE', 'Subir / apostar')}${decRow('FOLD', 'Tirar')}${decRow('CHECK', 'Pasar')}</div>` : ''}
-
-      <div class="sub-title">🔎 Dónde pierdes más EV <small style="color:var(--cream-dim); font-weight:500;">(estimado)</small></div>
-      ${topGroups.length ? `<p style="margin:0 0 8px;">En total, unas <b style="color:var(--crimson)">−${fmt1(totalLoss)} BB</b> en ${withLoss.length} decisiones mejorables.</p>
-        <div class="loss-list">${topGroups.map(([k, g]) => `<div class="loss-row"><span>${k}</span><b>−${fmt1(g.loss)} BB</b><small>${g.n} ${g.n === 1 ? 'vez' : 'veces'}</small></div>`).join('')}</div>`
-        : '<p style="margin:0;">Aún no hay errores de pagar, tirar, apostar o pasar con la secuencia apuntada. 👏</p>'}
-      ${raiseErrs ? `<p class="hint" style="margin:8px 0 0;">Además, <b>${raiseErrs}</b> ${raiseErrs === 1 ? 'decisión' : 'decisiones'} de subir mejorable${raiseErrs === 1 ? '' : 's'} (el EV al subir no se puede estimar bien, así que solo las contamos).</p>` : ''}
-
-      <div class="sub-title">Tus errores más repetidos</div>
-      ${topLeaks.length ? `<ol style="margin:0; padding-left:20px;">${topLeaks.map(([k]) => `<li>${LEAKS[k] || k.replace('>', ' en vez de ')}</li>`).join('')}</ol>` : '<p style="margin:0;">¡Ninguno por ahora! 👏</p>'}
-
-      <div class="sub-title">Tu evolución (% bien jugadas)</div>
-      ${bars(weeks)}
-      <div class="sub-title">Por calle (% bien jugadas)</div>
-      ${bars(byStreet)}
-      ${train.length ? `<div class="sub-title">Entrenamiento</div><p style="margin:0;">${train.length} manos · ${pct(train, 'ok')}% acertadas</p>` : ''}
-      <p class="hint" style="margin-top:14px;">El EV perdido es una estimación: depende de las manos que suponemos a tu rival. Solo cuenta las manos con la secuencia apuntada.</p>`);
+    return { hand, train, hist, all, pct, evAvg, dec, topGroups, totalLoss, withLoss, raiseErrs, leakList, weeks, byStreet };
   }
+  const leakText = (k) => LEAKS[k] || k.replace('>', ' en vez de ');
+  function progressHTML(){
+    const d = progressData();
+    const fmt1 = (v) => (Math.round(v * 10) / 10).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    if (!d.all.length && !d.hist.length){
+      return `<div class="pv-empty"><div class="pv-empty-ic">📈</div><h3>Aún no hay datos</h3>
+        <p>Tu progreso se llena solo de dos formas:</p>
+        <ul><li><b>Analizando tus manos</b> y diciendo qué hiciste tú (un toque después del resultado).</li><li>Jugando al <b>entrenamiento</b> o a la <b>partida de práctica</b>.</li></ul>
+        <div class="pv-actions"><button type="button" class="btn-primary" data-go="analizar">Analizar una mano</button><button type="button" class="btn-secondary" data-go="entrenar">🎯 Empezar a entrenar</button></div></div>`;
+    }
+    const decTotal = Object.values(d.dec).reduce((a, b) => a + b, 0) || 1;
+    const decRow = (k, label) => `<div class="final-row"><span>${label}</span><div class="bar"><i style="width:${Math.max(d.dec[k] ? 2 : 0, d.dec[k] / decTotal * 100)}%"></i></div><b>${Math.round(d.dec[k] / decTotal * 100)}%</b></div>`;
+    const bars = (rows) => `<div class="finals">${rows.map(([n, c, p]) => `<div class="final-row"><span>${n} <small>(${c})</small></span><div class="bar"><i style="width:${c ? Math.max(2, p) : 0}%"></i></div><b>${c ? p + '%' : '—'}</b></div>`).join('')}</div>`;
+    const rated = d.hand.length + d.train.length;
+    const top = d.leakList[0];
+    const card = (title, body, sub, foot) => `<section class="pv-card"><h3>${title}${sub ? ` <small>${sub}</small>` : ''}</h3>${body}${foot || ''}</section>`;
+    const kpi = (v, l, cls = '') => `<div class="pv-kpi ${cls}"><b>${v}</b><span>${l}</span></div>`;
+    return `
+      <div class="pv-kpis">
+        ${kpi(d.hist.length, 'Manos analizadas')}
+        ${kpi(d.evAvg === null ? '—' : (d.evAvg >= 0 ? '+' : '') + fmt1(d.evAvg) + ' BB', 'EV medio', d.evAvg === null ? '' : d.evAvg >= 0 ? 'pos' : 'neg')}
+        ${kpi(rated ? d.pct(d.all, 'ok') + '%' : '—', 'Decisiones correctas', rated ? 'pos' : '')}
+        ${kpi(d.leakList.length, d.leakList.length === 1 ? 'Leak detectado' : 'Leaks detectados', d.leakList.length ? 'neg' : '')}
+      </div>
+      ${top ? `<div class="pv-leak"><small>Tu mayor leak</small><b>${leakText(top[0])}</b>
+        <button type="button" class="btn-primary" data-go="errores">🎯 Entrenar mis errores</button></div>` : rated ? '' :
+        `<div class="pv-leak muted"><small>Tu mayor leak</small><b>Dinos qué hiciste en tus manos y aparecerá aquí.</b>
+        <span class="hint">Después de cada análisis, pulsa lo que hiciste (Tiré, Pagué, Subí…).</span></div>`}
+      ${d.evAvg === null && d.hist.length ? '<p class="hint">El EV medio en ciegas grandes aparece cuando apuntas la secuencia de apuestas.</p>' : ''}
+      <div class="pv-grid">
+      ${card('🔎 Dónde pierdes más EV', d.topGroups.length ? `<p class="pv-big">Unas <b class="neg">−${fmt1(d.totalLoss)} BB</b> en ${d.withLoss.length} decisiones mejorables.</p>
+        <div class="loss-list">${d.topGroups.map(([k, g]) => `<div class="loss-row"><span>${k}</span><b>−${fmt1(g.loss)} BB</b><small>${g.n} ${g.n === 1 ? 'vez' : 'veces'}</small></div>`).join('')}</div>`
+        : '<p>Aún no hay errores de pagar, tirar, apostar o pasar con EV calculable. 👏</p>', '(estimado)')}
+      ${card('Tus errores más frecuentes', d.leakList.length ? `<ol class="pv-leaks">${d.leakList.slice(0, 5).map(([k, n]) => `<li><span>${leakText(k)}</span><small>${n} ${n === 1 ? 'punto' : 'puntos'}</small></li>`).join('')}</ol>
+        ${d.raiseErrs ? `<p class="hint">Además, <b>${d.raiseErrs}</b> ${d.raiseErrs === 1 ? 'decisión' : 'decisiones'} de subir mejorable${d.raiseErrs === 1 ? '' : 's'} (el EV al subir no se puede estimar bien, así que solo las contamos).</p>` : ''}`
+        : '<p>¡Ninguno por ahora! 👏</p>')}
+      ${card('Tu evolución', bars(d.weeks), '% bien jugadas')}
+      ${card('Acierto por calle', bars(d.byStreet), '% bien jugadas')}
+      ${d.hist.length ? card('Lo que te recomienda RÍO', `<div class="finals">${decRow('CALL', 'Pagar')}${decRow('RAISE', 'Subir / apostar')}${decRow('FOLD', 'Tirar')}${decRow('CHECK', 'Pasar')}</div>`) : ''}
+      ${card('Por posición', isPro() ? patternsHTML(d.hist)
+        : `<p>Qué te recomienda RÍO en cada posición y tu acierto en cada una.</p><button type="button" class="btn-secondary" data-go="pro">Desbloquear con RÍO PRO</button>`, isPro() ? '' : 'PRO')}
+      ${card('🎯 Entrenamiento', d.train.length ? `<p class="pv-big"><b>${d.train.length}</b> situaciones · <b class="pos">${d.pct(d.train, 'ok')}%</b> acertadas</p>` : '<p>Aún no has entrenado.</p>',
+        '', '<button type="button" class="btn-secondary" data-go="entrenar">Entrenar ahora</button>')}
+      </div>
+      <p class="hint">El EV perdido es una estimación: depende de las manos que suponemos a tu rival. Solo cuenta las decisiones en las que sabemos qué hiciste (con la secuencia apuntada o con «¿Tú qué hiciste?»).</p>`;
+  }
+  // "Mi progreso" es una sección propia (#/progreso). openStats() se mantiene para los botones que ya la usaban.
+  function renderProgress(){
+    const body = document.getElementById('progressBody');
+    body.innerHTML = progressHTML();
+    body.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
+      const go = b.dataset.go;
+      if (go === 'entrenar') openTrainer();
+      else if (go === 'errores') openTrainer('errores');
+      else if (go === 'pro') openPaywall('plans');
+      else showView(null);
+    }));
+  }
+  function openStats(){ closeSidebar(); showView('progreso'); }
+
+  // ---- Secciones con dirección propia (#/progreso…) ----
+  // La portada (#/ o sin #) es el analizador. Cada sección es una vista a pantalla completa
+  // y el botón Atrás del navegador vuelve a la anterior.
+  const VIEWS = {
+    progreso: { el: 'progressView', render: () => renderProgress() },
+    practicar: { el: 'practiceView', render: () => renderPractice() },
+    historial: { el: 'historyView', render: () => renderHistoryView(), leave: () => returnHistoryPanel() },
+    cuenta: { el: 'accountView', render: () => renderAccount() }
+  };
+  function currentView(){ const m = location.hash.match(/^#\/([a-z]+)/); return m && VIEWS[m[1]] ? m[1] : null; }
+  let navInApp = false; // true si se ha llegado a la vista desde dentro de RÍO (así Atrás vuelve a donde estabas)
+  function showView(name){
+    const target = name ? '#/' + name : '#/';
+    if (location.hash !== target){ navInApp = true; location.hash = target; return; } // el cambio de # pinta la vista
+    applyView();
+  }
+  let shownView = null;
+  function applyView(){
+    const v = currentView();
+    if (shownView && shownView !== v && VIEWS[shownView].leave) VIEWS[shownView].leave();
+    shownView = v;
+    Object.entries(VIEWS).forEach(([k, def]) => { document.getElementById(def.el).hidden = k !== v; });
+    document.body.classList.toggle('view-open', !!v);
+    document.querySelectorAll('#appNav [data-route]').forEach(a => {
+      const on = a.dataset.route === (v || '') && !a.classList.contains('an-brand');
+      a.classList.toggle('on', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    if (v){ closeModal(); closeSidebar(); VIEWS[v].render(); document.getElementById(VIEWS[v].el).scrollTop = 0; }
+    updateSticky();
+  }
+  // La barra de navegación usa enlaces con # normales; solo hace falta saber que el cambio viene de dentro.
+  document.querySelectorAll('#appNav a').forEach(a => a.addEventListener('click', () => { navInApp = true; }));
+  document.getElementById('anPro').addEventListener('click', () => openPlanPanel());
+
+  // Practicar: el entrenamiento y la partida de práctica, más las tablas y el glosario.
+  function renderPractice(){
+    const t = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
+    const body = document.getElementById('practiceBody');
+    body.innerHTML = `<div class="pr-grid">
+      <button type="button" class="pr-card hot" data-pr="train"><span class="pr-ic">🎯</span><b>Entrenamiento</b>
+        <span>Situaciones sueltas: ¿pagas, subes o tiras? RÍO te corrige al momento.</span>
+        <small>${t.n ? `${t.n} situaciones · ${Math.round(t.ok / t.n * 100)}% acertadas` : 'Empieza ahora · gratis'}</small></button>
+      <button type="button" class="pr-card" data-pr="errores"><span class="pr-ic">🧠</span><b>Entrenar mis errores</b>
+        <span>Situaciones del tipo que más fallas, sacadas de tus manos y de tu entrenamiento.</span>
+        <small>${errorSpots().length >= ERR_MIN ? `${errorSpots().length} decisiones mejorables tuyas` : 'Se desbloquea al analizar más manos'}</small></button>
+      <button type="button" class="pr-card" data-pr="partida"><span class="pr-ic">🃏</span><b>Partida de práctica</b>
+        <span>Manos completas contra 2 a 6 rivales con estilos distintos. Al acabar, RÍO repasa tus decisiones.</span><small>Fichas sin valor</small></button>
+      <button type="button" class="pr-card" data-pr="tablas"><span class="pr-ic">📊</span><b>Tablas de manos</b><span>Qué manos abrir desde cada posición, en cash y torneo.</span></button>
+      <button type="button" class="pr-card" data-pr="glosario"><span class="pr-ic">📖</span><b>Glosario de póker</b><span>Equity, pot odds, outs, SPR… explicados fácil.</span></button>
+    </div>`;
+    const act = { train: () => openTrainer(), errores: () => openTrainer('errores'), partida: () => openPartida(), tablas: () => openCharts(), glosario: () => openGlossary() };
+    body.querySelectorAll('[data-pr]').forEach(b => b.addEventListener('click', () => act[b.dataset.pr]()));
+  }
+
+  // Historial: se reutiliza el mismo panel del analizador (filtros, patrones y lista); se mueve aquí mientras la vista está abierta.
+  let historyHome = null; // marca del sitio original del panel en el analizador
+  function renderHistoryView(){
+    const historyPanel = document.getElementById('historyPanel');
+    if (!historyHome){ historyHome = document.createComment('historial'); historyPanel.parentNode.insertBefore(historyHome, historyPanel); }
+    const box = document.getElementById('historyViewBody');
+    renderHistory();
+    if (!getHistory().length){
+      box.innerHTML = `<div class="pv-empty"><div class="pv-empty-ic">📜</div><h3>Aún no has analizado ninguna mano</h3>
+        <p>Cada mano que analices se guarda aquí, con lo que dijo RÍO y lo que hiciste tú.</p>
+        <div class="pv-actions"><a class="btn-primary" href="#/">Analizar una mano</a></div></div>`;
+      return;
+    }
+    box.innerHTML = '';
+    box.appendChild(historyPanel);
+    historyPanel.classList.add('in-view');
+  }
+  function returnHistoryPanel(){
+    const historyPanel = document.getElementById('historyPanel');
+    if (!historyHome) return;
+    if (historyPanel.parentNode !== historyHome.parentNode){ historyHome.parentNode.insertBefore(historyPanel, historyHome.nextSibling); }
+    historyPanel.classList.remove('in-view');
+  }
+
+  // Cuenta: la misma información que la tarjeta del menú, más los accesos de cuenta y ajustes.
+  function renderAccount(){
+    updateProfileUI(); renderPlanInfo(); refreshPhotoUsage();
+    const logged = !!storageGet('rio_token', '');
+    const cta = document.getElementById('acctCta');
+    document.getElementById('accountViewCard').innerHTML = `<div class="acct-card av-card">
+      <div class="acct-top"><div class="acct-avatar">${escHTML(document.getElementById('acctAvatar').textContent)}</div>
+        <div class="acct-info"><div class="acct-name">${escHTML(document.getElementById('sidebarProfile').textContent)}</div><div class="acct-mail">${escHTML(document.getElementById('sidebarAccount').textContent)}</div></div></div>
+      <div class="sidebar-foot">${document.getElementById('sidebarFoot').innerHTML}</div>
+      <button type="button" class="${cta.className}" id="avCta">${escHTML(cta.textContent)}</button></div>`;
+    document.getElementById('avCta').addEventListener('click', () => cta.click());
+    const items = [
+      ['💎', 'Planes y precios', 'navPlan', true],
+      ['📋', 'Importar historial (PokerStars · GGPoker)', 'navImport', true],
+      ['⚙️', 'Configuración', 'navSettings', true],
+      ['📲', 'Instalar en el móvil', 'navInstall', true],
+      ['🔑', 'Entrar o crear cuenta', 'navLogin', !logged],
+      ['🚪', 'Cerrar sesión', 'navLogout', logged]
+    ].filter(x => x[3]);
+    const list = document.getElementById('accountList');
+    list.innerHTML = items.map(([ic, l, id]) => `<button type="button" class="av-item" data-click="${id}"><span>${ic}</span><b>${l}</b><i>›</i></button>`).join('')
+      + `<div class="av-legal"><a href="/legal.html#privacidad">Privacidad</a> · <a href="/legal.html#condiciones">Condiciones</a> · <a href="/legal.html#aviso-legal">Aviso legal</a> · <a href="/guias/">Guías</a> · <a href="/descubre/">Qué es RÍO</a></div>`;
+    list.querySelectorAll('[data-click]').forEach(b => b.addEventListener('click', () => {
+      document.getElementById(b.dataset.click).click();
+      if (b.dataset.click === 'navLogout') setTimeout(renderAccount, 300);
+    }));
+  }
+  window.addEventListener('hashchange', applyView);
+  document.querySelectorAll('[data-view-back]').forEach(b => b.addEventListener('click', () => { if (navInApp) history.back(); else showView(null); }));
+  setTimeout(applyView, 0); // al final del arranque, con todo ya definido (también marca la pestaña activa)
 
   // ---- Modo entrenamiento ----
   const TRAIN_SPOTS = [['BTN','BB'],['CO','BB'],['BB','BTN'],['SB','BB'],['UTG','BB'],['BTN','SB'],['HJ','BTN'],['BB','CO'],['CO','BTN']];
   let trainQ = null;
   const pickRand = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  function newTrainQ(){
+  // Temas del entrenamiento: solo cambian qué situaciones salen; la corrección es la de siempre (recommend).
+  const TRAIN_TOPICS = [['todo', 'Todo'], ['preflop', 'Preflop'], ['flop', 'Flop'], ['turn', 'Turn'], ['river', 'River'],
+    ['3bet', '3-bet'], ['cbet', 'C-bet'], ['bluff', 'Faroles'], ['potodds', 'Pot odds'], ['errores', '🎯 Mis errores']];
+  // Abrió el rival (vp) y te toca a ti (hp): pagar, resubir (3-bet) o tirar.
+  const VSOPEN_SPOTS = [['BTN','CO'],['BTN','HJ'],['CO','HJ'],['BB','BTN'],['SB','BTN'],['BB','CO'],['HJ','UTG'],['BTN','UTG'],['SB','CO']];
+  const CBET_SPOTS = [['BTN','BB'],['CO','BB'],['HJ','BB'],['UTG','BB'],['BTN','SB']];
+  // Una situación de un tipo concreto: open (abrir o tirar), vsopen (te abren), facing (te apuestan), checked (nadie ha apostado).
+  function makeTrainQ(s, kind, spots){
     const deck = drawN(fullDeck(), 7);
     const hero = [deck[0], deck[1]];
-    const r = Math.random();
-    const s = r < 0.2 ? 0 : r < 0.5 ? 1 : r < 0.75 ? 2 : 3;
-    if (s === 0) return { s, hero, board: [], hp: pickRand(['UTG','HJ','CO','BTN','SB']), vp: null, pot: 3, call: 0, kind: 'open' };
-    const [hp, vp] = pickRand(TRAIN_SPOTS);
+    if (kind === 'open') return { s: 0, hero, board: [], hp: pickRand(['UTG','HJ','CO','BTN','SB']), vp: null, pot: 3, call: 0, kind };
+    if (kind === 'vsopen'){
+      const [hp, vp] = pickRand(VSOPEN_SPOTS);
+      const posted = hp === 'SB' ? 0.5 : hp === 'BB' ? 1 : 0;
+      return { s: 0, hero, board: [], hp, vp, pot: 4, call: 2.5 - posted, kind };
+    }
+    const [hp, vp] = pickRand(spots || TRAIN_SPOTS);
     const potBefore = Math.round(6 + Math.random() * 54);
-    const facing = Math.random() < 0.6;
-    const bet = facing ? Math.max(1, Math.round(potBefore * pickRand([0.33, 0.5, 0.66, 1]))) : 0;
-    return { s, hero, board: deck.slice(2, 2 + [0, 3, 4, 5][s]), hp, vp, pot: potBefore + bet, call: bet, kind: facing ? 'facing' : 'checked' };
+    const bet = kind === 'facing' ? Math.max(1, Math.round(potBefore * pickRand([0.33, 0.5, 0.66, 1]))) : 0;
+    return { s, hero, board: deck.slice(2, 2 + [0, 3, 4, 5][s]), hp, vp, pot: potBefore + bet, call: bet, kind };
+  }
+  const randStreet = () => 1 + Math.floor(Math.random() * 3);
+  const postflopKind = () => Math.random() < 0.6 ? 'facing' : 'checked';
+  // Tus errores (de tus manos y del entrenamiento) convertidos en tipos de situación, para repetir las que fallas.
+  function errorSpots(){
+    const rows = [...Object.values(storageGet('rio_reviews', {})).flatMap(x => x.rows), ...storageGet('rio_train_log', [])].filter(r => r.g && r.g !== 'ok');
+    return rows.map(r => {
+      const both = [r.rec, r.act];
+      if (r.k) return { s: r.s, kind: r.k };
+      if (both.includes('CHECK') || both.includes('BET')) return { s: Math.max(1, r.s), kind: 'checked' };
+      if (r.s === 0) return { s: 0, kind: both.includes('CALL') ? 'vsopen' : 'open' };
+      return { s: r.s, kind: 'facing' };
+    });
+  }
+  const ERR_MIN = 3; // con menos errores no hay base para personalizar
+  function newTrainQ(topic){
+    switch (topic){
+      case 'preflop': return makeTrainQ(0, Math.random() < 0.5 ? 'open' : 'vsopen');
+      case 'flop': return makeTrainQ(1, postflopKind());
+      case 'turn': return makeTrainQ(2, postflopKind());
+      case 'river': return makeTrainQ(3, postflopKind());
+      case '3bet': return makeTrainQ(0, 'vsopen');
+      case 'cbet': return makeTrainQ(1, 'checked', CBET_SPOTS);
+      case 'bluff': { // situaciones sin apuesta en las que tu mano va por detrás: ¿farol o pasar?
+        let q;
+        for (let i = 0; i < 12; i++){ q = makeTrainQ(randStreet(), 'checked'); if (runEquity(q.hero, q.board, 1, 300, poolFromSet(topRange(55))).win < 45) break; }
+        return q;
+      }
+      case 'potodds': { // te apuestan y la decisión de pagar está ajustada
+        let q;
+        for (let i = 0; i < 10; i++){
+          q = makeTrainQ(randStreet(), 'facing');
+          const r = runEquity(q.hero, q.board, 1, 300, poolFromSet(topRange(55))), needed = q.call / (q.pot + q.call) * 100;
+          if (Math.abs(r.win + r.tie / 2 - needed) <= 12) break;
+        }
+        return q;
+      }
+      case 'errores': { const sp = pickRand(errorSpots()); return makeTrainQ(sp.s, sp.kind); }
+      default: {
+        const r = Math.random();
+        const s = r < 0.2 ? 0 : r < 0.5 ? 1 : r < 0.75 ? 2 : 3;
+        return s === 0 ? makeTrainQ(0, Math.random() < 0.7 ? 'open' : 'vsopen') : makeTrainQ(s, postflopKind());
+      }
+    }
   }
   function solveTrainQ(q){
     if (q.kind === 'open'){
       const top = handTopPercent(q.hero[0], q.hero[1]), lim = OPEN_PCT[q.hp];
       return { rec: top <= lim ? 'RAISE' : 'FOLD', top, lim, close: Math.abs(top - lim) <= 3 };
+    }
+    if (q.kind === 'vsopen'){
+      const pool = poolFromSet(topRange(OPEN_PCT[q.vp] || 30));
+      const oop = POSITION_ORDER.indexOf(q.hp) <= POSITION_ORDER.indexOf(q.vp);
+      const reco = recommend({ heroCards: q.hero, boardCards: [], pot: q.pot, toCall: q.call, rivals: 1, pool, oop, street: 0, heroPos: q.hp, unraised: false, iters: 1500 });
+      return { rec: reco.text, eq: reco.eq, needed: reco.needed, oop, close: Math.abs(reco.eq - reco.needed) <= 3 };
     }
     let pool = poolFromSet(topRange(q.vp === 'BB' ? 55 : (OPEN_PCT[q.vp] || 30)));
     if (q.kind === 'facing') pool = withBluffs(pool, q.board, 0.55, 0.1, q.hero);
@@ -1594,27 +1824,44 @@
     const bluff = reco.kind === 'bluff' ? reco.bc : null;
     return { rec: reco.text, eq, needed, oop, bluff, downgraded: reco.downgraded, close: q.call > 0 && Math.abs(eq - needed) <= 3 };
   }
-  function openTrainer(){
+  function openTrainer(topic){
     closeSidebar();
-    trainQ = newTrainQ();
+    if (typeof topic === 'string' && TRAIN_TOPICS.some(([k]) => k === topic)) storageSet('rio_train_topic', topic);
+    const cur = storageGet('rio_train_topic', 'todo');
+    const chips = `<div class="train-topics" role="group" aria-label="Tema">${TRAIN_TOPICS.map(([k, l]) => `<button type="button" class="tt-chip${k === cur ? ' on' : ''}" data-topic="${k}">${l}</button>`).join('')}</div>`;
+    const bindChips = (body) => body.querySelectorAll('[data-topic]').forEach(b => b.addEventListener('click', () => openTrainer(b.dataset.topic)));
+    // Entrenar mis errores: solo con errores reales tuyos; si no hay bastantes, se dice.
+    if (cur === 'errores' && errorSpots().length < ERR_MIN){
+      const body = openModal('🎯 Entrenamiento', `${chips}<div class="train-locked"><b>🔒 Entrenamiento personalizado</b>
+        <p>Analiza más manos para desbloquear entrenamiento personalizado. Necesitamos al menos ${ERR_MIN} decisiones tuyas mejorables (de tus manos, diciendo qué hiciste, o del entrenamiento).</p>
+        <p class="hint">Ahora tienes ${errorSpots().length}.</p><button type="button" class="btn-primary" id="trainGoAnalyze" style="width:100%;">Analizar una mano</button></div>`, { wide: true });
+      bindChips(body);
+      body.querySelector('#trainGoAnalyze').addEventListener('click', () => { closeModal(); showView(null); });
+      return;
+    }
+    trainQ = newTrainQ(cur);
     const q = trainQ, stats = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
     const opts = q.kind === 'open' ? [['FOLD', 'Tirar'], ['RAISE', 'Subir']]
+      : q.kind === 'vsopen' ? [['FOLD', 'Tirar'], ['CALL', 'Pagar'], ['RAISE', 'Resubir (3-bet)']]
       : q.kind === 'facing' ? [['FOLD', 'Tirar'], ['CALL', 'Pagar'], ['RAISE', 'Subir']]
       : [['CHECK', 'Pasar'], ['BET', 'Apostar']];
     const question = q.kind === 'open'
       ? `Estás en <b>${q.hp}</b> y nadie ha entrado antes que tú. ¿Abres (subes) o tiras?`
-      : `Estás en <b>${q.hp}</b> contra <b>${q.vp}</b>, en el <b>${STREET_NAMES[q.s].toLowerCase()}</b>. ${q.kind === 'facing'
+      : q.kind === 'vsopen'
+      ? `Estás en <b>${q.hp}</b>. <b>${q.vp}</b> abre subiendo a <b>2,5 ciegas</b> y los demás se retiran. Te cuesta <b>${fmtN(q.call)}</b> ciegas pagar. ¿Qué haces?`
+      : `Estás en <b>${q.hp}</b> contra <b>${q.vp}</b>, en el <b>${STREET_NAMES[q.s].toLowerCase()}</b>. ${cur === 'cbet' && q.kind === 'checked' ? 'Subiste antes del flop, te pagaron y ahora tu rival pasa. ' : ''}${q.kind === 'facing'
           ? `El bote es de <b>${q.pot}</b> y tu rival apuesta <b>${q.call}</b> (ya incluido). ¿Qué haces?`
           : `El bote es de <b>${q.pot}</b> y nadie ha apostado. ¿Qué haces?`}`;
-    const body = openModal('🎯 Entrenamiento', `
+    const body = openModal('🎯 Entrenamiento', `${chips}
       <button type="button" class="link-btn" id="trainToGame" style="display:block; margin:0 0 10px;">🃏 ¿Prefieres una mano completa? Juega una partida de práctica →</button>
       <div class="train-score">Mano ${stats.n + 1} · ${stats.ok}/${stats.n} acertadas${stats.streak > 1 ? ` · 🔥 racha de ${stats.streak}` : ''}</div>
       <div class="train-cards"><div><div class="zone-label">Tu mano</div>${q.hero.map(c => cardHTML(c, true)).join('')}</div>
       ${q.board.length ? `<div><div class="zone-label">Mesa</div>${q.board.map(c => cardHTML(c, true)).join('')}</div>` : ''}</div>
       <p>${question}</p>
       <div class="train-opts">${opts.map(([v, l]) => `<button type="button" class="btn-secondary" data-ans="${v}">${l}</button>`).join('')}</div>
-      <div id="trainResult"></div>`);
+      <div id="trainResult"></div>`, { wide: true });
     body.querySelectorAll('[data-ans]').forEach(b => b.addEventListener('click', () => answerTrainer(b.dataset.ans)));
+    bindChips(body);
     body.querySelector('#trainToGame').addEventListener('click', openPartida);
   }
   function answerTrainer(act){
@@ -1629,9 +1876,10 @@
       const stats = storageGet('rio_train', { n: 0, ok: 0, streak: 0 });
       stats.n++; if (g === 'ok'){ stats.ok++; stats.streak++; } else stats.streak = 0;
       storageSet('rio_train', stats);
-      const log = storageGet('rio_train_log', []); log.push({ s: q.s, rec: sol.rec, act, g }); storageSet('rio_train_log', log.slice(-300));
+      const log = storageGet('rio_train_log', []); log.push({ s: q.s, rec: sol.rec, act, g, k: q.kind }); storageSet('rio_train_log', log.slice(-300));
       let why;
-      if (q.kind === 'open') why = `Tu mano está en el <b>top ${Math.max(1, Math.round(sol.top))}%</b> y desde ${q.hp} se suele abrir aproximadamente el <b>${sol.lim}%</b> de las manos.`;
+      if (q.kind === 'vsopen') why = `Contra lo que suele abrir ${q.vp} (~${OPEN_PCT[q.vp]}% de las manos) ganas unas <b>${of20(sol.eq)} de cada 20</b> y para pagar necesitas <b>${of20(sol.needed)}</b>.${sol.rec === 'RAISE' ? ' Tu mano es lo bastante fuerte para <b>resubir (3-bet)</b>.' : ''}`;
+      else if (q.kind === 'open') why = `Tu mano está en el <b>top ${Math.max(1, Math.round(sol.top))}%</b> y desde ${q.hp} se suele abrir aproximadamente el <b>${sol.lim}%</b> de las manos.`;
       else if (sol.bluff && sol.bluff.better) why = `Tu mano no es la mejor (ganas unas ${of20(sol.eq)} de cada 20), pero si apuestas el rival se retira unas <b>${of20(sol.bluff.f * 100)} de cada 20</b> veces: el farol compensa.`;
       else if (q.kind === 'facing' && sol.downgraded) why = `Vas por delante de buena parte de su rango (ganas unas ${of20(sol.eq)} de cada 20), pero si subes solo te pagarían las manos que te ganan: <b>paga</b>.`;
       else if (q.kind === 'facing') why = `Ganas unas <b>${of20(sol.eq)} de cada 20</b> veces y para que pagar compense necesitas <b>${of20(sol.needed)}</b>.<span class="pro-only"> (Equity ${sol.eq.toFixed(1).replace('.', ',')}% · necesitas ${sol.needed.toFixed(1).replace('.', ',')}%)</span>`;
@@ -1646,7 +1894,7 @@
         ${funnel ? `<div class="train-funnel">🎯 <b>Ya llevas ${stats.n} situaciones.</b> ¿Quieres analizar tus propias manos?
           <button type="button" class="btn-primary" id="trainToAnalyzer" style="width:100%; margin-top:10px;">Ir al analizador →</button></div>` : ''}
         <button type="button" class="${funnel ? 'btn-secondary' : 'btn-primary'}" id="trainNext" style="width:100%;">Siguiente mano →</button>`;
-      document.getElementById('trainNext').addEventListener('click', openTrainer);
+      document.getElementById('trainNext').addEventListener('click', () => openTrainer());
       if (funnel) document.getElementById('trainToAnalyzer').addEventListener('click', () => {
         helpModal.classList.remove('show');
         document.querySelector('.entry-q').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2096,15 +2344,22 @@
   }
   function shareUrl(){ return `${location.origin}/#m=${encodeHand()}`; }
 
+  function decodeHand(code){
+    try { const o = JSON.parse(unb64url(code)); return o && o.v === 1 ? o : null; } catch(e){ return null; }
+  }
   function loadSharedHand(){
     const m = location.hash.match(/^#m=([A-Za-z0-9_-]+)$/);
     if (!m) return;
     history.replaceState(null, '', location.pathname + location.search);
-    let o;
-    try { o = JSON.parse(unb64url(m[1])); } catch(e){ return; }
-    if (!o || o.v !== 1) return;
+    applyEncodedHand(m[1], true);
+  }
+  // Carga una mano codificada (enlace compartido o mano del historial) y la analiza.
+  // Ni las compartidas ni volver a analizar una mano tuya gastan análisis.
+  function applyEncodedHand(code, shared){
+    const o = decodeHand(code);
+    if (!o) return false;
     const hc = parseTokens(String(o.h || '')), bc = parseTokens(String(o.b || ''));
-    if (!hc[0] || !hc[1]) return;
+    if (!hc[0] || !hc[1]) return false;
     hole = [hc[0], hc[1]]; board = [0, 1, 2, 3, 4].map(i => bc[i] || null);
     if (VALID_POS.includes(o.hp)) document.getElementById('heroPosInput').value = o.hp;
     if (VALID_POS.includes(o.vp)) document.getElementById('villPosInput').value = o.vp;
@@ -2130,6 +2385,7 @@
     if (seq.some(x => x.length)) document.getElementById('seqBox').open = true;
     updateOrderHint(); render(); renderRangeUI();
     const banner = document.getElementById('sharedBanner');
+    if (!shared){ banner.style.display = 'none'; freeRun = true; setTimeout(() => analyzeBtn.click(), 300); return true; }
     banner.innerHTML = '👀 <b>Te han compartido esta mano.</b> Abajo tienes el análisis de RÍO. ¿Tú qué habrías hecho?' +
       (storageGet('rio_token', '') ? '' : ' <a class="inline-link" id="sharedSignup">Crea tu cuenta gratis</a> para analizar las tuyas.');
     banner.style.display = 'block';
@@ -2137,10 +2393,11 @@
     if (su) su.addEventListener('click', () => openPaywall('free'));
     freeRun = true;
     setTimeout(() => analyzeBtn.click(), 300);
+    return true;
   }
 
-  async function shareHand(){
-    const url = shareUrl();
+  async function shareHand(code){
+    const url = typeof code === 'string' ? `${location.origin}/#m=${code}` : shareUrl();
     const text = `¿Tú qué harías con ${lastHandLabel || 'esta mano'}? Mírala en RÍO:`;
     const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
     if (navigator.share && touch){
@@ -2227,7 +2484,10 @@
     const YOU = { ok: '✅', meh: '≈', bad: '❌' };
     visible.forEach(h => {
       const row = document.createElement('div');
-      row.className = 'history-item';
+      row.className = 'history-item clickable';
+      row.tabIndex = 0; row.setAttribute('role', 'button'); row.title = 'Ver la mano';
+      row.addEventListener('click', () => openHistoryHand(h));
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openHistoryHand(h); } });
       const street = typeof h.st === 'number' ? STREET_NAMES[h.st] + ' · ' : '';
       const where = h.hp ? `${h.hp} vs ${h.vp} · ${h.game === 'torneo' ? 'Torneo' : 'Cash'} · ` : '';
       const date = h.t ? new Date(h.t).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : h.when;
@@ -2251,9 +2511,37 @@
       document.getElementById('unlockHistoryLink').addEventListener('click', () => openPaywall('plans'));
     }
   }
+  // Ficha de una mano del historial: lo que se guardó al analizarla, y Reanalizar con el motor de siempre.
+  var rerunOf = null; // t de la mano del historial que se está reanalizando
+  function openHistoryHand(h){
+    const o = h.m ? decodeHand(h.m) : null;
+    const hc = o ? parseTokens(String(o.h || '')).filter(Boolean) : [], bc = o ? parseTokens(String(o.b || '')).filter(Boolean) : [];
+    const date = h.t ? new Date(h.t).toLocaleString('es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : (h.when || '');
+    const VERD = { ok: '✓ Bien jugado', meh: '≈ Aceptable', bad: '✗ Mejorable' };
+    const evTxt = typeof h.ev === 'number' ? `${h.ev >= 0 ? '+' : ''}${String(h.ev).replace('.', ',')} ${h.evU || ''}` : '—';
+    const body = openModal(`Mano: ${h.hand}`, `
+      <div class="hh-meta">${typeof h.st === 'number' ? STREET_NAMES[h.st] : ''}${h.hp ? ` · ${h.hp} vs ${h.vp}` : ''}${h.game ? ` · ${h.game === 'torneo' ? 'Torneo' : 'Cash'}` : ''} · ${escHTML(date)}</div>
+      ${hc.length ? `<div class="train-cards hh-cards"><div><div class="zone-label">Tu mano</div>${hc.map(c => cardHTML(c, true)).join('')}</div>
+        ${bc.length ? `<div><div class="zone-label">Mesa</div>${bc.map(c => cardHTML(c, true)).join('')}</div>` : ''}</div>` : ''}
+      <div class="yd-cmp hh-cmp ${h.g || ''}"><div><small>RÍO recomienda</small><b>${decisionHTML(h.decision)}</b></div>
+        <div><small>Tú hiciste</small><b>${h.act ? decisionHTML(h.act) : '—'}</b></div>
+        ${h.g ? `<div class="yd-verdict">${VERD[h.g]}</div>` : ''}</div>
+      <div class="hh-stats"><div><b>${String(h.equity).replace('.', ',')}%</b><span>Prob. de ganar</span></div><div><b class="${typeof h.ev === 'number' ? (h.ev >= 0 ? 'pos' : 'neg') : ''}">${evTxt}</b><span>EV</span></div>
+        ${o && o.c ? `<div><b>${fmtN(o.c)}</b><span>Te tocaba pagar</span></div>` : ''}${o && o.p ? `<div><b>${fmtN(o.p)}</b><span>Bote</span></div>` : ''}</div>
+      ${h.w ? `<div class="sub-title">Por qué</div><p class="hh-why">${escHTML(h.w)}</p>` : ''}
+      ${o ? `<div class="hh-actions"><button type="button" class="btn-primary" id="hhRe">🔄 Reanalizar</button><button type="button" class="btn-secondary" id="hhShare">📤 Compartir</button></div>
+        <p class="hint">Reanalizar carga la mano en el analizador con el análisis completo (explicación, plan y datos). No gasta análisis.</p>`
+        : '<p class="hint">Esta mano se guardó con una versión anterior de RÍO y no se puede reanalizar. Las nuevas sí.</p>'}`, { wide: true });
+    if (o){
+      body.querySelector('#hhRe').addEventListener('click', () => { closeModal(); showView(null); rerunOf = h.t || null; applyEncodedHand(h.m, false); });
+      body.querySelector('#hhShare').addEventListener('click', () => shareHand(h.m));
+    }
+  }
   // Patrones reales del historial: qué te recomienda RÍO en cada posición y cómo juegas tú.
   function renderPatterns(hist){
-    const body = document.getElementById('histPatternsBody');
+    document.getElementById('histPatternsBody').innerHTML = patternsHTML(hist, true);
+  }
+  function patternsHTML(hist, withTop){
     const pctOf = (n, t) => t ? Math.round(n / t * 100) + '%' : '—';
     const withPos = hist.filter(h => h.hp);
     const byPos = {};
@@ -2264,12 +2552,12 @@
     });
     const rows = Object.entries(byPos).sort((a, b) => b[1].n - a[1].n);
     const rated = hist.filter(h => h.g);
-    body.innerHTML = `
-      <div class="pat-top"><div><b>${hist.length}</b><span>manos analizadas</span></div>
-        <div><b>${rated.length ? pctOf(rated.filter(h => h.g === 'ok').length, rated.length) : '—'}</b><span>bien jugadas${rated.length ? ` (${rated.length} con secuencia)` : ''}</span></div></div>
+    return `
+      ${withTop ? `<div class="pat-top"><div><b>${hist.length}</b><span>manos analizadas</span></div>
+        <div><b>${rated.length ? pctOf(rated.filter(h => h.g === 'ok').length, rated.length) : '—'}</b><span>bien jugadas${rated.length ? ` (${rated.length} con tu jugada)` : ''}</span></div></div>` : ''}
       ${rows.length ? `<div class="pat-table"><div class="pat-row pat-h"><span>Posición</span><span>Manos</span><span>Pagar</span><span>Subir</span><span>Tirar</span><span>Tu acierto</span></div>
         ${rows.map(([pos, p]) => `<div class="pat-row"><span><b>${pos}</b></span><span>${p.n}</span><span>${pctOf(p.CALL, p.n)}</span><span>${pctOf(p.RAISE, p.n)}</span><span>${pctOf(p.FOLD, p.n)}</span><span>${p.rated ? pctOf(p.ok, p.rated) : '—'}</span></div>`).join('')}</div>
-        <div class="hint" style="margin-top:6px;">Pagar / Subir / Tirar = lo que te recomendó RÍO en esa posición. Tu acierto solo cuenta las manos con la secuencia de apuestas apuntada.</div>`
+        <div class="hint" style="margin-top:6px;">Pagar / Subir / Tirar = lo que te recomendó RÍO en esa posición. Tu acierto solo cuenta las manos en las que sabemos qué hiciste.</div>`
         : '<div class="hint">El desglose por posición aparecerá con tus próximas manos analizadas.</div>'}`;
   }
   ['hfStreet', 'hfDec', 'hfEv', 'hfErr'].forEach(id => document.getElementById(id).addEventListener('change', renderHistory));
@@ -2991,16 +3279,24 @@
 
       // Tu jugada en esa mano (solo si apuntaste lo que hiciste en la secuencia): la peor nota.
       const worst = reviewRows.reduce((w, r) => (!w || ['ok', 'meh', 'bad'].indexOf(r.g) > ['ok', 'meh', 'bad'].indexOf(w.g)) ? r : w, null);
-      pushHistory({
+      const historyT = rerunOf || Date.now(); // al reanalizar una mano del historial se reutiliza su entrada
+      if (!rerunOf) pushHistory({
         hand: handLabel, equity: win.toFixed(1), rivals: numRivals,
-        decision: text, cls: cls, t: Date.now(), st: aStreet,
+        decision: text, cls: cls, t: historyT, st: aStreet,
         ev: evShown === null ? null : Math.round((inBB ? evShown / bbSize() : evShown) * 10) / 10, evU: inBB ? 'BB' : unitLabel,
  g: worst ? worst.g : null, act: worst ? worst.act : null,
         hp: heroPos, vp: villPos, game: tourney ? 'torneo' : 'cash',
+        m: encodeHand(), w: (why[0] || '').replace(/<[^>]+>/g, '').slice(0, 160),
         when: new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})
       });
+      rerunOf = null;
       updateUsageBadge();
       renderHistory();
+      renderYouDid(reviewRows.length || demo ? null : {
+        t: historyT, sig: handSignature(), s: aStreet, rec: text, toCall: call, pot, isOpen,
+        evCall: call > 0 ? ev : null, bc: bluff, bb: bbSize(), pos: `${heroPos} vs ${villPos}`,
+        pt: aStreet > 0 && seq[0].length && replay(0).raises >= 2 ? '3bet' : '', river: aStreet === 3 && call > 0 ? 1 : 0
+      });
 
       if (storageGet('rio_remember_defaults', true)){
         storageSet('rio_defaults', { heroPos, villPos, numRivals });

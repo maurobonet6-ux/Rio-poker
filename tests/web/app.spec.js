@@ -232,8 +232,10 @@ test('estadísticas: "Estadísticas y errores" abre el progreso del jugador, no 
   await abrir(page, { pro: true, storage: { rio_email: 'cliente@rio.test' } });
   await expect(page.locator('#navAdminStats')).toHaveCount(0);
   await page.evaluate(() => document.getElementById('navStats').click());
-  await expect(page.locator('#helpBody')).toContainText('Aún no hay datos');
-  await expect(page.locator('#helpBody .stats-tbl')).toHaveCount(0);
+  // "Mi progreso" es ahora una sección propia (#/progreso), no una ventana.
+  await expect(page).toHaveURL(/#\/progreso$/);
+  await expect(page.locator('#progressBody')).toContainText('Aún no hay datos');
+  await expect(page.locator('#progressBody .stats-tbl')).toHaveCount(0);
 });
 
 test('estadísticas: se guarda de dónde llega la persona y se manda al crear la cuenta', async ({ page }) => {
@@ -486,4 +488,115 @@ test('partida de práctica: mano a mano, 3 jugadores y mesa variable (las fichas
   await jugarManos(8);
   const n = await page.locator('.g-seat').count();
   expect(n).toBeGreaterThanOrEqual(3); expect(n).toBeLessThanOrEqual(6);
+});
+
+test('¿Tú qué hiciste?: se guarda en el historial y en tus errores, y se puede cambiar', async ({ page }) => {
+  await abrir(page, { pro: true });
+  await ponerMano(page, ['7c', '2d'], ['As', 'Kd', 'Qh']);
+  await ponerBote(page, 20, 20);
+  await analizar(page);
+  await expect(page.locator('#youDid')).toBeVisible();
+  const rec = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history'))[0].decision);
+  const otra = rec === 'CALL' ? 'FOLD' : 'CALL';
+  await page.locator(`#youDid [data-yd="${otra}"]`).click();
+  await expect(page.locator('#youDid .yd-cmp')).toContainText('Tú hiciste');
+  let h = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history'))[0]);
+  expect(h.act).toBe(otra);
+  expect(['meh', 'bad']).toContain(h.g);
+  const rows = await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('rio_reviews'))).flatMap(x => x.rows));
+  expect(rows).toHaveLength(1);
+  expect(rows[0].act).toBe(otra);
+  await page.locator(`#youDid [data-yd="${rec}"]`).click();
+  h = await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history'))[0]);
+  expect(h.g).toBe('ok');
+  expect(await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('rio_reviews'))).flatMap(x => x.rows).length)).toBe(1);
+});
+
+test('Mi progreso: resume tus manos y tu mayor leak, y Atrás vuelve al analizador', async ({ page }) => {
+  const t = Date.now();
+  await abrir(page, { pro: true, storage: {
+    rio_history: [{ hand: 'A♠ K♦', equity: '60.0', decision: 'CALL', cls: 'warn', t, st: 1, ev: 2.5, evU: 'BB', g: 'bad', act: 'FOLD', hp: 'BTN', vp: 'BB', game: 'cash' }],
+    rio_reviews: { x: { t, rows: [{ s: 1, rec: 'CALL', act: 'FOLD', g: 'bad', pos: 'BTN vs BB', pt: '', bc: 0, loss: 2.5 }] } } } });
+  await page.evaluate(() => document.getElementById('navStats').click());
+  await expect(page.locator('#progressView')).toBeVisible();
+  await expect(page.locator('.pv-kpi').first()).toContainText('1');
+  await expect(page.locator('.pv-leak')).toContainText('Te retiras cuando convenía pagar');
+  await expect(page.locator('#progressBody')).toContainText('−2,5 BB');
+  await page.goBack();
+  await expect(page.locator('#progressView')).toBeHidden();
+  await page.goto('http://rio.test/#/progreso');
+  await expect(page.locator('#progressView')).toBeVisible();
+});
+
+test('navegación: secciones con su dirección, pestaña activa y Atrás del navegador', async ({ page }) => {
+  await abrir(page);
+  const nav = page.locator('#appNav');
+  await expect(nav.locator('.an-link.on')).toHaveText(/Analizar/);
+  await nav.locator('[data-route="practicar"]').click();
+  await expect(page).toHaveURL(/#\/practicar$/);
+  await expect(page.locator('#practiceView')).toBeVisible();
+  await expect(nav.locator('.an-link.on')).toHaveText(/Practicar/);
+  await nav.locator('[data-route="cuenta"]').click();
+  await expect(page.locator('#accountView')).toBeVisible();
+  await expect(page.locator('#accountList')).toContainText('Configuración');
+  await page.goBack();
+  await expect(page.locator('#practiceView')).toBeVisible();
+  await page.goBack();
+  await expect(page.locator('#practiceView')).toBeHidden();
+  await expect(page.locator('#cardsPanel')).toBeVisible();
+});
+
+test('navegación: el historial se ve en su sección y vuelve al analizador al salir', async ({ page }) => {
+  await abrir(page, { storage: { rio_history: [{ hand: 'A♠ K♦', equity: '60.0', decision: 'CALL', cls: 'warn', t: Date.now(), st: 1 }] } });
+  await page.goto('http://rio.test/#/historial');
+  await expect(page.locator('#historyView #historyPanel')).toBeVisible();
+  await page.goto('http://rio.test/#/');
+  await expect(page.locator('#historyView #historyPanel')).toHaveCount(0);
+  await expect(page.locator('.wrap #historyPanel')).toBeVisible();
+});
+
+test('historial interactivo: abrir una mano, ver su ficha y reanalizarla sin duplicarla', async ({ page }) => {
+  await abrir(page, { pro: true });
+  await ponerMano(page, ['Ah', '9h'], ['Kh', '7h', '2c']);
+  await ponerBote(page, 30, 15);
+  await analizar(page);
+  await page.locator('#historyList .history-item').first().click();
+  await expect(page.locator('#helpModal.show')).toBeVisible();
+  await expect(page.locator('#helpBody .hh-cards .mini-card')).toHaveCount(5);
+  await expect(page.locator('#helpBody')).toContainText('RÍO recomienda');
+  await page.locator('#hhRe').click();
+  await expect(page.locator('#helpModal.show')).toHaveCount(0);
+  await expect(page.locator('#resultPanel')).toHaveClass(/show/);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('rio_history')).length)).toBe(1);
+});
+
+test('entrenamiento por temas: 3-bet pregunta si resubir y "mis errores" pide datos reales', async ({ page }) => {
+  await abrir(page);
+  await page.evaluate(() => document.getElementById('navTrain').click());
+  await page.locator('[data-topic="3bet"]').click();
+  await expect(page.locator('#helpBody')).toContainText('abre subiendo a');
+  await expect(page.locator('[data-ans="RAISE"]')).toContainText('3-bet');
+  await page.locator('[data-ans="CALL"]').click();
+  await expect(page.locator('.train-verdict')).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('rio_train_log')).pop().k)).toBe('vsopen');
+  await page.locator('[data-topic="errores"]').click();
+  await expect(page.locator('#helpBody')).toContainText('Analiza más manos para desbloquear entrenamiento personalizado');
+});
+
+test('entrenar mis errores: con errores reales saca situaciones de ese tipo', async ({ page }) => {
+  const rows = [1, 2, 3].map(i => ({ s: 3, rec: 'FOLD', act: 'CALL', g: 'bad', pos: 'BTN vs BB', pt: '', bc: 1, loss: 1 }));
+  await abrir(page, { storage: { rio_reviews: { x: { t: Date.now(), rows } } } });
+  await page.evaluate(() => document.getElementById('navTrain').click());
+  await page.locator('[data-topic="errores"]').click();
+  await expect(page.locator('#helpBody')).toContainText('river');
+  await expect(page.locator('[data-ans="CALL"]')).toBeVisible();
+});
+
+test('landing pública: sin errores, con la mano de ejemplo real y llevando a la app', async ({ page }) => {
+  const { errores } = await abrir(page, { path: '/descubre/' });
+  await expect(page.locator('h1')).toContainText('Tu coach de póker');
+  await expect(page.locator('#demo')).toContainText('RÍO recomienda');
+  await expect(page.locator('#precios')).toContainText('9,99 €');
+  await expect(page.locator('a.btn', { hasText: 'Empezar gratis' }).first()).toHaveAttribute('href', '/');
+  expect(errores).toEqual([]);
 });

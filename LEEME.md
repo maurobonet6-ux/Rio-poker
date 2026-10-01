@@ -7,7 +7,7 @@ Este proyecto tiene estas partes:
 - `lib/routes/check-pro.js` — le pregunta a Stripe si el usuario con sesión iniciada tiene suscripción activa
 - `api/analyze-table.js` — lee una captura de la mesa con Claude (solo PRO, gasta 1 crédito de IA)
 - `api/parse-hand.js` — "Cuéntame tu mano": convierte el relato de una mano (escrito o dictado) en cartas, posiciones y apuestas con Claude (solo PRO, gasta 1 crédito de IA)
-- `lib/routes/free-use.js` — cuenta los 5 análisis gratis de cada cuenta gratuita (en el servidor, no en el navegador)
+- `lib/routes/free-use.js` — cuenta los 10 análisis gratis de cada cuenta gratuita (en el servidor, no en el navegador)
 - `api/user-data.js` — guarda en la cuenta el historial, las estadísticas y los ajustes
 - `api/stripe-webhook.js` — suma solos los créditos de los packs al comprarlos
 - `api/feedback.js` — avisos de "¿consejo raro?" (los ADMIN_EMAILS los leen desde el menú)
@@ -94,7 +94,7 @@ Este proyecto tiene estas partes:
 
 ## Cómo funciona la verificación
 
-Cualquiera puede crear una cuenta gratis con su email (sin contraseña): los 5 análisis gratis van ligados a esa cuenta y se cuentan en el servidor. Cuando alguien paga, entra con el mismo email. La página
+Cualquiera puede crear una cuenta gratis con su email (sin contraseña): los 10 análisis gratis van ligados a esa cuenta y se cuentan en el servidor. Cuando alguien paga, entra con el mismo email. La página
 llama a `/api/send-code`, que comprueba en Stripe que ese email tiene una suscripción activa
 y le envía un código de 6 dígitos (caduca en 10 minutos, máximo 5 intentos). Al escribir el
 código, `/api/verify-code` le da a ese navegador un token de sesión válido 90 días. Así nadie
