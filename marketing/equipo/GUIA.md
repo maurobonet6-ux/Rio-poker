@@ -63,6 +63,8 @@ Entre **4 y 6 piezas**. Mezcla de referencia:
 - **Por qué** (`why`): en una frase, por qué esta pieza hoy (dato, hallazgo o prueba).
 - Formato de cada red:
   - **TikTok:** texto corto + 3-5 hashtags (#poker #pokerespañol #texasholdem…). Sin enlace.
+  - **Mitos del póker** («los suited ganan mucho más», «hay que defender siempre la ciega»…): siempre en **carrusel** para deslizar
+    en Instagram, nunca en vídeo: diapositiva 1 = «MITO: …», luego «LA REALIDAD» con la cuenta, y la última con la llamada a la acción.
   - **Instagram:** carrusel de 3-8 diapositivas (titulo ≤ 8 palabras, texto ≤ 35 palabras; `**así**` resalta en rojo). Texto con «guárdalo para tu próxima partida».
   - **YouTube Shorts:** `title` ≤ 60 caracteres; `caption` = descripción con `{enlace}`.
   - **Telegram:** `post` (texto con `{enlace}`), `encuesta` (pregunta + opciones + `correcta`) o `video`.

@@ -86,7 +86,6 @@ jobs:
         env:
           PEDIDO: ${{ matrix.pedido }}
           ID: ${{ matrix.id }}
-          ENLACE: riopoker.es/v/${{ matrix.id }}
           VOZ: ${{ vars.VOZ }}
           SIN_VOZ: ${{ vars.SIN_VOZ }}
           SIN_FONDO: ${{ vars.SIN_FONDO }}

@@ -1,4 +1,4 @@
-// Vídeo "¿Qué harías tú?", versión 2: cámara que se mueve por la mesa, luz y grano de cine, cartas de 4 colores como la app
+// Vídeo "¿Qué harías tú?", versión 2: cámara que se mueve por la mesa, luz y grano de cine, cartas como las de la app (2 colores)
 // y barra de equity en el veredicto. Mismo guion y mismos tiempos que video-mesa.js.
 // Uso: node video-mesa2.js <mano>   (la mano tiene que estar en manos.js y analizada con capturas-manos.js)
 const { chromium } = require('@playwright/test');
@@ -67,7 +67,7 @@ em{font-style:normal;color:#E8283F} .g{color:#3DDC7A} .y{color:#D8A63B}
 .card.vill{width:112px;height:158px;margin:-79px 0 0 -56px}
 .face,.back{position:absolute;inset:0;border-radius:20px;backface-visibility:hidden;box-shadow:0 14px 30px rgba(0,0,0,.55);overflow:hidden}
 .face{background:linear-gradient(180deg,#FFFFFF,#F3F2EE);color:#17171B;box-shadow:0 0 0 2px rgba(0,0,0,.08),0 18px 36px rgba(0,0,0,.6)}
-.face.p-h{color:#D9304A}.face.p-d{color:#2E6BE6}.face.p-c{color:#1A9A4A}
+.face.p-h,.face.p-d{color:#D9304A} /* en los vídeos, baraja clásica de 2 colores: es la que conoce todo el mundo */
 .rk{position:absolute;top:12px;left:16px;font-family:'Bricolage Grotesque';font-weight:800;font-size:64px;line-height:.9}
 .rk i{display:block;font-style:normal;font-size:36px;margin-top:6px}
 .su{position:absolute;right:14px;bottom:8px;font-size:92px;line-height:1}

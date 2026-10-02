@@ -78,7 +78,8 @@ function manoEscrita(texto){
 // Formatos de vídeo. Sin pedir ninguno, cada vídeo sale de uno distinto (así no se sube siempre lo mismo).
 const FORMATOS = { mesa: 'mesa', concurso: 'concurso', quiz: 'concurso', mito: 'mito', lista: 'lista', top: 'lista' };
 // Reparto al azar cuando no se pide formato: más peso a la mesa y al concurso, que son los más completos.
-const PESOS = [['mesa', 30], ['concurso', 30], ['mito', 20], ['lista', 20]];
+// El mito ya no sale en el reparto automático: funciona mejor como carrusel para deslizar (lo hace el equipo; ver GUIA.md).
+const PESOS = [['mesa', 40], ['concurso', 40], ['lista', 20]];
 function elegirFormato(){
   let x = Math.random() * PESOS.reduce((a, [, p]) => a + p, 0);
   for (const [f, p] of PESOS){ if ((x -= p) < 0) return f; }
@@ -122,7 +123,7 @@ if (pide){
     const formato = pide.formato || (tema ? 'mesa' : elegirFormato());
     if (formato !== 'mesa'){
       console.log(`Vídeo ${v}/${cantidad} · formato ${formato}`);
-      node('video-' + formato + '.js'); hechos++; continue;
+      node(formato === 'concurso' ? 'video-concurso2.js' : 'video-' + formato + '.js'); hechos++; continue; // el concurso, en su versión 3D
     }
     for (let i = 1; i <= 8; i++){
       const d = validar(manoAlAzar(tema));
