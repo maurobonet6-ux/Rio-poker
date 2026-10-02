@@ -85,7 +85,7 @@ async function enviar(archivoPlan, carpeta){
       if (p.format === 'video'){
         const f = path.join(carpeta, `pieza-${p.id}.mp4`);
         if (!fs.existsSync(f)) throw new Error('no se pudo hacer el vídeo' + (fs.existsSync(f + '.error') ? ': ' + fs.readFileSync(f + '.error', 'utf8').trim() : ''));
-        media = [(await tg('sendVideo', { chat_id: chat, supports_streaming: true, caption: `#${p.id}` }, { video: f })).message_id];
+        media = [(await tg('sendVideo', { chat_id: chat, supports_streaming: true, width: 1080, height: 1920, caption: `#${p.id}` }, { video: f })).message_id];
       } else if (p.format === 'carrusel'){
         const fotos = imagenes[p.id];
         if (!fotos || !fotos.length) throw new Error('no se pudo hacer el carrusel');
