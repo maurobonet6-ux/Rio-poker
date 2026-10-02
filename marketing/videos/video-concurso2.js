@@ -4,7 +4,13 @@
 // Uso: desde generar.js ("concurso") o a mano: SNAP=1,4,8,12 node video-concurso2.js
 const { grabar, FUENTES } = require('./motor.js');
 const { pregunta } = require('./concurso-preguntas.js');
-const { narracion, T } = require('./video-concurso.js');
+const { narracion: narracionBase, T } = require('./video-concurso.js');
+
+// Dificultad en palabras en lugar de «nivel 3» (las preguntas tienen nivel del 1 al 15; ahora se usan del 1 al 7).
+const DIFICULTAD = ['muy fácil', 'fácil', 'difícil', 'muy difícil', 'imposible'];
+const dificultad = nivel => nivel <= 2 ? 0 : nivel <= 3 ? 1 : nivel <= 5 ? 2 : nivel <= 6 ? 3 : 4;
+// La voz igual que en el concurso de siempre, pero diciendo la dificultad.
+const narracion = p => narracionBase(p).map(f => f.id === 'intro' ? { ...f, texto: f.texto.replace(/Nivel \d+\./, `Pregunta ${DIFICULTAD[dificultad(p.nivel)]}.`) } : f);
 
 const PALOS = { s: '♠', h: '♥', d: '♦', c: '♣' };
 const limpio = s => String(s).replace(/[<>&]/g, '');
@@ -25,8 +31,8 @@ em{font-style:normal;color:#E8283F}.y{color:#F2C14E}.g{color:#3DDC7A}
 #cam{position:absolute;inset:0;transform-style:preserve-3d}
 .brand{position:absolute;top:96px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:18px;font-family:'Bricolage Grotesque';font-weight:800;font-size:46px;z-index:10}
 .brand i{font-style:normal;font-size:28px;font-weight:700;color:#E8283F;background:rgba(232,40,63,.14);border:2px solid rgba(232,40,63,.5);padding:8px 18px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase}
-#ladder{position:absolute;top:186px;left:0;right:0;display:flex;justify-content:center;gap:12px;z-index:10}
-.lv{width:44px;height:44px;border-radius:50%;background:repeating-conic-gradient(#2a2a30 0 30deg,#3a3a42 30deg 45deg);box-shadow:inset 0 0 0 7px #1a1a1e;opacity:.55}
+#ladder{position:absolute;top:180px;left:0;right:0;display:flex;justify-content:center;gap:22px;z-index:10}
+.lv{width:58px;height:58px;border-radius:50%;background:repeating-conic-gradient(#2a2a30 0 30deg,#3a3a42 30deg 45deg);box-shadow:inset 0 0 0 7px #1a1a1e;opacity:.55}
 .lv.on{background:repeating-conic-gradient(#E8283F 0 30deg,#F5F2EC 30deg 45deg);box-shadow:inset 0 0 0 7px #b3162b,0 0 18px rgba(232,40,63,.6);opacity:1}
 .lv.now{transform:scale(1.25)}
 #nivel{position:absolute;top:248px;left:0;right:0;text-align:center;font-weight:700;font-size:30px;letter-spacing:.14em;color:rgba(245,242,236,.6);z-index:10}
@@ -79,7 +85,7 @@ em{font-style:normal;color:#E8283F}.y{color:#F2C14E}.g{color:#3DDC7A}
 </style></head><body>
 ${[0, 1, 2].map(i => `<div class="beam" id="be${i}" style="left:${140 + i * 300}px"></div>`).join('')}
 <div class="brand">RÍO <i>¿Cuánto sabes?</i></div>
-<div id="ladder">${Array.from({ length: 15 }, () => '<div class="lv"></div>').join('')}</div>
+<div id="ladder">${DIFICULTAD.map(() => '<div class="lv"></div>').join('')}</div>
 <div id="nivel"></div>
 <div id="titulo"></div>
 <div id="dim"></div>
@@ -95,7 +101,7 @@ ${[0, 1, 2].map(i => `<div class="beam" id="be${i}" style="left:${140 + i * 300}
 <div id="fin"><div class="t">¿Lo sabías?</div><div class="s">Aprende póker con <b>RÍO</b></div><div class="url">riopoker.es</div><div class="a">👆 enlace en la bio</div><div class="f">Herramienta de estudio · +18</div></div>
 <div class="pbar" id="pbar"></div>
 <script>
-const P = ${JSON.stringify({ ok: p.ok, n, nivel: p.nivel, T, letra: letras[p.ok] })};
+const P = ${JSON.stringify({ ok: p.ok, n, dif: dificultad(p.nivel), nombre: DIFICULTAD[dificultad(p.nivel)], T, letra: letras[p.ok] })};
 const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), lerp = (a, b, k) => a + (b - a)*k;
 const out = t => 1 - Math.pow(1 - t, 3), io = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2, back = t => { const a = 1.7, b = a + 1; return 1 + b*Math.pow(t - 1, 3) + a*Math.pow(t - 1, 2); };
 const $ = id => document.getElementById(id);
@@ -120,12 +126,13 @@ function render(t){
   const T = P.T, rev = t >= T.reveal;
   for (let i = 0; i < 3; i++) $('be' + i).style.transform = 'rotate(' + (-18 + i*18 + 8*Math.sin(t*.7 + i*1.9)) + 'deg)';
   // Escalera de niveles
-  const nv = rev ? P.nivel + 1 : P.nivel;
-  document.querySelectorAll('.lv').forEach((l, i) => { l.classList.toggle('on', i < nv); l.classList.toggle('now', i === nv - 1); });
-  $('nivel').textContent = 'NIVEL ' + nv + ' DE 15';
+  // Medidor de dificultad: 5 fichas, encendidas hasta la de esta pregunta
+  document.querySelectorAll('.lv').forEach((l, i) => { l.classList.toggle('on', i <= P.dif); l.classList.toggle('now', i === P.dif); });
+  $('nivel').textContent = 'PREGUNTA ' + P.nombre.toUpperCase();
+  $('nivel').style.opacity = t >= T.q && t < T.cuenta ? 0 : 1; // mientras el título ya lo dice, no se repite
   // Título
   let ti = '', at = 0;
-  if (t >= T.q && t < T.cuenta){ ti = 'Pregunta del <em>nivel ' + P.nivel + '</em>'; at = T.q; }
+  if (t >= T.q && t < T.cuenta){ ti = 'Pregunta <em>' + P.nombre + '</em>'; at = T.q; }
   else if (t >= T.cuenta && t < T.resp){ ti = '¿Tú qué dices? <em>Comenta</em> 👇'; at = T.cuenta; }
   else if (t >= T.resp && t < T.reveal){ ti = 'La correcta es…'; at = T.resp; }
   else if (rev){ ti = '¡Es la <span class="g">' + P.letra + '</span>!'; at = T.reveal; }
@@ -193,7 +200,7 @@ function eventos(p){
 
 async function hacerConcurso({ p = pregunta(), id = 'concurso-' + Date.now().toString(36), snap } = {}){
   const f = await grabar({ html: pagina(p), nombre: id, total: T.total, eventos: eventos(p), snap, narracion: narracion(p) });
-  if (f) console.log('LISTO ' + f + ' · concurso nivel ' + p.nivel);
+  if (f) console.log('LISTO ' + f + ' · concurso ' + DIFICULTAD[dificultad(p.nivel)]);
   return { ok: true, id, archivo: f };
 }
 
