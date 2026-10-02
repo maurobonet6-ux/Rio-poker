@@ -33,10 +33,14 @@ body{background:radial-gradient(1100px 800px at 50% -6%, rgba(232,40,63,.30), tr
 .brand i{font-style:normal;font-size:28px;font-weight:700;color:#E8283F;background:rgba(232,40,63,.14);border:2px solid rgba(232,40,63,.5);padding:8px 18px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase}
 .cap{position:absolute;top:200px;left:50px;right:50px;text-align:center;z-index:10}
 .cap .t{font-family:'Bricolage Grotesque';font-weight:800;font-size:88px;line-height:1.07;text-shadow:0 6px 28px rgba(0,0,0,.95),0 0 2px rgba(0,0,0,.9)}
-#topfade{position:absolute;left:0;right:0;top:0;height:640px;background:linear-gradient(180deg,rgba(10,10,11,.92) 0,rgba(10,10,11,.7) 55%,transparent);z-index:9;pointer-events:none}
+#topfade{position:absolute;left:0;right:0;top:0;height:520px;background:linear-gradient(180deg,rgba(10,10,11,.9) 0,rgba(10,10,11,.55) 60%,transparent);z-index:9;pointer-events:none}
 #spot{position:absolute;inset:0;z-index:5;pointer-events:none}
 #grain{position:absolute;inset:0;width:1080px;height:1920px;z-index:35;opacity:.07;mix-blend-mode:overlay;pointer-events:none}
 #dust{position:absolute;inset:0;z-index:4;pointer-events:none}#dust i{position:absolute;border-radius:50%;background:#ffd9c2;filter:blur(3px)}
+#villain{position:absolute;left:330px;top:300px;width:420px;height:440px;transform-origin:50% 100%;filter:drop-shadow(0 0 22px rgba(232,40,63,.35))}
+#villain:before{content:'';position:absolute;left:-120px;right:-120px;top:-60px;bottom:40px;background:radial-gradient(closest-side,rgba(232,40,63,.22),transparent);z-index:-1}
+#vseat .av{display:none}#vseat{padding-left:30px}
+#villain svg{width:100%;height:100%;overflow:visible}
 #vig{position:absolute;inset:0;z-index:34;pointer-events:none;background:radial-gradient(ellipse 75% 60% at 50% 50%,transparent 55%,rgba(0,0,0,.55) 100%)}
 #verdict .eq{position:relative;height:26px;border-radius:13px;background:#0A0A0B;border:1px solid rgba(245,242,236,.1);margin:34px 6px 54px}
 #verdict .eqf{position:absolute;left:0;top:0;bottom:0;border-radius:13px;background:linear-gradient(90deg,#1A9A4A,#3DDC7A);width:0}
@@ -106,7 +110,15 @@ em{font-style:normal;color:#E8283F} .g{color:#3DDC7A} .y{color:#D8A63B}
 const W = 940, CX = 470;
 const BOARD = H.board.map((c, i) => ({ x: CX + (i - 2) * 168, y: 420 }));
 const html = `<!doctype html><html><head><meta charset="utf-8"><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${CSS}</style></head><body>
-<div id="world"><div id="table"><div id="rail"></div><div id="felt"><div class="line"></div><div class="logo">RÍO</div></div>
+<div id="world"><div id="villain"><svg viewBox="0 0 420 440"><defs>
+  <linearGradient id="vg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26262c"/><stop offset=".55" stop-color="#141417"/><stop offset="1" stop-color="#0b0b0d"/></linearGradient>
+  <linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3a44"/><stop offset=".45" stop-color="#0d0d10"/><stop offset=".55" stop-color="#5a2430"/><stop offset="1" stop-color="#0d0d10"/></linearGradient></defs>
+  <path d="M210 18 C128 18 88 92 90 172 C92 224 108 254 128 272 C66 294 22 336 0 440 L420 440 C398 336 354 294 292 272 C312 254 328 224 330 172 C332 92 292 18 210 18 Z" fill="url(#vg)" stroke="rgba(232,40,63,.55)" stroke-width="3"/>
+  <ellipse cx="210" cy="182" rx="64" ry="82" fill="#050506"/>
+  <g id="gafas"><rect x="150" y="160" width="54" height="30" rx="12" fill="url(#gl)"/><rect x="216" y="160" width="54" height="30" rx="12" fill="url(#gl)"/><rect x="202" y="170" width="16" height="5" rx="2" fill="#2a2a30"/>
+  <rect id="brillo" x="156" y="164" width="10" height="22" rx="4" fill="rgba(255,255,255,.55)" transform="skewX(-20)"/></g>
+  <path d="M120 300 C160 330 260 330 300 300" stroke="rgba(245,242,236,.06)" stroke-width="3" fill="none"/>
+</svg></div><div id="table"><div id="rail"></div><div id="felt"><div class="line"></div><div class="logo">RÍO</div></div>
   <div id="dealer">D</div>
   ${[0, 1, 2, 3, 4].filter(i => i >= H.board.length).map(i => `<div class="ghost" style="left:${CX + (i - 2) * 168}px;top:420px"><span>${i === 3 ? "TURN" : i === 4 ? "RIVER" : i === 1 ? "FLOP" : ""}</span></div>`).join("")}
   ${chips('pot', [['#2a2a30','#141416','#F5F2EC'],['#E8283F','#8f1426','#F5F2EC'],['#F5F2EC','#b9b3a8','#E8283F'],['#E8283F','#8f1426','#F5F2EC'],['#2a2a30','#141416','#F5F2EC'],['#E8283F','#8f1426','#F5F2EC']])}
@@ -117,7 +129,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><link href="https
   ${card('v0', ['?', '?'], 'vill')}${card('v1', ['?', '?'], 'vill')}
   ${H.board.map((c, i) => card('b' + i, c)).join('')}
   ${H.hero.map((c, i) => card('h' + i, c, 'hero')).join('')}
-</div><div class="seat" id="vseat" style="top:500px"><div class="av"><span></span></div><div><b>Rival</b><small id="vstack">${H.vstack0}</small></div><div class="act" id="vact"></div></div></div>
+</div><div class="seat" id="vseat" style="top:660px"><div class="av"><span></span></div><div><b>Rival</b><small id="vstack">${H.vstack0}</small></div><div class="act" id="vact"></div></div></div>
 <div id="dust">${Array.from({ length: 26 }, () => '<i></i>').join('')}</div><div id="spot"></div><div id="topfade"></div>
 <div id="dim"></div>
 <div id="bar"><div class="btn fold" id="bfold">TIRAR</div><div class="btn call" id="bcall">${H.call}</div></div>
@@ -189,6 +201,11 @@ function render(t){
   const vl = E.back(cl((t - 4.3)/0.35));
   place($('vbetlbl'), 560, 270, 'translate(-50%,-50%) scale(' + vl + ')'); $('vbetlbl').style.opacity = t < 4.3 || t > 9.4 ? 0 : 1;
   $('vact').textContent = t >= 4.0 ? H.vact : ''; $('vstack').textContent = t >= 4.0 ? H.vstack : H.vstack0;
+  // Rival: respira, se inclina hacia delante al apostar y el brillo cruza sus gafas
+  { const lean = E.out(cl((t - 3.8)/0.4)) - E.inOut(cl((t - 5.0)/0.8))*0.6, br = 1 + 0.012*Math.sin(t*2.2);
+    $('villain').style.transform = 'translateY(' + (14*lean) + 'px) scale(' + ((1 + 0.06*lean)*br) + ',' + ((1 + 0.06*lean)/br) + ')';
+    $('villain').style.opacity = 1 - E.out(cl((t - 10.6)/0.3))*0.5;
+    const g = cl((t - 4.0)/0.5); $('brillo').setAttribute('x', 156 + 100*E.inOut(g)); $('brillo').style.opacity = g > 0 && g < 1 ? 1 : 0.35; }
   $('vseat').style.opacity = 1 - E.out(cl((t - 10.6)/0.3));
   // Tu pago: tus fichas van al bote
   const hb = E.out(cl((t - 9.3)/0.5)), hm = E.inOut(cl((t - 9.8)/0.45));
