@@ -37,6 +37,12 @@ body{background:radial-gradient(1100px 800px at 50% -6%, rgba(232,40,63,.30), tr
 #spot{position:absolute;inset:0;z-index:5;pointer-events:none}
 #grain{position:absolute;inset:0;width:1080px;height:1920px;z-index:35;opacity:.07;mix-blend-mode:overlay;pointer-events:none}
 #dust{position:absolute;inset:0;z-index:4;pointer-events:none}#dust i{position:absolute;border-radius:50%;background:#ffd9c2;filter:blur(3px)}
+.cap .t .w{transition:none}.cap .t.hablando .w{opacity:.5!important}.cap .t.hablando .w.on{opacity:1!important;text-shadow:0 0 30px rgba(255,255,255,.35),0 6px 28px rgba(0,0,0,.95)}
+#phone{position:absolute;left:240px;top:560px;width:600px;height:1230px;border-radius:84px;background:#050506;padding:22px;z-index:12;box-shadow:0 0 0 3px #2a2a30,0 0 0 9px #0c0c0e,0 60px 140px rgba(0,0,0,.85),0 0 120px rgba(232,40,63,.25);display:none}
+#phone .scr{position:relative;width:100%;height:100%;border-radius:64px;overflow:hidden;background:#0A0A0B}
+#phone img{position:absolute;left:0;top:72px;width:100%}
+#phone .notch{position:absolute;left:50%;top:40px;width:150px;height:40px;margin-left:-75px;border-radius:20px;background:#000;z-index:2}
+#phone .scan{position:absolute;left:0;right:0;height:180px;background:linear-gradient(180deg,transparent,rgba(232,40,63,.28),transparent);z-index:1}
 #villain{position:absolute;left:330px;top:300px;width:420px;height:440px;transform-origin:50% 100%;filter:drop-shadow(0 0 22px rgba(232,40,63,.35))}
 #villain:before{content:'';position:absolute;left:-120px;right:-120px;top:-60px;bottom:40px;background:radial-gradient(closest-side,rgba(232,40,63,.22),transparent);z-index:-1}
 #vseat .av{display:none}#vseat{padding-left:30px}
@@ -108,6 +114,9 @@ em{font-style:normal;color:#E8283F} .g{color:#3DDC7A} .y{color:#D8A63B}
 `;
 
 const W = 940, CX = 470;
+// «RÍO en acción»: la captura real de la app con el resultado (la hace capturas-manos.js). Si no está, el veredicto sale como antes.
+const MOVIL = fs.existsSync(HN + '-result.png');
+const VT = MOVIL ? 10.85 : 9.4; // cuándo sale la tarjeta del veredicto
 const BOARD = H.board.map((c, i) => ({ x: CX + (i - 2) * 168, y: 420 }));
 const html = `<!doctype html><html><head><meta charset="utf-8"><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${CSS}</style></head><body>
 <div id="world"><div id="villain"><svg viewBox="0 0 420 440"><defs>
@@ -136,8 +145,9 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><link href="https
 <div id="ring"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="88" class="track"/><circle cx="100" cy="100" r="88" class="prog"/></svg><div class="num" data-n="3">3</div><div class="num" data-n="2">2</div><div class="num" data-n="1">1</div></div>
 <div id="pill">Comenta tu respuesta 👇</div>
 <div id="verdict"><div class="brandsm">ANÁLISIS DE RÍO</div><div class="badge" style="${H.fold ? "color:#FF4757;background:rgba(255,71,87,.16)" : ""}">${H.badge}</div><div class="rec">${H.rec}</div>
-  <div class="stats"><div class="st"><b><span class="count" data-to="${G.ganas}" data-at="9.6">0</span>%</b><span>Ganas</span></div><div class="st"><b><span class="count" data-to="${G.nec}" data-at="9.6">0</span>%</b><span>Necesitas</span></div><div class="st"><b style="color:${H.fold ? "#FF4757" : "#3DDC7A"}">${G.ev}</b><span>fichas de media</span></div></div>
+  <div class="stats"><div class="st"><b><span class="count" data-to="${G.ganas}" data-at="${VT + 0.2}">0</span>%</b><span>Ganas</span></div><div class="st"><b><span class="count" data-to="${G.nec}" data-at="${VT + 0.2}">0</span>%</b><span>Necesitas</span></div><div class="st"><b style="color:${H.fold ? "#FF4757" : "#3DDC7A"}">${G.ev}</b><span>fichas de media</span></div></div>
   <div class="eq"><div class="eqf${H.fold ? ' no' : ''}"></div><div class="eqm" style="left:${G.nec}%"><span>necesitas ${G.nec}%</span></div></div></div>
+${MOVIL ? `<div id="phone"><div class="scr"><img src="${HN}-result.png"><div class="scan"></div></div><div class="notch"></div></div>` : ""}
 <div class="brand">RÍO <i>¿Qué harías tú?</i></div>
 ${H.caps.map((c, i) => `<div class="cap" id="c${i}"><div class="t words">${c.t}</div>${c.sub ? `<div class="s">${c.sub}</div>` : ''}</div>`).join('')}
 <div id="cta"><div class="t words">¿Y tus manos?</div><div class="s">Analízalas <b>gratis</b> en segundos</div><div class="url">riopoker.es</div><div class="a">👆 enlace en la bio</div><div class="f">Herramienta de estudio · analiza después de jugar</div></div>
@@ -145,7 +155,7 @@ ${H.caps.map((c, i) => `<div class="cap" id="c${i}"><div class="t words">${c.t}<
 <script>
 const H = ${JSON.stringify({ caps: H.caps, END: H.END, TOTAL: H.TOTAL, pots: H.pots, vact: H.vact, fold: H.fold, vstack0: H.vstack0, vstack: H.vstack })};
 const BOARD = ${JSON.stringify(BOARD)};
-const GANAS = ${+G.ganas || 0};
+const GANAS = ${+G.ganas || 0}, VT = ${VT}, MOVIL = ${MOVIL};
 const E = { out: t => 1 - Math.pow(1 - t, 3), inOut: t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2,
   back: t => { const a = 1.9, b = a + 1; return 1 + b*Math.pow(t - 1, 3) + a*Math.pow(t - 1, 2); } };
 const cl = x => Math.max(0, Math.min(1, x)), lerp = (a, b, p) => a + (b - a)*p;
@@ -180,7 +190,18 @@ function deal(el, t, at, x, y, rot, flipAt){
 }
 function words(root, t, at){ root.querySelectorAll('.w').forEach((s, k) => { const p = cl((t - at - k*0.07)/0.38), e = E.back(p);
   s.style.opacity = cl(p*2.2); s.style.transform = 'translateY(' + (40*(1-e)) + 'px) scale(' + (0.7 + 0.3*e) + ')'; }); }
-function render(t){
+// Subtítulo al ritmo de la voz: resalta la palabra que se está diciendo. Como la voz lee el mismo texto (a veces con los números
+// dichos de otra forma), la posición se calcula por la parte del texto ya dicha, con el tiempo real de la frase.
+function seguirVoz(el, id, real){
+  const v = (window.__VOZ || {})[id], ws = [...el.querySelectorAll('.w')];
+  const on = v && real >= v.i && real < v.i + v.d;
+  el.classList.toggle('hablando', !!on);
+  if (!on) return ws.forEach(w => w.classList.remove('on'));
+  const largo = ws.map(w => Math.max(1, w.textContent.length)), total = largo.reduce((a, b) => a + b, 0), f = (real - v.i)/v.d*total;
+  let acc = 0, k = 0; for (; k < ws.length - 1; k++){ acc += largo[k]; if (acc > f) break; }
+  ws.forEach((w, j) => w.classList.toggle('on', j === k));
+}
+function render(t, real = t){
   // Cartas: tú (grandes, abajo) y el rival (arriba, boca abajo)
   deal($('h0'), t, 0.0, 390, 800, -7, 0.75); deal($('h1'), t, 0.15, 560, 805, 6, 0.9); // en la v2 tus cartas ya están en el primer fotograma
   if (H.fold && t >= 9.3){ const m = E.inOut(cl((t - 9.3)/0.5));
@@ -206,7 +227,7 @@ function render(t){
     $('villain').style.transform = 'translateY(' + (14*lean) + 'px) scale(' + ((1 + 0.06*lean)*br) + ',' + ((1 + 0.06*lean)/br) + ')';
     $('villain').style.opacity = 1 - E.out(cl((t - 10.6)/0.3))*0.5;
     const g = cl((t - 4.0)/0.5); $('brillo').setAttribute('x', 156 + 100*E.inOut(g)); $('brillo').style.opacity = g > 0 && g < 1 ? 1 : 0.35; }
-  $('vseat').style.opacity = 1 - E.out(cl((t - 10.6)/0.3));
+  $('vseat').style.opacity = cl((t - 1.9)/0.4)*(1 - E.out(cl((t - 10.6)/0.3)));
   // Tu pago: tus fichas van al bote
   const hb = E.out(cl((t - 9.3)/0.5)), hm = E.inOut(cl((t - 9.8)/0.45));
   $('hbet').style.opacity = H.fold || t < 9.3 ? 0 : 1 - hm;
@@ -230,8 +251,15 @@ function render(t){
       nm.style.display = on ? 'flex' : 'none'; if (on){ const e = E.back(cl(q/0.3)); nm.style.transform = 'scale(' + (1.7 - 0.7*e) + ')'; nm.style.opacity = cl(q/0.12)*(q > .82 ? cl((1 - q)/0.18) : 1); } });
     const pp2 = E.back(cl((lt - 0.3)/0.4)); $('pill').style.transform = 'translateX(-50%) scale(' + pp2 + ')'; }
   // Veredicto de RÍO
-  const v = cl((t - 9.4)/0.35), ve = E.out(v);
-  $('verdict').style.opacity = t < 9.4 || t >= H.END ? 0 : cl(v*3);
+  const v = cl((t - VT)/0.35), ve = E.out(v);
+  $('verdict').style.opacity = t < VT || t >= H.END ? 0 : cl(v*3);
+  // RÍO en acción: el móvil sube con el análisis real de la app, lo recorre un poco y se va cuando llegan los números
+  if (MOVIL){ const ph = $('phone'), on = t >= 9.3 && t < VT + 0.25;
+    ph.style.display = on ? 'block' : 'none';
+    if (on){ const a = E.back(cl((t - 9.3)/0.45)), b = E.inOut(cl((t - VT + 0.05)/0.3));
+      ph.style.transform = 'translateY(' + (1300*(1 - a) - 80*b) + 'px) rotate(' + (6*(1 - a)) + 'deg) scale(' + (1 - 0.35*b) + ')'; ph.style.opacity = 1 - b;
+      ph.querySelector('img').style.transform = 'translateY(' + (-140*E.inOut(cl((t - 9.9)/0.9))) + 'px)';
+      const sc = cl((t - 9.5)/0.6); ph.querySelector('.scan').style.top = (-180 + 1400*sc) + 'px'; ph.querySelector('.scan').style.opacity = sc > 0 && sc < 1 ? 1 : 0; } }
   $('verdict').style.transform = 'scale(' + (2.0 - 1.0*ve) + ') rotate(' + (-7*(1 - ve)) + 'deg)';
   document.querySelectorAll('.count').forEach(x => { const p = E.out(cl((t - +x.dataset.at)/0.9)); x.textContent = Math.round(+x.dataset.to*p); });
   // Temblor al revelar
@@ -253,13 +281,14 @@ function render(t){
     d.style.left = (rnd(i + 3)*1080 + Math.sin(t*0.4 + i)*40) + 'px'; d.style.top = (((rnd(i + 7)*1920 - t*sp) % 1920) + 1920) % 1920 + 'px'; });
   $('grain').getContext('2d').putImageData(GRANOS[Math.floor(t*30) % GRANOS.length], 0, 0);
   // Barra de equity del veredicto
-  const ef = E.out(cl((t - 9.7)/0.9)); document.querySelector('#verdict .eqf').style.width = (GANAS*ef) + '%';
+  const ef = E.out(cl((t - VT - 0.3)/0.9)); document.querySelector('#verdict .eqf').style.width = (GANAS*ef) + '%';
   // Títulos
   H.caps.forEach((c, i) => { const el = $('c' + i); const vis = t >= c.at && t < c.to + 0.2;
     el.style.display = vis ? 'block' : 'none'; if (!vis) return;
     const outp = cl((t - c.to)/0.2); el.style.opacity = 1 - outp;
     if (c.stamp){ const p = E.out(cl((t - c.at)/0.32)); el.querySelector('.t').style.transform = 'scale(' + (2.3 - 1.3*p) + ') rotate(' + (-9*(1 - p)) + 'deg)'; el.querySelector('.t').style.opacity = cl(p*3); }
     else words(el.querySelector('.t'), t, i === 0 ? c.at - 0.45 : c.at);
+    seguirVoz(el.querySelector('.t'), 'c' + i, real);
     const s = el.querySelector('.s'); if (s){ const p = E.out(cl((t - (c.subAt || c.at))/0.45)); s.style.opacity = p; s.style.transform = 'translateY(' + (40*(1 - p)) + 'px)'; } });
   // Final
   const ce = E.out(cl((t - H.END)/0.35));
@@ -287,7 +316,7 @@ const eventos = [
   ...[0.05, 0.2, 0.4, 0.55].map(t => ({ t, tipo: 'whoosh' })),
   ...H.board.map((_, k) => ({ t: 2.15 + k * 0.15, tipo: 'whoosh' })),
   ...[6.2, 7.2, 8.2].map(t => ({ t, tipo: 'tick' })),
-  { t: 9.4, tipo: 'ding' }, { t: H.END - 0.1, tipo: 'whoosh' },
+  { t: 9.3, tipo: 'whoosh' }, { t: 9.4, tipo: 'ding' }, ...(MOVIL ? [{ t: VT, tipo: 'pop' }] : []), { t: H.END - 0.1, tipo: 'whoosh' },
 ];
 
 (async () => {
