@@ -166,7 +166,7 @@ jobs:
             nombre=$(basename "$video" .mp4 | sed 's/^rio-//' | sed -E 's/^(auto|mano).*/mesa/; s/^([a-z]+)-.*/\1/')
             if [ "$DESTINO" = "canal" ]; then leyenda="$pie"; else leyenda="🎬 ${n}/${total} · ${nombre}${pie:+ · $pie}"; fi
             curl -sS -f "https://api.telegram.org/bot${BOT}/sendVideo" \
-              -F chat_id="$destino" -F video=@"$video" -F supports_streaming=true \
+              -F chat_id="$destino" -F video=@"$video" -F supports_streaming=true -F width=1080 -F height=1920 \
               -F caption="${leyenda:0:1000}" ${botones:+-F reply_markup="$botones"} > /dev/null
             sleep 2
           done

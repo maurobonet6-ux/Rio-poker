@@ -73,7 +73,35 @@ async function renderizarMudo({ archivoHtml, total, salida, tiempo = t => t, fon
 // html: página completa con window.setup() (opcional) y window.render(t).
 // eventos: sonidos [{ t, tipo }] (whoosh, tick, ding, riser, pop). snap: segundos de los que sacar una captura en vez del vídeo.
 // narracion: [{ id, texto, en, limite }] frases de la voz en off (en = cuándo empieza, limite = el siguiente momento que no debe pisar).
+// Acabado común de la versión 2 para todos los formatos: grano de película, viñeta y polvo en el aire, que se mueven con el
+// tiempo del vídeo (los formatos que ya lo traen, como video-mesa2.js, se dejan como están).
+const ACABADO = `<style>#__grain{position:fixed;inset:0;width:1080px;height:1920px;z-index:9998;opacity:.07;mix-blend-mode:overlay;pointer-events:none}
+#__vig{position:fixed;inset:0;z-index:9997;pointer-events:none;background:radial-gradient(ellipse 75% 60% at 50% 50%,transparent 55%,rgba(0,0,0,.5) 100%)}
+#__dust{position:fixed;inset:0;z-index:1;pointer-events:none}#__dust i{position:absolute;border-radius:50%;background:#ffd9c2;filter:blur(3px)}</style>
+<script>(() => {
+  const rnd = k => { const x = Math.sin(k*127.1 + 311.7)*43758.5453; return x - Math.floor(x); }, G = [];
+  addEventListener('DOMContentLoaded', () => {
+    const d = document.createElement('div'); d.id = '__dust'; d.innerHTML = '<i></i>'.repeat(22); document.body.appendChild(d);
+    const v = document.createElement('div'); v.id = '__vig'; document.body.appendChild(v);
+    const c = document.createElement('canvas'); c.id = '__grain'; c.width = 360; c.height = 640; document.body.appendChild(c);
+    const cx = c.getContext('2d');
+    for (let g = 0; g < 6; g++){ const im = cx.createImageData(360, 640);
+      for (let i = 0; i < im.data.length; i += 4){ const x = rnd(g*1e6 + i)*255; im.data[i] = im.data[i+1] = im.data[i+2] = x; im.data[i+3] = 255; } G.push(im); }
+    const r0 = window.render;
+    window.render = (t, real) => { r0(t, real);
+      document.querySelectorAll('#__dust i').forEach((d, i) => { const sz = 4 + rnd(i)*12, sp = 18 + rnd(i + 50)*40;
+        d.style.width = d.style.height = sz + 'px'; d.style.opacity = (0.1 + rnd(i + 9)*0.22)*(0.6 + 0.4*Math.sin(t*1.3 + i));
+        d.style.left = (rnd(i + 3)*1080 + Math.sin(t*0.4 + i)*40) + 'px'; d.style.top = (((rnd(i + 7)*1920 - t*sp) % 1920) + 1920) % 1920 + 'px'; });
+      cx.putImageData(G[Math.floor(t*30) % G.length], 0, 0); };
+  });
+})();</script>`;
+
 async function grabar({ html, nombre, total, eventos = [], snap, narracion = null }){
+  // Enlace propio de la pieza (ENLACE=riopoker.es/v/17) en la pantalla final, en lugar de riopoker.es
+  if (process.env.ENLACE) html = html.replace(/(<div class="url[^"]*"[^>]*>)riopoker\.es(<\/div>)/g, '$1' + process.env.ENLACE + '$2').replace('👆 enlace en la bio', '✍️ escríbelo en tu navegador');
+  if (!html.includes('id="grain"') && process.env.SIN_ACABADO !== '1') html = html.replace('</head>', ACABADO + '</head>');
+  // Música de fondo (generada, sin derechos de autor); baja sola cuando habla la voz. SIN_MUSICA=1 la quita.
+  if (process.env.SIN_MUSICA !== '1') eventos = [...eventos, { t: 0, tipo: 'musica' }];
   const f = path.join(SALIDA, nombre + '.html');
   fs.writeFileSync(f, html);
   if (snap){

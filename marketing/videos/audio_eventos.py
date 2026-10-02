@@ -1,4 +1,4 @@
-# Sonido de los vídeos de formato nuevo: efectos sueltos, sin música (así se puede poner una canción de tendencia).
+# Sonido de los vídeos: efectos sueltos, voz en off y una música de fondo suave opcional (tipo «musica»).
 # Uso: python3 audio_eventos.py <salida.wav> <duración> '[{"t":1.2,"tipo":"whoosh"}, ...]'
 # Tipos: whoosh (transición), tick (cuenta atrás), ding (acierto), riser (suspense que sube), pop (confeti),
 # voz ({"t": 3.2, "tipo": "voz", "archivo": "frase.wav"}: una frase de la voz en off; los efectos bajan de volumen mientras habla).
@@ -21,9 +21,31 @@ def add(sig, at, g=1.0):
     i = int(at*SR)
     if i < 0 or i + len(sig) > len(L): return
     L[i:i+len(sig)] += sig*g; R[i:i+len(sig)] += sig*g
+# Música de fondo («musica»): una base tranquila hecha aquí mismo (sin derechos de autor), a 92 BPM, con acordes La m–Fa–Do–Sol,
+# bajo, bombo suave y charles. Va en su propia pista (M) para bajarla cuando habla la voz.
+M = np.zeros(len(L))
+if any(e['tipo'] == 'musica' for e in EV):
+    bpm = 92; beat = 60/bpm; compas = 4*beat; t_all = np.arange(len(M))/SR
+    acordes = [[220.0, 261.63, 329.63], [174.61, 220.0, 261.63], [130.81, 164.81, 196.0], [196.0, 246.94, 293.66]]
+    nb = int(np.ceil(TOTAL/compas)) + 1
+    for b in range(nb):
+        i0 = int(b*compas*SR); n = int(compas*SR)
+        if i0 >= len(M): break
+        n = min(n, len(M) - i0); tt = np.arange(n)/SR; env = np.minimum(1, tt/.4)*np.minimum(1, (compas - tt)/.4)
+        ch = acordes[b % 4]; pad = sum(np.sin(2*np.pi*f*tt) + .5*np.sin(2*np.pi*f*1.003*tt) + .25*np.sin(2*np.pi*2*f*tt) for f in ch)
+        M[i0:i0+n] += pad*env*.06 + np.sin(2*np.pi*ch[0]/2*tt)*env*.10
+        for q in range(4):
+            j = i0 + int(q*beat*SR)
+            if q in (0, 2):
+                k = tone(55, .35, .09)*.5; m = min(len(k), len(M) - j); M[j:j+m] += k[:m] if m > 0 else 0
+            h = int((q + .5)*beat*SR) + i0; ruido = lp(rng.normal(0, 1, int(.05*SR)), 1)*np.exp(-np.arange(int(.05*SR))/SR/.012)*.05
+            m = min(len(ruido), len(M) - h)
+            if m > 0: M[h:h+m] += ruido[:m]
+    fade = np.minimum(1, t_all/.6)*np.clip((TOTAL - t_all)/1.2, 0, 1)
+    M *= fade
 for e in EV:
     t, k = float(e['t']), e['tipo']
-    if k == 'voz': continue
+    if k in ('voz', 'musica'): continue
     if k == 'whoosh': add(whoosh(.45), t - .2, 1.0)
     elif k == 'tick': add(tone(1000, .08, .03)*.5, t, 0.8)
     elif k == 'ding': add(tone(1318.5, 1.4, .35)*.5 + tone(2637, 1.4, .18)*.18 + tone(1975.5, 1.4, .3)*.25, t, 1.0)
@@ -47,8 +69,10 @@ if hay_voz:
     actividad = media(np.abs(V), int(.12*SR)) > 0.01                                # dónde se está hablando
     bajada = 1 - 0.7*media(actividad.astype(float), int(.25*SR))                    # los efectos bajan al 30 % con suavidad
     L *= bajada; R *= bajada
+    M *= 1 - 0.55*media(actividad.astype(float), int(.4*SR))                         # la música baja más despacio, sin cortes
     pico = np.max(np.abs(V)); V = V/pico*0.9                                        # voz a buen nivel
     L = L*0.8 + V; R = R*0.8 + V
+L = L + M*0.55; R = R + M*0.55
 mix = np.stack([L, R], 1)[:N]; m = np.max(np.abs(mix)); mix = mix/(m if m > 0 else 1)*0.89
 with wave.open(OUT, 'wb') as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes((mix*32767).astype('<i2').tobytes())
