@@ -56,7 +56,8 @@ async function renderizarMudo({ archivoHtml, total, salida, tiempo = t => t, fon
       await p.evaluate(() => window.setup && window.setup());
       for (let i = w; i < frames; i += W){
         if (fondo) await p.evaluate(src => { const im = document.getElementById('__fondo'); im.src = src; return im.decode(); }, 'file://' + path.join(dirFondo, String(i + 1).padStart(5, '0') + '.jpg'));
-        await p.evaluate(x => window.render(x), tiempo(i / FPS));
+        // render(hora de diseño, hora real): la hora real sirve para seguir la voz aunque la animación esté en pausa
+        await p.evaluate(([x, r]) => window.render(x, r), [tiempo(i / FPS), i / FPS]);
         await p.screenshot({ type: 'jpeg', quality: 92, path: path.join(dir, String(i).padStart(5, '0') + '.jpg') });
       }
       await p.close();
@@ -104,6 +105,11 @@ async function grabar({ html, nombre, total, eventos = [], snap, narracion = nul
     } catch (e){ console.warn('Sin voz en off: ' + e.message); sintesis = null; }
   }
 
+  // La página recibe cuándo empieza y cuánto dura cada frase de la voz (hora real), para resaltar la palabra que se dice.
+  if (sintesis){
+    const VOZ = Object.fromEntries(narracion.filter(fr => sintesis.dur[fr.id] != null).map(fr => [fr.id, { i: ajuste.inicios[fr.id], d: sintesis.dur[fr.id] }]));
+    fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace('<body>', '<body><script>window.__VOZ = ' + JSON.stringify(VOZ) + ';</script>'));
+  }
   // 2. Fotogramas y vídeo mudo
   const fondo = elegirFondo();
   if (fondo) console.log('Fondo: ' + path.basename(fondo));

@@ -59,7 +59,8 @@ function intentar(datos){
     fs.rmSync(path.join(AUTO, datos.id + '.json'));
     return { ok: false, badge: info.badge };
   }
-  node('video-mesa.js', datos.id);
+  // Estilo de la mesa: la versión 2 (cámara, silueta del rival, subtítulos con la voz y RÍO en acción). ESTILO=1 vuelve a la primera.
+  node(process.env.ESTILO === '1' ? 'video-mesa.js' : 'video-mesa2.js', datos.id);
   console.log('LISTO ' + path.join(SALIDA, `rio-${datos.id}.mp4`) + ' · ' + info.badge);
   return { ok: true };
 }
